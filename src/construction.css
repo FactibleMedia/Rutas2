@@ -26,49 +26,18 @@
   right: 0;
   z-index: 50;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
-  padding: 14px 20px;
+  height: 82px;
+  padding: 0 28px;
   background: rgba(26, 17, 10, 0.9);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.brand-lockup {
-  display: flex;
-  flex-direction: column;
-  color: #fff;
-  line-height: 1;
-}
-
-.brand-lockup span {
-  font-family: Georgia, "Times New Roman", serif;
-  font-style: italic;
-  font-size: 14px;
-}
-
-.brand-lockup strong {
-  font-size: 24px;
-  letter-spacing: 0.14em;
-}
-
-.mini-nav {
-  display: flex;
-  gap: 8px;
-  color: rgba(255, 255, 255, 0.75);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  font-weight: 700;
-}
-
-.mini-nav span {
-  padding: 8px 10px;
-  border-radius: 999px;
-}
-
-.mini-nav .active {
-  color: var(--orange);
-  background: rgba(255, 255, 255, 0.08);
+.construction-logo {
+  height: 54px;
+  width: auto;
+  object-fit: contain;
 }
 
 .construction-hero {
@@ -84,7 +53,6 @@
 .hero-backdrop {
   position: absolute;
   inset: 0;
-  background-image: url("https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?q=80&w=2070&auto=format&fit=crop");
   background-size: cover;
   background-position: center;
 }
@@ -295,15 +263,17 @@
 }
 
 @media (max-width: 900px) {
-  .mini-nav {
-    display: none;
+  .construction-header {
+    padding: 0 14px;
+    height: 74px;
   }
 
-  .construction-header {
-    padding: 14px;
+  .construction-logo {
+    height: 46px;
   }
 
   .construction-hero {
     min-height: 66vh;
+    padding-top: 84px;
   }
 }

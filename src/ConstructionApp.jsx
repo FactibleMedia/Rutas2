@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Mail, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
+import logoProject from "./assets/mcp/logo_white_hero.png";
+import constructionBg from "./assets/mcp/hero_centro.png";
 import "./construction.css";
 
 function calculateTimeLeft(targetDate) {
@@ -40,20 +42,11 @@ export default function ConstructionApp() {
   return (
     <div className="construction-page">
       <header className="construction-header">
-        <div className="brand-lockup" aria-label="Rutas de Valledupar">
-          <span>Rutas De</span>
-          <strong>VALLEDUPAR</strong>
-        </div>
-
-        <nav className="mini-nav" aria-label="Navegacion temporal">
-          <span className="active">Inicio</span>
-          <span>Mapa</span>
-          <span>Acerca de</span>
-        </nav>
+        <img src={logoProject} alt="Rutas de Valledupar" className="construction-logo" loading="eager" fetchPriority="high" />
       </header>
 
       <main className="construction-hero">
-        <div className="hero-backdrop" />
+        <div className="hero-backdrop" style={{ backgroundImage: `url(${constructionBg})` }} />
         <div className="hero-overlay" />
 
         <section className="hero-content">
