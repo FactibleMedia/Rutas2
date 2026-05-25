@@ -4,9 +4,12 @@
   "private": true,
   "description": "Replica React del diseño Rutas de Valledupar desde Figma",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "node ./node_modules/vite/bin/vite.js",
+    "build": "node ./node_modules/vite/bin/vite.js build",
+    "preview": "node ./node_modules/vite/bin/vite.js preview"
+  },
+  "engines": {
+    "node": ">=20.19.0"
   },
   "type": "module",
   "dependencies": {
