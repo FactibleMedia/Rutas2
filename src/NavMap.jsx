@@ -216,6 +216,7 @@ export default function NavMap() {
   const [routePlan, setRoutePlan] = useState(navigationState?.routePlan ?? null);
   const [routeStatus, setRouteStatus] = useState(routePlan ? "ready" : "loading");
   const [routeMessage, setRouteMessage] = useState("Preparando navegación...");
+  const [pendingRouteRecalculation, setPendingRouteRecalculation] = useState(Boolean(effectiveNavigationState?.forceRecalculate));
   const [progress, setProgress] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [bearing, setBearing] = useState(0);
@@ -230,6 +231,7 @@ export default function NavMap() {
   const travelMode = effectiveNavigationState?.travelMode ?? "walking";
   const origin = effectiveNavigationState?.routeOrigin ?? null;
   const destination = effectiveNavigationState?.destination ?? null;
+  const routeRequestId = effectiveNavigationState?.routeRequestId ?? "default-request";
 
   const totalDuration = Number.isFinite(routePlan?.duration) ? routePlan.duration : Number.NaN;
   const totalDistance = Number.isFinite(routePlan?.distance) ? routePlan.distance : Number.NaN;
@@ -251,6 +253,14 @@ export default function NavMap() {
 
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(effectiveNavigationState));
   }, [effectiveNavigationState]);
+
+  useEffect(() => {
+    setRoutePlan(effectiveNavigationState?.routePlan ?? null);
+    setPendingRouteRecalculation(Boolean(effectiveNavigationState?.forceRecalculate));
+    setProgress(0);
+    setElapsedSeconds(0);
+    navigationStartRef.current = null;
+  }, [routeRequestId, effectiveNavigationState?.routePlan]);
 
   useEffect(() => {
     if (!effectiveNavigationState) {
@@ -324,7 +334,11 @@ export default function NavMap() {
   }, [destination, origin]);
 
   useEffect(() => {
-    const needsRoute = origin && destination && MAPBOX_TOKEN?.startsWith("pk.") && (!routePlan?.coordinates?.length || !routePlan?.steps?.length);
+    const needsRoute =
+      origin &&
+      destination &&
+      MAPBOX_TOKEN?.startsWith("pk.") &&
+      (!routePlan?.coordinates?.length || !routePlan?.steps?.length || pendingRouteRecalculation);
 
     if (!needsRoute) {
       return undefined;
@@ -339,11 +353,13 @@ export default function NavMap() {
         const plan = await fetchRoutePlan(MAPBOX_TOKEN, origin, destination, travelMode);
         if (!cancelled) {
           setRoutePlan(plan);
+          setPendingRouteRecalculation(false);
           setRouteStatus("ready");
           setRouteMessage("Ruta lista. Iniciando navegación...");
         }
       } catch {
         if (!cancelled) {
+          setPendingRouteRecalculation(false);
           setRouteStatus("error");
           setRouteMessage("No se pudo calcular la ruta.");
         }
@@ -353,7 +369,7 @@ export default function NavMap() {
     return () => {
       cancelled = true;
     };
-  }, [destination, origin, routePlan, travelMode]);
+  }, [destination, origin, routePlan, travelMode, routeRequestId, pendingRouteRecalculation]);
 
   useEffect(() => {
     if (!isMapReady || !mapRef.current || !routePlan?.coordinates?.length) {

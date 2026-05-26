@@ -569,10 +569,12 @@ export default function Mapas() {
     }
 
     const navigationState = {
+      routeRequestId: `${Date.now()}-${activePlace.id}-${travelMode}`,
       routeOrigin,
       destination: activePlace.coordinates,
       travelMode,
-      routePlan: currentPlan,
+      routePlan: null,
+      forceRecalculate: true,
       place: {
         id: activePlace.id,
         name: activePlace.name,
