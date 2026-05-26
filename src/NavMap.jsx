@@ -8,7 +8,7 @@ import "./NavMap.css";
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const STORAGE_KEY = "rutas_navmap_state";
 const FALLBACK_CENTER = [-73.2500, 10.4630];
-const MAP_STYLE = "mapbox://styles/mapbox/navigation-day-v1";
+const MAP_STYLE = "mapbox://styles/mapbox/streets-v12";
 const PLAYBACK_DURATION_MS = 36000;
 
 function normalizeText(value) {
@@ -309,7 +309,16 @@ export default function NavMap() {
       setIsMapReady(true);
     });
 
-    map.on("error", () => {
+    map.on("error", (event) => {
+      const errorMessage = event?.error?.message ?? "";
+      const isIncidents404 =
+        errorMessage.includes("mapbox.mapbox-incidents-v1") ||
+        (event?.error?.status === 404 && errorMessage.includes("vector.pbf"));
+
+      if (isIncidents404) {
+        return;
+      }
+
       setLoadError("No se pudo cargar la navegación. Verifica que el token de Mapbox sea público (pk.*).");
     });
 
@@ -331,7 +340,27 @@ export default function NavMap() {
       mapRef.current = null;
       setIsMapReady(false);
     };
-  }, [destination, origin]);
+  }, []);
+
+  useEffect(() => {
+    if (!isMapReady || !mapRef.current || routePlan?.coordinates?.length) {
+      return;
+    }
+
+    const focusPoint = origin ?? destination;
+    if (!focusPoint) {
+      return;
+    }
+
+    mapRef.current.easeTo({
+      center: focusPoint,
+      zoom: 15.2,
+      pitch: 0,
+      bearing: 0,
+      duration: 700,
+      essential: true,
+    });
+  }, [destination, isMapReady, origin, routePlan?.coordinates?.length]);
 
   useEffect(() => {
     const needsRoute =
