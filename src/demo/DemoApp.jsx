@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState } from "react";
-import iconSearch from "../assets/mcp/icon_search.png";
+import { useEffect, useId, useRef, useState } from "react";
 import iconYoutube from "../assets/mcp/icon_youtube.png";
 import iconInstagram from "../assets/mcp/icon_instagram.png";
 import iconLocation from "../assets/mcp/icon_location.png";
@@ -10,68 +9,129 @@ import mapGas from "../assets/mcp/mapa_gas.png";
 import gal1 from "../assets/mcp/gal_slide1.png";
 import gal2 from "../assets/mcp/gal_slide2.png";
 import gal3 from "../assets/mcp/gal_slide3.png";
-import heroCentro from "../assets/mcp/hero_centro.png";
-import heroArquitectura from "../assets/mcp/hero_arquitectura.png";
-import heroGlorietas from "../assets/mcp/hero_glorietas.png";
-import heroMistico from "../assets/mcp/hero_mistico.png";
-import heroGastro from "../assets/mcp/hero_gastro.png";
-import heroPhotoLeft from "../assets/mcp/hero_photo_left.png";
-import heroPhotoRight from "../assets/mcp/hero_photo_right.png";
-import heroNextBtn from "../assets/mcp/hero_next_btn.png";
-import logoNav from "../assets/mcp/logo_white_hero.png";
-import logoHero from "../assets/mcp/logo_white_hero.png";
 import logoFooter from "../assets/mcp/logo_footer.png";
 import ctaBgIcon from "../assets/mcp/icon_bg_cta.png";
 import glossFramePurple from "../assets/mcp/gloss_frame_purple.png";
+import TopBar from "../TopBar";
 import glossFrameGreen from "../assets/mcp/gloss_frame_green.png";
+import InitialSlider from "../InitialSlider";
 import glossBgLucas from "../assets/mcp/gloss_bg_lucas.png";
 import glossBgMotetes from "../assets/mcp/gloss_bg_motetes.png";
 import glossBgCantaro from "../assets/mcp/gloss_bg_cantaro.png";
 import glossBgAsiento from "../assets/mcp/gloss_bg_asiento.png";
 import "../styles.css";
 
-const heroSlides = [
-  { img: heroCentro, label: "Centro historico" },
-  { img: heroArquitectura, label: "Arquitectura" },
-  { img: heroGlorietas, label: "Glorietas" },
-  { img: heroMistico, label: "Lugares misticos" },
-  { img: heroGastro, label: "Sabores tradicionales" },
-];
 
 const glossaryCards = [
   {
-    bg: "#464c33",
-    imgBack: glossBgAsiento,
-    imgFrame: glossFrameGreen,
+    id: "asiento",
     title: "Asiento",
-    type: "(Objeto)",
+    type: "Objeto",
     meaning: "Silla de madera con cuero de vaca disecado.",
+    color: "#4B5A3E",
+    borderColor: "#DCA150",
+    imageUrl: glossBgAsiento,
   },
   {
-    bg: "#564e87",
-    imgBack: glossBgCantaro,
-    imgFrame: glossFramePurple,
+    id: "cantaro",
     title: "Cantaro",
-    type: "(Objeto)",
+    type: "Objeto",
     meaning: "Vasija de metal que se utilizaba para llevar y conservar la leche.",
+    color: "#575288",
+    borderColor: "#DCA150",
+    imageUrl: glossBgCantaro,
   },
   {
-    bg: "#464c33",
-    imgBack: glossBgMotetes,
-    imgFrame: glossFrameGreen,
+    id: "motetes",
     title: "Motetes",
-    type: "(Objeto)",
+    type: "Objeto",
     meaning: "Son las maletas o cosas que lleva una persona al viajar.",
+    color: "#4B5A3E",
+    borderColor: "#DCA150",
+    imageUrl: glossBgMotetes,
   },
   {
-    bg: "#564e87",
-    imgBack: glossBgLucas,
-    imgFrame: glossFramePurple,
+    id: "lucas",
     title: "Lucas",
-    type: "(Objeto)",
+    type: "Objeto",
     meaning: "Es para hacer referencia al dinero.",
+    color: "#575288",
+    borderColor: "#DCA150",
+    imageUrl: glossBgLucas,
   },
 ];
+
+function StampCard({ color, borderColor, children }) {
+  const uniqueId = useId().replace(/:/g, "-");
+  const w = 256;
+  const h = 320;
+
+  return (
+    <div className="glossary__stamp-card">
+      <svg className="glossary__stamp-svg" viewBox={`0 0 ${w} ${h}`} fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <mask id={`stamp-mask-${uniqueId}`}>
+            <rect width={w} height={h} fill="white" />
+            <rect
+              x="0"
+              y="0"
+              width={w}
+              height={h}
+              fill="none"
+              stroke="black"
+              strokeWidth="14"
+              strokeDasharray="0 20"
+              strokeLinecap="round"
+            />
+          </mask>
+        </defs>
+
+        <rect width={w} height={h} fill={color} mask={`url(#stamp-mask-${uniqueId})`} rx="4" />
+        <rect x="12" y="12" width={w - 24} height={h - 24} fill="none" stroke={borderColor} strokeWidth="1.5" rx="4" />
+      </svg>
+      <div className="glossary__stamp-content">{children}</div>
+    </div>
+  );
+}
+
+function GlossaryItem({ title, type, meaning, color, borderColor, imageUrl }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div
+      className={`glossary__item ${isOpen ? "glossary__item--active" : ""}`}
+      onClick={() => setIsOpen((prev) => !prev)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          setIsOpen((prev) => !prev);
+        }
+      }}
+      aria-pressed={isOpen}
+    >
+      <div className="glossary__card glossary__card--back">
+        <StampCard color={color} borderColor={borderColor}>
+          <div className={`glossary__card-back-image ${isOpen ? "glossary__card-back-image--open" : ""}`}>
+            <img src={imageUrl} alt={`Ilustración de ${title}`} />
+          </div>
+        </StampCard>
+      </div>
+      <div className={`glossary__card glossary__card--front ${isOpen ? "glossary__card--front-open" : ""}`}>
+        <StampCard color={color} borderColor={borderColor}>
+          <div className="glossary__card-front-content">
+            <h2>{title}</h2>
+            <span>({type})</span>
+            <div className="glossary__card-meaning">
+              <span>Significado:</span>
+              <p>{meaning}</p>
+            </div>
+          </div>
+        </StampCard>
+      </div>
+    </div>
+  );
+}
 
 const gallerySlides = [
   {
@@ -100,177 +160,89 @@ const gallerySlides = [
   },
 ];
 
-function Navbar({ activeSection }) {
-  const links = [
-    { id: "inicio", label: "Inicio" },
-    { id: "mapas", label: "Mapa" },
-    { id: "glosario", label: "Glosario" },
-    { id: "galeria", label: "Galeria" },
-    { id: "footer", label: "Acerca de" },
-  ];
-
-  return (
-    <nav className="navbar">
-      <img src={logoNav} alt="Rutas de Valledupar" className="navbar__logo" loading="eager" fetchPriority="high" />
-      <div className="navbar__nav">
-        {links.map((link) => (
-          <a key={link.id} href={`#${link.id}`} className={`navbar__link${activeSection === link.id ? " active" : ""}`}>
-            {link.label}
-          </a>
-        ))}
-        <img src={iconSearch} alt="buscar" className="navbar__search" />
-      </div>
-      <div className="navbar__actions">
-        <button className="navbar__btn">Iniciar sesion</button>
-        <button className="navbar__btn">Registrate</button>
-      </div>
-    </nav>
-  );
-}
-
-function Hero() {
-  const [current, setCurrent] = useState(0);
-  const heroTimerRef = useRef(null);
-
-  const startAutoplay = () => {
-    clearInterval(heroTimerRef.current);
-    heroTimerRef.current = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % heroSlides.length);
-    }, 4600);
-  };
-
-  useEffect(() => {
-    startAutoplay();
-    return () => clearInterval(heroTimerRef.current);
-  }, []);
-
-  return (
-    <section id="inicio" className="hero" onMouseEnter={() => clearInterval(heroTimerRef.current)} onMouseLeave={startAutoplay}>
-      {heroSlides.map((slide, index) => (
-        <img
-          key={slide.label}
-          src={slide.img}
-          alt={slide.label}
-          className={`hero__slide${index === current ? " active" : ""}`}
-          loading={index === 0 ? "eager" : "lazy"}
-          fetchPriority={index === 0 ? "high" : "auto"}
-          decoding="async"
-        />
-      ))}
-      <div className="hero__overlay" />
-
-      <div className="hero__photo-left">
-        <img src={heroPhotoLeft} alt="Centro historico" />
-      </div>
-      <div className="hero__photo-right">
-        <img src={heroPhotoRight} alt="Arquitectura" />
-      </div>
-
-      <div className="hero__content reveal visible">
-        <img src={logoHero} alt="Rutas de Valledupar" className="hero__logo-img" />
-        <p className="hero__desc">
-          Bienvenido a recorrer las rutas del viejo Valle, aqui mantenemos la herencia viva de un patrimonio que todavia se conserva.
-        </p>
-        <a href="#mapas" className="hero__cta">
-          Explora el mapa
-        </a>
-      </div>
-
-      <div className="hero__label-view" aria-live="polite">
-        <div className="hero__label-track" style={{ transform: `translateY(-${current * 144}px)` }}>
-          {heroSlides.map((slide) => (
-            <span key={slide.label} className="hero__label-item">
-              {slide.label}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <button className="hero__nav-btn next" onClick={() => setCurrent((prev) => (prev + 1) % heroSlides.length)} aria-label="siguiente">
-        <img src={heroNextBtn} alt="Siguiente" />
-      </button>
-
-      <div className="hero__dots">
-        {heroSlides.map((slide, index) => (
-          <button
-            key={slide.label}
-            className={`hero__dot${index === current ? " active" : ""}`}
-            onClick={() => setCurrent(index)}
-            aria-label={`Mostrar ${slide.label}`}
-          />
-        ))}
-      </div>
-    </section>
-  );
-}
-
 function Maps() {
-  const [active, setActive] = useState(0);
-  const mapImages = [mapPat, mapMis, mapGas];
+  const [selectedRoute, setSelectedRoute] = useState(null);
+
   const routes = [
-    { label: "Ruta patrimonial", cls: "patrimonial" },
-    { label: "Ruta mistica", cls: "mistica" },
-    { label: "Ruta gastronomica", cls: "gastronomica" },
+    {
+      id: 0,
+      title: "RUTA PATRIMONIAL",
+      subtitle: "LUGARES HISTÓRICOS, ARQUITECTURA, PLAZAS, ESCULTURAS, IGLESIAS, ETC.",
+      activeColor: "#6a8759",
+      mutedColor: "#d0ddc7",
+      image: mapPat,
+    },
+    {
+      id: 1,
+      title: "RUTA MÍSTICA",
+      subtitle: "HISTORIAS ORALES, PERSONAJES MÍTICOS Y TRADICIONES POPULARES.",
+      activeColor: "#4a3e75",
+      mutedColor: "#c6c2d6",
+      image: mapMis,
+    },
+    {
+      id: 2,
+      title: "RUTA GASTRONÓMICA",
+      subtitle: "SABORES Y PLATOS TÍPICOS DE LA REGIÓN.",
+      activeColor: "#c46c33",
+      mutedColor: "#eed0be",
+      image: mapGas,
+    },
   ];
 
   return (
     <section id="mapas" className="maps reveal">
       <h2 className="maps__title">Mapas</h2>
-      <div className="maps__routes">
-        {routes.map((route, index) => (
-          <button
-            key={route.label}
-            className={`maps__route ${route.cls}${active === index ? " active" : ""}`}
-            onClick={() => setActive(index)}
-          >
-            {route.label}
-          </button>
-        ))}
-      </div>
-      <div className="maps__map-display">
-        <img src={mapImages[active]} alt={routes[active].label} loading="lazy" decoding="async" />
-      </div>
-    </section>
-  );
-}
+      <div className="maps__inner">
+        <div className={`maps__text-block ${selectedRoute === null ? "maps__text-block--initial" : "maps__text-block--active"}`}>
+          <div className="maps__intro">
+            <p>
+              Explora las rutas del viejo Valle y descubre cómo cada camino cambia el mapa,
+              las historias y los colores del territorio.
+            </p>
+          </div>
 
-function GlossaryCard({ card }) {
-  const cardRef = useRef(null);
+          <div className="maps__route-list">
+            {routes.map((route) => {
+              const isActive = selectedRoute === route.id;
+              const isInitial = selectedRoute === null;
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("visible");
-            observer.disconnect();
-          }
-        });
-      },
-      { threshold: 0.2 }
-    );
+              return (
+                <div
+                  key={route.id}
+                  className="maps__route-item"
+                  onClick={() => setSelectedRoute(route.id)}
+                  style={{ cursor: "pointer" }}
+                >
+                  <h3
+                    className={`maps__route-title ${isInitial ? "maps__route-title--initial" : isActive ? "maps__route-title--active" : "maps__route-title--inactive"}`}
+                    style={{
+                      color: isInitial ? route.mutedColor : isActive ? route.activeColor : route.mutedColor,
+                    }}
+                  >
+                    {route.title}
+                  </h3>
+                  <p className={`maps__route-subtitle ${isActive ? "active" : ""}`}>
+                    {route.subtitle}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
 
-    if (cardRef.current) {
-      observer.observe(cardRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <div className="glossary__card" ref={cardRef}>
-      <img src={card.imgFrame} alt="Marco postal" className="glossary__card-frame" />
-      <div className="glossary__card-inner" style={{ backgroundColor: card.bg }}>
-        <img src={card.imgBack} alt={card.title} className="glossary__card-img" />
-        <div className="glossary__card-title">{card.title}</div>
-        <div className="glossary__card-type">{card.type}</div>
-        <div className="glossary__card-meaning">
-          <strong>Significado:</strong>
-          <br />
-          {card.meaning}
+        <div className={`maps__visual ${selectedRoute === null ? "maps__visual--hidden" : "maps__visual--visible"}`}>
+          <div className="maps__map-display">
+            {routes.map((route) => (
+              <div key={route.id} className={`maps__map-slide ${selectedRoute === route.id ? "active" : ""}`}>
+                <img src={route.image} alt={route.title} loading="lazy" decoding="async" />
+              </div>
+            ))}
+          </div>
+          <button className="maps__cta">EXPLORA EL MAPA</button>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -283,9 +255,17 @@ function Glossary() {
           Por eso en este Glosario encontraras mas de 200 palabras que te ayudaran a entender el hablao de los Valduparenses.
         </p>
       </div>
-      <div className="glossary__cards">
+      <div className="glossary__grid">
         {glossaryCards.map((card) => (
-          <GlossaryCard key={card.title} card={card} />
+          <GlossaryItem
+            key={card.id}
+            title={card.title}
+            type={card.type}
+            meaning={card.meaning}
+            color={card.color}
+            borderColor={card.borderColor}
+            imageUrl={card.imageUrl}
+          />
         ))}
       </div>
       <div className="glossary__cta-wrap">
@@ -450,6 +430,7 @@ function useScrollReveal() {
 
 export default function DemoApp() {
   const [activeSection, setActiveSection] = useState("inicio");
+  const [isRegistered, setIsRegistered] = useState(false);
 
   useScrollReveal();
 
@@ -474,10 +455,18 @@ export default function DemoApp() {
     return () => observer.disconnect();
   }, []);
 
+  const handleSectionChange = (sectionId) => {
+    setActiveSection(sectionId);
+    const target = document.getElementById(sectionId);
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
   return (
     <div className="page-shell">
-      <Navbar activeSection={activeSection} />
-      <Hero />
+      <TopBar activeSection={activeSection} isAuthenticated={isRegistered} user={{ name: "Usuario Valido", initials: "UV" }} onSectionChange={handleSectionChange} />
+      <InitialSlider />
       <Maps />
       <Glossary />
       <Gallery />
