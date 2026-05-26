@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { DbConnection } from "./admin/module_bindings";
 
 export const ROUTE_META = {
   patrimonial: { id: "patrimonial", name: "Ruta Patrimonial", chipClass: "patrimonial" },
@@ -79,12 +80,20 @@ export const DEFAULT_MAP_LOCATIONS = [
   },
 ];
 
-const STORAGE_KEY = "rutas_map_locations";
-const CHANNEL_NAME = "rutas-map-locations";
 const listeners = new Set();
-let broadcastChannel = null;
-let cachedLocations = readFromStorage();
-let globalsBound = false;
+let cachedLocations = fallbackLocations();
+let connection = null;
+let connectPromise = null;
+
+const SPACETIME_URI =
+  import.meta.env.VITE_SPACETIME_URI ||
+  import.meta.env.VITE_SPACETIMEDB_HOST ||
+  "https://maincloud.spacetimedb.com";
+const SPACETIME_DB =
+  import.meta.env.VITE_SPACETIME_DB ||
+  import.meta.env.VITE_SPACETIMEDB_DB_NAME ||
+  "rutasvallenatas-9wo5o";
+const SPACETIME_TOKEN_KEY = "rutas_spacetime_token";
 
 function cloneLocations(locations) {
   return locations.map((location) => ({
@@ -97,55 +106,16 @@ function fallbackLocations() {
   return cloneLocations(DEFAULT_MAP_LOCATIONS);
 }
 
-function readFromStorage() {
-  if (typeof window === "undefined") {
-    return fallbackLocations();
-  }
-
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      return fallbackLocations();
-    }
-
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed) || parsed.length === 0) {
-      return fallbackLocations();
-    }
-
-    return cloneLocations(parsed).map(normalizeLocation);
-  } catch {
-    return fallbackLocations();
-  }
-}
-
 function emitChange() {
   listeners.forEach((listener) => listener());
 }
 
-function bindGlobals() {
-  if (globalsBound || typeof window === "undefined") {
-    return;
+function cryptoId() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
   }
 
-  globalsBound = true;
-
-  window.addEventListener("storage", (event) => {
-    if (event.key !== STORAGE_KEY) {
-      return;
-    }
-
-    cachedLocations = readFromStorage();
-    emitChange();
-  });
-
-  if (typeof BroadcastChannel !== "undefined") {
-    broadcastChannel = new BroadcastChannel(CHANNEL_NAME);
-    broadcastChannel.onmessage = () => {
-      cachedLocations = readFromStorage();
-      emitChange();
-    };
-  }
+  return `location-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
 function normalizeLocation(location) {
@@ -157,9 +127,9 @@ function normalizeLocation(location) {
     routeId,
     categoryLabel: location.categoryLabel || ROUTE_META[routeId].name.replace(/^Ruta\s*/, ""),
     name: location.name?.trim() || "Nuevo sitio",
-    subtitle: location.subtitle?.trim() || "Descripción breve.",
-    description: location.description?.trim() || location.subtitle?.trim() || "Descripción breve.",
-    address: location.address?.trim() || "Sin dirección",
+    subtitle: location.subtitle?.trim() || "Descripcion breve.",
+    description: location.description?.trim() || location.subtitle?.trim() || "Descripcion breve.",
+    address: location.address?.trim() || "Sin direccion",
     costStatus: location.costStatus?.trim() || "Sin definir",
     hours: location.hours?.trim() || "Sin definir",
     audience: location.audience?.trim() || "Sin definir",
@@ -168,32 +138,145 @@ function normalizeLocation(location) {
   };
 }
 
-function cryptoId() {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-    return crypto.randomUUID();
-  }
-
-  return `location-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+function toRow(location) {
+  return {
+    id: location.id,
+    routeId: location.routeId,
+    categoryLabel: location.categoryLabel,
+    name: location.name,
+    subtitle: location.subtitle,
+    description: location.description,
+    address: location.address,
+    costStatus: location.costStatus,
+    hours: location.hours,
+    audience: location.audience,
+    image: location.image,
+    longitude: String(location.coordinates[0]),
+    latitude: String(location.coordinates[1]),
+  };
 }
 
-function persistLocations(locations) {
-  const normalized = cloneLocations(locations).map(normalizeLocation);
-  cachedLocations = normalized;
+function fromRow(row) {
+  return normalizeLocation({
+    id: row.id,
+    routeId: row.routeId,
+    categoryLabel: row.categoryLabel,
+    name: row.name,
+    subtitle: row.subtitle,
+    description: row.description,
+    address: row.address,
+    costStatus: row.costStatus,
+    hours: row.hours,
+    audience: row.audience,
+    image: row.image,
+    coordinates: [Number(row.longitude), Number(row.latitude)],
+  });
+}
 
-  if (typeof window !== "undefined") {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
-    } catch {
-      // ignore storage errors in restricted environments
-    }
-
-    if (broadcastChannel) {
-      broadcastChannel.postMessage({ type: "updated" });
-    }
+function updateFromRemoteTable() {
+  if (!connection?.db?.ubicacionesMapa) {
+    return;
   }
 
+  const remoteRows = Array.from(connection.db.ubicacionesMapa.iter());
+  if (!remoteRows.length) {
+    cachedLocations = fallbackLocations();
+    emitChange();
+    return;
+  }
+
+  cachedLocations = remoteRows.map(fromRow);
   emitChange();
-  return normalized;
+}
+
+function persistLocally(locations) {
+  cachedLocations = cloneLocations(locations).map(normalizeLocation);
+  emitChange();
+  return cachedLocations;
+}
+
+async function ensureRealtimeConnection() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  if (connection) {
+    return connection;
+  }
+
+  if (connectPromise) {
+    return connectPromise;
+  }
+
+  connectPromise = new Promise((resolve, reject) => {
+    let settled = false;
+
+    const finishResolve = (value) => {
+      if (settled) {
+        return;
+      }
+
+      settled = true;
+      resolve(value);
+    };
+
+    const finishReject = (error) => {
+      if (settled) {
+        return;
+      }
+
+      settled = true;
+      reject(error);
+    };
+
+    const conn = DbConnection.builder()
+      .withUri(SPACETIME_URI)
+      .withDatabaseName(SPACETIME_DB)
+      .withToken(localStorage.getItem(SPACETIME_TOKEN_KEY) || undefined)
+      .onConnect((_ctx, _identity, token) => {
+        localStorage.setItem(SPACETIME_TOKEN_KEY, token);
+
+        conn
+          .subscriptionBuilder()
+          .onApplied(() => {
+            updateFromRemoteTable();
+            finishResolve(conn);
+          })
+          .onError((ctx) => {
+            finishReject(ctx.error || new Error("No se pudo sincronizar ubicaciones en Spacetime."));
+          })
+          .subscribe("SELECT * FROM ubicaciones_mapa");
+      })
+      .onConnectError((_ctx, error) => {
+        finishReject(error || new Error("No se pudo conectar con Spacetime."));
+      })
+      .build();
+
+    connection = conn;
+  })
+    .catch((error) => {
+      connection = null;
+      throw error;
+    })
+    .finally(() => {
+      connectPromise = null;
+    });
+
+  return connectPromise;
+}
+
+async function callReducer(name, params) {
+  const conn = await ensureRealtimeConnection();
+  if (!conn) {
+    throw new Error("No hay conexion activa con Spacetime.");
+  }
+
+  const reducer = conn.reducers?.[name];
+  if (typeof reducer !== "function") {
+    throw new Error(`Reducer ${name} no disponible en los bindings actuales.`);
+  }
+
+  await reducer(params);
 }
 
 export function getMapLocationsSnapshot() {
@@ -202,7 +285,10 @@ export function getMapLocationsSnapshot() {
 
 export function subscribeMapLocations(listener) {
   listeners.add(listener);
-  bindGlobals();
+  ensureRealtimeConnection().catch(() => {
+    cachedLocations = fallbackLocations();
+    emitChange();
+  });
 
   return () => {
     listeners.delete(listener);
@@ -213,26 +299,63 @@ export function useMapLocations() {
   return useSyncExternalStore(subscribeMapLocations, getMapLocationsSnapshot, fallbackLocations);
 }
 
-export function setMapLocations(locations) {
-  return persistLocations(locations);
+export async function setMapLocations(locations) {
+  const normalized = cloneLocations(locations).map(normalizeLocation);
+
+  try {
+    const conn = await ensureRealtimeConnection();
+    if (!conn) {
+      return persistLocally(normalized);
+    }
+
+    const existing = new Set(Array.from(conn.db.ubicacionesMapa.iter()).map((item) => item.id));
+
+    for (const location of normalized) {
+      existing.delete(location.id);
+      await callReducer("upsertUbicacionMapa", toRow(location));
+    }
+
+    for (const id of existing) {
+      await callReducer("eliminarUbicacionMapa", { id });
+    }
+
+    return normalized;
+  } catch {
+    return persistLocally(normalized);
+  }
 }
 
-export function upsertMapLocation(location) {
+export async function upsertMapLocation(location) {
   const normalized = normalizeLocation(location);
-  const current = getMapLocationsSnapshot();
-  const next = current.some((item) => item.id === normalized.id)
-    ? current.map((item) => (item.id === normalized.id ? normalized : item))
-    : [normalized, ...current];
 
-  return persistLocations(next);
+  try {
+    await callReducer("upsertUbicacionMapa", toRow(normalized));
+    return normalized;
+  } catch {
+    const current = getMapLocationsSnapshot();
+    const next = current.some((item) => item.id === normalized.id)
+      ? current.map((item) => (item.id === normalized.id ? normalized : item))
+      : [normalized, ...current];
+    return persistLocally(next);
+  }
 }
 
-export function removeMapLocation(id) {
-  return persistLocations(getMapLocationsSnapshot().filter((location) => location.id !== id));
+export async function removeMapLocation(id) {
+  try {
+    await callReducer("eliminarUbicacionMapa", { id });
+    return getMapLocationsSnapshot();
+  } catch {
+    return persistLocally(getMapLocationsSnapshot().filter((location) => location.id !== id));
+  }
 }
 
-export function resetMapLocations() {
-  return persistLocations(DEFAULT_MAP_LOCATIONS);
+export async function resetMapLocations() {
+  try {
+    await callReducer("resetUbicacionesMapa", {});
+    return fallbackLocations();
+  } catch {
+    return persistLocally(DEFAULT_MAP_LOCATIONS);
+  }
 }
 
 export function getRouteCounts(locations) {

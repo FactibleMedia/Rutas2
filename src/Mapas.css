@@ -215,6 +215,12 @@
   justify-content: center;
 }
 
+.mapas-ui-top-stack {
+  width: min(92vw, 540px);
+  display: grid;
+  gap: 10px;
+}
+
 .mapas-ui-middle {
   justify-content: flex-end;
   flex: 1;
@@ -235,13 +241,49 @@
 }
 
 .mapas-search-box {
-  width: min(92vw, 540px);
+  width: 100%;
   padding: 4px;
   border-radius: 999px;
   background: rgba(241, 154, 32, 0.94);
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.mapas-location-cta {
+  pointer-events: auto;
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: rgba(255, 250, 242, 0.94);
+  border: 1px solid rgba(75, 88, 66, 0.18);
+  box-shadow: 0 10px 20px rgba(10, 8, 20, 0.2);
+  display: grid;
+  gap: 8px;
+}
+
+.mapas-location-cta__button {
+  width: fit-content;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-weight: 700;
+  font-size: 0.84rem;
+  cursor: pointer;
+  background: var(--mapas-orange);
+  color: #ffffff;
+}
+
+.mapas-location-cta__button:disabled {
+  opacity: 0.75;
+  cursor: default;
+  background: var(--mapas-green);
+}
+
+.mapas-location-cta p {
+  margin: 0;
+  color: #3f4a37;
+  font-size: 0.82rem;
+  line-height: 1.3;
 }
 
 .mapas-search-icon {
@@ -1244,6 +1286,10 @@
   .mapas-floating-popup {
     width: min(94vw, 320px);
   }
+
+  .mapas-ui-top-stack {
+    width: min(95vw, 540px);
+  }
 }
 
 @media (max-width: 740px) {
@@ -1263,6 +1309,10 @@
 
   .mapas-links {
     justify-content: flex-end;
+  }
+
+  .mapas-location-cta {
+    padding: 8px 10px;
   }
 
   .mapas-modal-body {

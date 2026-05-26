@@ -36,16 +36,27 @@ import {
 // Import all reducer arg schemas
 import CrearAdminInicialReducer from "./crear_admin_inicial_reducer";
 import CrearUsuarioReducer from "./crear_usuario_reducer";
+import EliminarUbicacionMapaReducer from "./eliminar_ubicacion_mapa_reducer";
+import ResetUbicacionesMapaReducer from "./reset_ubicaciones_mapa_reducer";
+import UpsertUbicacionMapaReducer from "./upsert_ubicacion_mapa_reducer";
 
 // Import all procedure arg schemas
 
 // Import all table schema definitions
+import UbicacionesMapaRow from "./ubicaciones_mapa_table";
 import UsuariosRow from "./usuarios_table";
 
 /** Type-only namespace exports for generated type groups. */
 
 /** The schema information for all tables in this module. This is defined the same was as the tables would have been defined in the server. */
 const tablesSchema = __schema({
+  ubicacionesMapa: __table({
+    name: 'ubicaciones_mapa',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, UbicacionesMapaRow),
   usuarios: __table({
     name: 'usuarios',
     indexes: [
@@ -59,6 +70,9 @@ const tablesSchema = __schema({
 const reducersSchema = __reducers(
   __reducerSchema("crear_admin_inicial", CrearAdminInicialReducer),
   __reducerSchema("crear_usuario", CrearUsuarioReducer),
+  __reducerSchema("eliminar_ubicacion_mapa", EliminarUbicacionMapaReducer),
+  __reducerSchema("reset_ubicaciones_mapa", ResetUbicacionesMapaReducer),
+  __reducerSchema("upsert_ubicacion_mapa", UpsertUbicacionMapaReducer),
 );
 
 /** The schema information for all procedures in this module. This is defined the same way as the procedures would have been defined in the server. */

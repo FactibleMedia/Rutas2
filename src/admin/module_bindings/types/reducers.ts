@@ -8,7 +8,13 @@ import { type Infer as __Infer } from "spacetimedb";
 // Import all reducer arg schemas
 import CrearAdminInicialReducer from "../crear_admin_inicial_reducer";
 import CrearUsuarioReducer from "../crear_usuario_reducer";
+import EliminarUbicacionMapaReducer from "../eliminar_ubicacion_mapa_reducer";
+import ResetUbicacionesMapaReducer from "../reset_ubicaciones_mapa_reducer";
+import UpsertUbicacionMapaReducer from "../upsert_ubicacion_mapa_reducer";
 
 export type CrearAdminInicialParams = __Infer<typeof CrearAdminInicialReducer>;
 export type CrearUsuarioParams = __Infer<typeof CrearUsuarioReducer>;
+export type EliminarUbicacionMapaParams = __Infer<typeof EliminarUbicacionMapaReducer>;
+export type ResetUbicacionesMapaParams = __Infer<typeof ResetUbicacionesMapaReducer>;
+export type UpsertUbicacionMapaParams = __Infer<typeof UpsertUbicacionMapaReducer>;
 

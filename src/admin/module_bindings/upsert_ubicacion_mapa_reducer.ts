@@ -10,7 +10,7 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
-export const UbicacionesMapa = __t.object("UbicacionesMapa", {
+export default {
   id: __t.string(),
   routeId: __t.string(),
   categoryLabel: __t.string(),
@@ -24,17 +24,4 @@ export const UbicacionesMapa = __t.object("UbicacionesMapa", {
   image: __t.string(),
   longitude: __t.string(),
   latitude: __t.string(),
-  actualizadoEn: __t.string(),
-});
-export type UbicacionesMapa = __Infer<typeof UbicacionesMapa>;
-
-export const Usuarios = __t.object("Usuarios", {
-  nombre: __t.string(),
-  correo: __t.string(),
-  passwordHash: __t.string(),
-  rol: __t.string(),
-  activo: __t.bool(),
-  creadoEn: __t.string(),
-});
-export type Usuarios = __Infer<typeof Usuarios>;
-
+};

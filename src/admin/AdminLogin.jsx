@@ -32,7 +32,7 @@ const SPACETIME_URI =
 const SPACETIME_DB =
   import.meta.env.VITE_SPACETIME_DB ||
   import.meta.env.VITE_SPACETIMEDB_DB_NAME ||
-  "rutasvallenatas-admin";
+  "rutasvallenatas-9wo5o";
 const SPACETIME_TOKEN_KEY = "rutas_spacetime_token";
 
 function getInitials(name) {
@@ -244,7 +244,7 @@ export default function AdminLogin({ initialView = "login" }) {
     }));
   };
 
-  const handleSaveLocation = (event) => {
+  const handleSaveLocation = async (event) => {
     event.preventDefault();
 
     const parsedLongitude = Number.parseFloat(locationForm.longitude);
@@ -281,13 +281,17 @@ export default function AdminLogin({ initialView = "login" }) {
       ? locations.map((location) => (location.id === payload.id ? payload : location))
       : [payload, ...locations];
 
-    setMapLocations(currentLocations);
-    setSelectedLocationId(payload.id);
-    setLocationForm(createLocationDraft(payload));
-    setMapEditorMessage("Ubicacion guardada y sincronizada en tiempo real.");
+    try {
+      await setMapLocations(currentLocations);
+      setSelectedLocationId(payload.id);
+      setLocationForm(createLocationDraft(payload));
+      setMapEditorMessage("Ubicacion guardada y sincronizada en Spacetime.");
+    } catch {
+      setMapEditorMessage("No se pudo guardar en Spacetime. Revisa la conexion.");
+    }
   };
 
-  const handleDeleteLocation = () => {
+  const handleDeleteLocation = async () => {
     if (!selectedLocationId) {
       return;
     }
@@ -301,10 +305,14 @@ export default function AdminLogin({ initialView = "login" }) {
       return;
     }
 
-    removeMapLocation(selectedLocationId);
-    setSelectedLocationId("");
-    setLocationForm(createLocationDraft(null));
-    setMapEditorMessage("Ubicacion eliminada.");
+    try {
+      await removeMapLocation(selectedLocationId);
+      setSelectedLocationId("");
+      setLocationForm(createLocationDraft(null));
+      setMapEditorMessage("Ubicacion eliminada.");
+    } catch {
+      setMapEditorMessage("No se pudo eliminar en Spacetime.");
+    }
   };
 
   const handleNewLocation = () => {
@@ -313,9 +321,13 @@ export default function AdminLogin({ initialView = "login" }) {
     setMapEditorMessage("Creando una nueva ubicacion.");
   };
 
-  const handleResetLocations = () => {
-    resetMapLocations();
-    setMapEditorMessage("Se restauraron las ubicaciones por defecto.");
+  const handleResetLocations = async () => {
+    try {
+      await resetMapLocations();
+      setMapEditorMessage("Se restauraron las ubicaciones por defecto.");
+    } catch {
+      setMapEditorMessage("No se pudo restaurar en Spacetime.");
+    }
   };
 
   return (

@@ -12,6 +12,7 @@ const MAP_CENTER = [-73.2435, 10.4631];
 const MAP_ZOOM = 14.2;
 const MAP_PITCH = 45;
 const MAP_BEARING = -17.6;
+const MOBILE_USER_AGENT_REGEX = /Android|iPhone|iPad|iPod/i;
 
 const SUBCATEGORIES = {
   patrimonial: [
@@ -69,7 +70,11 @@ export default function Mapas() {
   const [isRouteTrackingOpen, setIsRouteTrackingOpen] = useState(false);
   const [navigationElapsedSeconds, setNavigationElapsedSeconds] = useState(0);
   const [navigationPreviewProgress, setNavigationPreviewProgress] = useState(0);
+  const [locationPermissionState, setLocationPermissionState] = useState("idle");
+  const [locationPermissionMessage, setLocationPermissionMessage] = useState("");
   const [loadError, setLoadError] = useState("");
+
+  const isMobileDevice = typeof navigator !== "undefined" && MOBILE_USER_AGENT_REGEX.test(navigator.userAgent);
 
   const routeStats = useMemo(() => getRouteCounts(locations), [locations]);
 
@@ -277,6 +282,78 @@ export default function Mapas() {
       markerElement.style.display = routeMatches && searchMatches ? "block" : "none";
     });
   }, [searchText, selectedRouteId]);
+
+  useEffect(() => {
+    if (!isMobileDevice || locationPermissionState !== "idle") {
+      return;
+    }
+
+    setLocationPermissionState("prompt");
+    setLocationPermissionMessage("Activa la ubicación para trazar rutas en tiempo real.");
+  }, [isMobileDevice, locationPermissionState]);
+
+  const requestCurrentPosition = () =>
+    new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true,
+        timeout: 12000,
+        maximumAge: 0,
+      });
+    });
+
+  const requestLocationPermission = async ({ silentSuccess = false } = {}) => {
+    if (!("geolocation" in navigator)) {
+      const message = "Este dispositivo no soporta geolocalización.";
+      setLocationPermissionState("unsupported");
+      setLocationPermissionMessage(message);
+      return { position: null, errorMessage: message };
+    }
+
+    if (!window.isSecureContext && window.location.hostname !== "localhost") {
+      const message = "Para solicitar ubicación en iPhone y Android debes abrir el sitio en HTTPS.";
+      setLocationPermissionState("error");
+      setLocationPermissionMessage(message);
+      return { position: null, errorMessage: message };
+    }
+
+    try {
+      if (navigator.permissions?.query) {
+        const permissionStatus = await navigator.permissions.query({ name: "geolocation" });
+        if (permissionStatus.state === "denied") {
+          const message = "Permiso de ubicación bloqueado. Habilítalo en la configuración del navegador.";
+          setLocationPermissionState("denied");
+          setLocationPermissionMessage(message);
+          return { position: null, errorMessage: message };
+        }
+      }
+    } catch {
+      // Safari iOS puede no soportar Permissions API para geolocalización.
+    }
+
+    try {
+      const position = await requestCurrentPosition();
+      setLocationPermissionState("granted");
+      if (!silentSuccess) {
+        setLocationPermissionMessage("Ubicación activada correctamente.");
+      }
+      return { position, errorMessage: "" };
+    } catch (error) {
+      let message = "No pudimos acceder a tu ubicación. Revisa permisos del navegador.";
+      if (error?.code === 1) {
+        message = "Permiso denegado. Sin ubicación no podemos calcular la ruta.";
+        setLocationPermissionState("denied");
+        setLocationPermissionMessage(message);
+      } else if (error?.code === 3) {
+        message = "No se pudo obtener ubicación a tiempo. Intenta de nuevo en zona con mejor señal.";
+        setLocationPermissionState("error");
+        setLocationPermissionMessage(message);
+      } else {
+        setLocationPermissionState("error");
+        setLocationPermissionMessage(message);
+      }
+      return { position: null, errorMessage: message };
+    }
+  };
 
   const handleSelectPlace = (place) => {
     setSelectedPlaceId(place.id);
@@ -712,35 +789,27 @@ export default function Mapas() {
     setRouteMessage("Buscando tu ubicacion...");
     setIsNavigationOpen(true);
 
-    if (!("geolocation" in navigator)) {
+    const { position, errorMessage } = await requestLocationPermission({ silentSuccess: true });
+    if (!position) {
       setRouteStatus("error");
-      setRouteMessage("Tu navegador no soporta geolocalizacion.");
+      setRouteMessage(errorMessage || "No pudimos acceder a tu ubicacion. Revisa permisos del navegador.");
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const userLngLat = [position.coords.longitude, position.coords.latitude];
-        setRouteOrigin(userLngLat);
-        setRouteStatus("routing");
-        setRouteMessage("Consultando ruta caminando...");
+    const userLngLat = [position.coords.longitude, position.coords.latitude];
+    setRouteOrigin(userLngLat);
+    setRouteStatus("routing");
+    setRouteMessage("Consultando ruta caminando...");
 
-        if (userMarkerRef.current) {
-          userMarkerRef.current.remove();
-        }
+    if (userMarkerRef.current) {
+      userMarkerRef.current.remove();
+    }
 
-        const userMarkerElement = document.createElement("div");
-        userMarkerElement.className = "mapas-user-marker";
-        userMarkerRef.current = new mapboxgl.Marker(userMarkerElement).setLngLat(userLngLat).addTo(mapRef.current);
+    const userMarkerElement = document.createElement("div");
+    userMarkerElement.className = "mapas-user-marker";
+    userMarkerRef.current = new mapboxgl.Marker(userMarkerElement).setLngLat(userLngLat).addTo(mapRef.current);
 
-        await loadNavigationPlans(userLngLat, activePlace.coordinates);
-      },
-      () => {
-        setRouteStatus("error");
-        setRouteMessage("No pudimos acceder a tu ubicacion. Revisa permisos del navegador.");
-      },
-      { enableHighAccuracy: true, timeout: 12000 }
-    );
+    await loadNavigationPlans(userLngLat, activePlace.coordinates);
   };
 
   useEffect(() => {
@@ -761,15 +830,33 @@ export default function Mapas() {
 
           <div className="mapas-ui-layer">
             <div className="mapas-ui-top">
-              <div className="mapas-ui-card mapas-search-box">
-                <span className="mapas-search-icon" aria-hidden="true" />
-                <input
-                  type="text"
-                  value={searchText}
-                  onChange={(event) => setSearchText(event.target.value)}
-                  placeholder="Buscar sitios en la ruta activa..."
-                  aria-label="Buscar"
-                />
+              <div className="mapas-ui-top-stack">
+                <div className="mapas-ui-card mapas-search-box">
+                  <span className="mapas-search-icon" aria-hidden="true" />
+                  <input
+                    type="text"
+                    value={searchText}
+                    onChange={(event) => setSearchText(event.target.value)}
+                    placeholder="Buscar sitios en la ruta activa..."
+                    aria-label="Buscar"
+                  />
+                </div>
+
+                {isMobileDevice ? (
+                  <div className="mapas-location-cta" role="status" aria-live="polite">
+                    <button
+                      type="button"
+                      className="mapas-location-cta__button"
+                      onClick={() => {
+                        requestLocationPermission();
+                      }}
+                      disabled={locationPermissionState === "granted"}
+                    >
+                      {locationPermissionState === "granted" ? "Ubicación activa" : "Activar ubicación"}
+                    </button>
+                    {locationPermissionMessage ? <p>{locationPermissionMessage}</p> : null}
+                  </div>
+                ) : null}
               </div>
             </div>
 
