@@ -1,627 +1,498 @@
-import { useEffect, useMemo, useState } from "react";
-import {
-  User,
-  Lock,
-  ArrowRight,
-  ShieldCheck,
-  BookOpen,
-  Music,
-  TreePine,
-  Map,
-  Coffee,
-  LayoutDashboard,
-  Image as ImageIcon,
-  Map as MapIcon,
-  Settings,
-  LogOut,
-  Search,
-  Plus,
-  MoreVertical,
-  Bell,
-} from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { clearAdminSession, getAdminProfile, hasAdminSession, setAdminSession } from "./adminAuth";
-import { DbConnection } from "./module_bindings";
-import { ROUTE_META, getRouteCounts, removeMapLocation, resetMapLocations, setMapLocations, useMapLocations } from "../mapLocationsStore";
-import "./AdminLogin.css";
-
-const SPACETIME_URI =
-  import.meta.env.VITE_SPACETIME_URI ||
-  import.meta.env.VITE_SPACETIMEDB_HOST ||
-  "https://maincloud.spacetimedb.com";
-const SPACETIME_DB =
-  import.meta.env.VITE_SPACETIME_DB ||
-  import.meta.env.VITE_SPACETIMEDB_DB_NAME ||
-  "rutasvallenatas-9wo5o";
-const SPACETIME_TOKEN_KEY = "rutas_spacetime_token";
+import { supabase, isSupabaseReady, getSupabaseStatus } from "../supabaseClient";
+import "./AdminPanel.css";
 
 function getInitials(name) {
-  const parts = name
+  const parts = (name || "")
     .trim()
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2);
-
-  if (!parts.length) {
-    return "AD";
-  }
-
-  return parts.map((part) => part[0].toUpperCase()).join("");
+  return parts.length ? parts.map((p) => p[0].toUpperCase()).join("") : "AD";
 }
 
-function authenticateAdmin(correo, password) {
+async function authenticateAdmin(correo, password) {
   const email = correo.trim().toLowerCase();
 
-  return new Promise((resolve, reject) => {
-    let resolved = false;
-    let connection;
-
-    const finish = (handler, payload) => {
-      if (resolved) {
-        return;
-      }
-
-      resolved = true;
-      clearTimeout(timeoutId);
-
-      if (connection) {
-        connection.disconnect();
-      }
-
-      handler(payload);
-    };
-
-    const timeoutId = setTimeout(() => {
-      finish(reject, new Error("Tiempo de espera agotado al validar credenciales."));
-    }, 12000);
-
-    connection = DbConnection.builder()
-      .withUri(SPACETIME_URI)
-      .withDatabaseName(SPACETIME_DB)
-      .withToken(localStorage.getItem(SPACETIME_TOKEN_KEY) || undefined)
-      .onConnect((_ctx, _identity, token) => {
-        localStorage.setItem(SPACETIME_TOKEN_KEY, token);
-
-        connection
-          .subscriptionBuilder()
-          .onApplied(() => {
-            const usuarios = Array.from(connection.db.usuarios.iter());
-            const usuarioValido = usuarios.find((usuario) => {
-              return (
-                usuario.correo.trim().toLowerCase() === email &&
-                usuario.passwordHash === password &&
-                usuario.rol === "administrador" &&
-                usuario.activo
-              );
-            });
-
-            if (!usuarioValido) {
-              finish(reject, new Error("Correo o contraseña inválidos."));
-              return;
-            }
-
-            finish(resolve, {
-              name: usuarioValido.nombre,
-              email: usuarioValido.correo,
-              initials: getInitials(usuarioValido.nombre),
-            });
-          })
-          .onError(() => {
-            finish(reject, new Error("No se pudo leer la tabla de usuarios en Spacetime."));
-          })
-          .subscribe("SELECT * FROM usuarios");
-      })
-      .onConnectError((_ctx, error) => {
-        finish(reject, error || new Error("No se pudo conectar con Spacetime."));
-      })
-      .build();
+  const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+    email,
+    password,
   });
-}
 
-const activity = [
-  { item: 'Palabra "Zangandongo"', section: "Glosario", date: "Hoy, 10:42 AM", state: "Publicado" },
-  { item: "Foto: Plaza Alfonso López", section: "Galería", date: "Ayer, 16:30 PM", state: "Publicado" },
-  { item: 'Actualización "Ruta Mística"', section: "Mapas", date: "12 May 2024", state: "Borrador" },
-];
+  if (authError || !authData.user) {
+    throw new Error("Correo o contraseña inválidos.");
+  }
 
-function createLocationDraft(location = null) {
-  const routeId = location?.routeId || "patrimonial";
-  const categoryLabel = location?.categoryLabel || ROUTE_META[routeId].name.replace(/^Ruta\s*/, "");
+  const { data: usuario, error: usuarioError } = await supabase
+    .from("usuarios")
+    .select("*")
+    .eq("id", authData.user.id)
+    .eq("rol", "administrador")
+    .eq("activo", true)
+    .single();
+
+  if (usuarioError || !usuario) {
+    await supabase.auth.signOut();
+    throw new Error("No tienes permisos de administrador en este sistema.");
+  }
 
   return {
-    id: location?.id || "new-location",
-    routeId,
-    categoryLabel,
-    name: location?.name || "",
-    subtitle: location?.subtitle || "",
-    description: location?.description || "",
-    address: location?.address || "",
-    costStatus: location?.costStatus || "",
-    hours: location?.hours || "",
-    audience: location?.audience || "",
-    image: location?.image || "",
-    longitude: String(location?.coordinates?.[0] ?? ""),
-    latitude: String(location?.coordinates?.[1] ?? ""),
+    name: usuario.nombre,
+    email: usuario.correo,
+    initials: getInitials(usuario.nombre),
   };
 }
 
-export default function AdminLogin({ initialView = "login" }) {
+export default function AdminLogin() {
   const navigate = useNavigate();
-  const locations = useMapLocations();
-  const initialState = initialView === "dashboard" || hasAdminSession() ? "dashboard" : "login";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [authError, setAuthError] = useState("");
-  const [viewState, setViewState] = useState(initialState);
-  const [selectedLocationId, setSelectedLocationId] = useState(locations[0]?.id || "");
-  const [locationForm, setLocationForm] = useState(() => createLocationDraft(locations[0] || null));
-  const [mapEditorMessage, setMapEditorMessage] = useState("");
-
-  const routeCounts = useMemo(() => getRouteCounts(locations), [locations]);
-
-  const dashboardStats = useMemo(() => {
-    const activeRoutes = routeCounts.filter((route) => route.count > 0).length;
-
-    return [
-      { label: "Ubicaciones del Mapa", value: String(locations.length), tone: "green", icon: MapIcon },
-      { label: "Rutas con contenido", value: String(activeRoutes), tone: "purple", icon: LayoutDashboard },
-      { label: "Imágenes en Galería", value: "1,204", tone: "orange", icon: ImageIcon },
-    ];
-  }, [locations.length, routeCounts]);
-
-  useEffect(() => {
-    if (!locations.length) {
-      setSelectedLocationId("");
-      setLocationForm(createLocationDraft(null));
-      return;
-    }
-
-    const selectedLocation = locations.find((location) => location.id === selectedLocationId) || locations[0];
-
-    if (selectedLocation && selectedLocation.id !== selectedLocationId) {
-      setSelectedLocationId(selectedLocation.id);
-    }
-
-    setLocationForm(createLocationDraft(selectedLocation));
-  }, [locations, selectedLocationId]);
-
-  const profile = useMemo(() => {
-    return (
-      getAdminProfile() || {
-        name: "Admin Principal",
-        email: "admin@valledupar.gov.co",
-        initials: "AD",
-      }
-    );
-  }, [viewState]);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setAuthError("");
+
+    if (!isSupabaseReady()) {
+      setAuthError(getSupabaseStatus().message);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       const adminProfile = await authenticateAdmin(email, password);
-
       setIsLoading(false);
       setAdminSession(adminProfile);
-      setViewState("transitioning");
-      setTimeout(() => {
-        setViewState("dashboard");
-        navigate("/admin/panel", { replace: true });
-      }, 1300);
+      navigate("/admin/panel", { replace: true });
     } catch (error) {
       setIsLoading(false);
       setAuthError(error?.message || "No se pudo iniciar sesión. Intenta de nuevo.");
     }
   };
 
-  const handleLogout = () => {
-    setViewState("transitioning");
-    setTimeout(() => {
-      clearAdminSession();
-      localStorage.removeItem(SPACETIME_TOKEN_KEY);
-      setEmail("");
-      setPassword("");
-      setAuthError("");
-      setViewState("login");
-      navigate("/admin", { replace: true });
-    }, 900);
-  };
-
-  const handleSelectLocation = (location) => {
-    setSelectedLocationId(location.id);
-    setLocationForm(createLocationDraft(location));
-    setMapEditorMessage(`Editando ${location.name}`);
-  };
-
-  const handleLocationFieldChange = (field, value) => {
-    setLocationForm((previousForm) => ({
-      ...previousForm,
-      [field]: value,
-      ...(field === "routeId" ? { categoryLabel: ROUTE_META[value]?.name.replace(/^Ruta\s*/, "") || previousForm.categoryLabel } : {}),
-    }));
-  };
-
-  const handleSaveLocation = async (event) => {
-    event.preventDefault();
-
-    const parsedLongitude = Number.parseFloat(locationForm.longitude);
-    const parsedLatitude = Number.parseFloat(locationForm.latitude);
-
-    if (!locationForm.name.trim()) {
-      setMapEditorMessage("El nombre es obligatorio.");
-      return;
-    }
-
-    if (Number.isNaN(parsedLongitude) || Number.isNaN(parsedLatitude)) {
-      setMapEditorMessage("Revisa las coordenadas longitude/latitude.");
-      return;
-    }
-
-    const payload = {
-      id:
-        selectedLocationId ||
-        (locationForm.id && locationForm.id !== "new-location" ? locationForm.id : `location-${Date.now()}`),
-      routeId: ROUTE_META[locationForm.routeId] ? locationForm.routeId : "patrimonial",
-      categoryLabel: locationForm.categoryLabel.trim() || ROUTE_META[locationForm.routeId]?.name.replace(/^Ruta\s*/, "") || "Patrimonial",
-      name: locationForm.name.trim(),
-      subtitle: locationForm.subtitle.trim(),
-      description: locationForm.description.trim(),
-      address: locationForm.address.trim(),
-      costStatus: locationForm.costStatus.trim(),
-      hours: locationForm.hours.trim(),
-      audience: locationForm.audience.trim(),
-      image: locationForm.image.trim(),
-      coordinates: [parsedLongitude, parsedLatitude],
-    };
-
-    const currentLocations = locations.some((location) => location.id === payload.id)
-      ? locations.map((location) => (location.id === payload.id ? payload : location))
-      : [payload, ...locations];
-
-    try {
-      await setMapLocations(currentLocations);
-      setSelectedLocationId(payload.id);
-      setLocationForm(createLocationDraft(payload));
-      setMapEditorMessage("Ubicacion guardada y sincronizada en Spacetime.");
-    } catch {
-      setMapEditorMessage("No se pudo guardar en Spacetime. Revisa la conexion.");
-    }
-  };
-
-  const handleDeleteLocation = async () => {
-    if (!selectedLocationId) {
-      return;
-    }
-
-    const locationToDelete = locations.find((location) => location.id === selectedLocationId);
-    if (!locationToDelete) {
-      return;
-    }
-
-    if (!window.confirm(`Eliminar ${locationToDelete.name}?`)) {
-      return;
-    }
-
-    try {
-      await removeMapLocation(selectedLocationId);
-      setSelectedLocationId("");
-      setLocationForm(createLocationDraft(null));
-      setMapEditorMessage("Ubicacion eliminada.");
-    } catch {
-      setMapEditorMessage("No se pudo eliminar en Spacetime.");
-    }
-  };
-
-  const handleNewLocation = () => {
-    setSelectedLocationId("");
-    setLocationForm(createLocationDraft(null));
-    setMapEditorMessage("Creando una nueva ubicacion.");
-  };
-
-  const handleResetLocations = async () => {
-    try {
-      await resetMapLocations();
-      setMapEditorMessage("Se restauraron las ubicaciones por defecto.");
-    } catch {
-      setMapEditorMessage("No se pudo restaurar en Spacetime.");
-    }
-  };
-
   return (
-    <div className={`admin-login admin-login--${viewState}`}>
-      <div className="admin-login__dome" />
-
-      <div className={`admin-login__login-layer ${viewState === "login" ? "is-visible" : "is-hidden"}`}>
-        <div className="admin-login__scene">
-          <div className="admin-login__badge admin-login__badge--green">
-            <Map size={32} className="admin-login__badge-icon" />
-          </div>
-          <div className="admin-login__badge admin-login__badge--orange">
-            <Music size={30} className="admin-login__badge-icon" />
-          </div>
-          <div className="admin-login__badge admin-login__badge--yellow">
-            <BookOpen size={34} className="admin-login__badge-icon" />
-          </div>
-          <div className="admin-login__badge admin-login__badge--red">
-            <TreePine size={34} className="admin-login__badge-icon" />
-          </div>
-          <div className="admin-login__badge admin-login__badge--woven">
-            <Coffee size={34} className="admin-login__badge-icon" />
-          </div>
-          <div className="admin-login__badge admin-login__badge--shield">
-            <ShieldCheck size={34} className="admin-login__badge-icon" />
-          </div>
-        </div>
-
-        <div className="admin-login__panel">
-          <div className="admin-login__brand">
-            <span className="font-serif-custom admin-login__brand-title">Portal</span>
-            <span className="font-script-custom admin-login__brand-accent">Administrador</span>
-          </div>
-          <p className="admin-login__subtitle">
-            Ingresa tus credenciales para gestionar el contenido y el acervo cultural de Valledupar.
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        fontFamily: "var(--font-body)",
+        backgroundColor: "var(--surface)",
+        backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E")`,
+      }}
+    >
+      {/* Left: Hero Image (visible on desktop) */}
+      <div
+        className="admin-login-hero"
+        style={{
+          width: "50%",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage: "url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200&h=1600&fit=crop')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "linear-gradient(to top, rgba(254, 249, 234, 0.85) 0%, rgba(254, 249, 234, 0.2) 50%, transparent 100%)",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            bottom: 48,
+            left: 48,
+            maxWidth: 400,
+          }}
+        >
+          <h2
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: 32,
+              fontWeight: 700,
+              color: "var(--on-surface)",
+              margin: "0 0 8px",
+              letterSpacing: "-0.02em",
+            }}
+          >
+            Legado &amp; Patrimonio
+          </h2>
+          <p
+            style={{
+              fontSize: 18,
+              lineHeight: "28px",
+              color: "var(--on-surface-variant)",
+              margin: 0,
+            }}
+          >
+            Descubre las historias contadas a través de la música y los paisajes de nuestra región.
           </p>
+        </div>
+      </div>
 
-          <form onSubmit={handleLogin} className="admin-login__form">
-            <label className="admin-login__field">
-              <span className="admin-login__label">Correo electrónico</span>
-              <div className="admin-login__input-group">
-                <User size={18} className="admin-login__input-icon" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@rutasvalledupar.com"
-                  className="admin-login__input"
-                  required
-                />
+      {/* Right: Login Form */}
+      <div
+        className="admin-login-form"
+        style={{
+          width: "50%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "24px 20px",
+          overflow: "auto",
+        }}
+      >
+        <div style={{ width: "100%", maxWidth: 400 }}>
+          {/* Brand */}
+          <div style={{ textAlign: "center", marginBottom: 40 }}>
+            <h1
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: 48,
+                fontWeight: 800,
+                letterSpacing: "-0.02em",
+                color: "var(--primary)",
+                margin: "0 0 4px",
+              }}
+            >
+              Rutas Vallenatas
+            </h1>
+            <p style={{ fontSize: 16, color: "var(--on-surface-variant)", margin: 0 }}>
+              Panel Administrativo
+            </p>
+          </div>
+
+          {/* Card */}
+          <div
+            className="admin-card"
+            style={{
+              padding: 32,
+              position: "relative",
+              paddingTop: 40,
+            }}
+          >
+            {/* Top decorative border */}
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 4,
+                opacity: 0.3,
+                borderTopLeftRadius: "var(--radius-xl)",
+                borderTopRightRadius: "var(--radius-xl)",
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  backgroundImage: "radial-gradient(circle at center, var(--primary) 2px, transparent 2px)",
+                  backgroundSize: "12px 4px",
+                }}
+              />
+            </div>
+
+            <h2
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: 20,
+                fontWeight: 600,
+                textAlign: "center",
+                margin: "0 0 24px",
+                color: "var(--on-surface)",
+              }}
+            >
+              Iniciar Sesión
+            </h2>
+
+            <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+              {/* Email */}
+              <div style={{ margin: 0 }}>
+                <label
+                  className="admin-form-label"
+                  htmlFor="login-email"
+                  style={{ marginBottom: 8 }}
+                >
+                  Correo Electrónico
+                </label>
+                <div style={{ position: "relative" }}>
+                  <span
+                    className="material-symbols-outlined"
+                    style={{
+                      position: "absolute",
+                      left: 0,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      color: "var(--outline)",
+                      fontSize: 20,
+                    }}
+                  >
+                    mail
+                  </span>
+                  <input
+                    id="login-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="admin@rutasvallenatas.co"
+                    required
+                    style={{
+                      width: "100%",
+                      padding: "12px 0 12px 32px",
+                      border: "none",
+                      borderBottom: "2px solid var(--outline-variant)",
+                      background: "var(--surface-container-low)",
+                      fontFamily: "var(--font-body)",
+                      fontSize: 16,
+                      color: "var(--on-surface)",
+                      outline: "none",
+                      transition: "border-color 0.2s ease, background 0.2s ease",
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = "var(--primary)";
+                      e.target.style.background = "var(--surface-container-lowest)";
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = "var(--outline-variant)";
+                      e.target.style.background = "var(--surface-container-low)";
+                    }}
+                  />
+                </div>
               </div>
-            </label>
 
-            <label className="admin-login__field">
-              <span className="admin-login__label">Contraseña</span>
-              <div className="admin-login__input-group">
-                <Lock size={18} className="admin-login__input-icon" />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="********"
-                  className="admin-login__input"
-                  required
-                />
+              {/* Password */}
+              <div style={{ margin: 0 }}>
+                <label
+                  className="admin-form-label"
+                  htmlFor="login-password"
+                  style={{ marginBottom: 8 }}
+                >
+                  Contraseña
+                </label>
+                <div style={{ position: "relative" }}>
+                  <span
+                    className="material-symbols-outlined"
+                    style={{
+                      position: "absolute",
+                      left: 0,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      color: "var(--outline)",
+                      fontSize: 20,
+                    }}
+                  >
+                    lock
+                  </span>
+                  <input
+                    id="login-password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    style={{
+                      width: "100%",
+                      padding: "12px 0 12px 32px",
+                      border: "none",
+                      borderBottom: "2px solid var(--outline-variant)",
+                      background: "var(--surface-container-low)",
+                      fontFamily: "var(--font-body)",
+                      fontSize: 16,
+                      color: "var(--on-surface)",
+                      outline: "none",
+                      transition: "border-color 0.2s ease, background 0.2s ease",
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = "var(--primary)";
+                      e.target.style.background = "var(--surface-container-lowest)";
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = "var(--outline-variant)";
+                      e.target.style.background = "var(--surface-container-low)";
+                    }}
+                  />
+                </div>
               </div>
-            </label>
 
-            <button type="submit" className="admin-login__submit" disabled={isLoading}>
-              {isLoading ? <span className="admin-login__spinner" /> : "Iniciar sesión"}
-              {!isLoading && <ArrowRight size={18} className="admin-login__submit-icon" />}
-            </button>
+              {/* Remember me & Forgot */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    style={{
+                      width: 16,
+                      height: 16,
+                      accentColor: "var(--primary)",
+                      cursor: "pointer",
+                    }}
+                  />
+                  <span style={{ fontSize: 14, color: "var(--on-surface-variant)" }}>Recordarme</span>
+                </label>
+                <a
+                  href="#"
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 600,
+                    letterSpacing: "0.05em",
+                    color: "var(--primary)",
+                    textDecoration: "none",
+                  }}
+                  onMouseEnter={(e) => (e.target.style.textDecoration = "underline")}
+                  onMouseLeave={(e) => (e.target.style.textDecoration = "none")}
+                >
+                  ¿Olvidaste tu contraseña?
+                </a>
+              </div>
 
-            {authError ? <p className="admin-login__error">{authError}</p> : null}
-          </form>
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="admin-btn admin-btn--primary"
+                style={{
+                  width: "100%",
+                  justifyContent: "center",
+                  padding: "14px 24px",
+                  fontSize: 16,
+                  marginTop: 8,
+                  letterSpacing: "0.05em",
+                  position: "relative",
+                }}
+              >
+                {isLoading ? (
+                  <span
+                    style={{
+                      width: 20,
+                      height: 20,
+                      border: "2px solid rgba(255,255,255,0.3)",
+                      borderTopColor: "white",
+                      borderRadius: "50%",
+                      animation: "spin 0.8s linear infinite",
+                      display: "inline-block",
+                    }}
+                  />
+                ) : (
+                  <>
+                    Entrar
+                    <span className="material-symbols-outlined" style={{ fontSize: 20, fontVariationSettings: "'FILL' 1" }}>
+                      login
+                    </span>
+                  </>
+                )}
+              </button>
+            </form>
 
-          <p className="admin-login__hint">Conectado a Spacetime: {SPACETIME_DB}</p>
+            {authError && (
+              <p
+                style={{
+                  margin: "16px 0 0",
+                  textAlign: "center",
+                  color: "var(--error)",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  whiteSpace: "pre-line",
+                  fontFamily: "monospace",
+                  background: "var(--error-container)",
+                  padding: 12,
+                  borderRadius: "var(--radius-lg)",
+                  lineHeight: 1.5,
+                }}
+              >
+                {authError}
+              </p>
+            )}
 
-          <div className="admin-login__footer">
-            <a href="#" className="admin-login__link">¿Olvidaste tu contraseña?</a>
-            <a href="/" className="admin-login__link">Volver al sitio</a>
+            {/* Folk Divider */}
+            <div className="admin-folk-divider" style={{ marginTop: 24, marginBottom: 24 }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 14, color: "var(--outline-variant)" }}>
+                local_fire_department
+              </span>
+            </div>
+
+            {/* Social Login */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <button
+                type="button"
+                className="admin-btn admin-btn--ghost"
+                style={{
+                  width: "100%",
+                  justifyContent: "center",
+                  border: "1px solid var(--outline-variant)",
+                  padding: "12px 16px",
+                }}
+              >
+                <svg style={{ width: 20, height: 20, marginRight: 8 }} viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z" />
+                </svg>
+                Continuar con Google
+              </button>
+              <button
+                type="button"
+                className="admin-btn admin-btn--ghost"
+                style={{
+                  width: "100%",
+                  justifyContent: "center",
+                  border: "1px solid var(--outline-variant)",
+                  padding: "12px 16px",
+                }}
+              >
+                <svg style={{ width: 20, height: 20, marginRight: 8, color: "#1877F2" }} viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                </svg>
+                Continuar con Facebook
+              </button>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div style={{ textAlign: "center", marginTop: 32 }}>
+            <p style={{ fontSize: 14, color: "var(--on-surface-variant)" }}>
+              ¿No tienes una cuenta?{" "}
+              <a
+                href="#"
+                style={{
+                  color: "var(--primary)",
+                  fontWeight: 600,
+                  letterSpacing: "0.05em",
+                  textDecoration: "none",
+                }}
+                onMouseEnter={(e) => (e.target.style.textDecoration = "underline")}
+                onMouseLeave={(e) => (e.target.style.textDecoration = "none")}
+              >
+                Solicitar acceso
+              </a>
+            </p>
           </div>
         </div>
       </div>
 
-      <div className={`admin-dashboard ${viewState === "dashboard" ? "is-visible" : "is-hidden"}`}>
-        <aside className="admin-dashboard__sidebar">
-          <div>
-            <div className="admin-dashboard__logo-wrap">
-              <h1 className="admin-dashboard__logo">
-                <span className="font-serif-custom">Portal</span>
-                <span className="font-script-custom">Admin</span>
-              </h1>
-            </div>
-
-            <nav className="admin-dashboard__nav">
-              <a href="#" className="is-active"><LayoutDashboard size={18} /> Resumen</a>
-              <a href="#"><BookOpen size={18} /> Glosario Vallenato</a>
-              <a href="#"><MapIcon size={18} /> Rutas Turísticas</a>
-              <a href="#mapas-admin"><MapIcon size={18} /> Ubicaciones del Mapa</a>
-              <a href="#"><ImageIcon size={18} /> Galería</a>
-            </nav>
-          </div>
-
-          <div className="admin-dashboard__sidebar-bottom">
-            <a href="#"><Settings size={18} /> Configuración</a>
-            <button type="button" onClick={handleLogout}><LogOut size={18} /> Cerrar Sesión</button>
-          </div>
-        </aside>
-
-        <main className="admin-dashboard__content">
-          <header className="admin-dashboard__header">
-            <div className="admin-dashboard__search-wrap">
-              <Search size={16} />
-              <input type="text" placeholder="Buscar en el portal..." />
-            </div>
-
-            <div className="admin-dashboard__header-right">
-              <button type="button" className="admin-dashboard__bell">
-                <Bell size={17} />
-                <span />
-              </button>
-              <div className="admin-dashboard__user">
-                <div className="admin-dashboard__user-avatar">{profile.initials || "AD"}</div>
-                <div>
-                  <p>{profile.name || "Admin Principal"}</p>
-                  <small>{profile.email || "admin@valledupar.gov.co"}</small>
-                </div>
-              </div>
-            </div>
-          </header>
-
-          <div className="admin-dashboard__scroll">
-            <section className="admin-dashboard__hero">
-              <div>
-                <h2>Bienvenido al Panel</h2>
-                <p>Gestiona la información cultural y turística de Valledupar.</p>
-              </div>
-              <button type="button"><Plus size={16} /> Nueva Entrada</button>
-            </section>
-
-            <section id="mapas-admin" className="admin-dashboard__map-manager">
-              <div className="admin-dashboard__map-manager-head">
-                <div>
-                  <h3>Ubicaciones del Mapa</h3>
-                  <p>Edita puntos, rutas y popups. Los cambios se reflejan en vivo en la vista del mapa.</p>
-                </div>
-                <div className="admin-dashboard__map-manager-actions">
-                  <button type="button" className="admin-dashboard__secondary-action" onClick={handleNewLocation}>
-                    <Plus size={16} /> Nueva Ubicación
-                  </button>
-                  <button type="button" className="admin-dashboard__secondary-action" onClick={handleResetLocations}>
-                    Restaurar Defaults
-                  </button>
-                </div>
-              </div>
-
-              <div className="admin-dashboard__map-manager-grid">
-                <div className="admin-dashboard__location-list">
-                  {locations.map((location) => (
-                    <button
-                      type="button"
-                      key={location.id}
-                      className={`admin-dashboard__location-card${selectedLocationId === location.id ? " is-active" : ""}`}
-                      onClick={() => handleSelectLocation(location)}
-                    >
-                      <span className={`admin-dashboard__location-chip admin-dashboard__location-chip--${location.routeId}`} />
-                      <div>
-                        <strong>{location.name}</strong>
-                        <p>{location.address}</p>
-                      </div>
-                      <small>{location.coordinates[0].toFixed(4)}, {location.coordinates[1].toFixed(4)}</small>
-                    </button>
-                  ))}
-                </div>
-
-                <form className="admin-dashboard__location-form" onSubmit={handleSaveLocation}>
-                  <div className="admin-dashboard__form-grid">
-                    <label>
-                      <span>Nombre</span>
-                      <input type="text" value={locationForm.name} onChange={(event) => handleLocationFieldChange("name", event.target.value)} placeholder="Plaza Alfonso Lopez" />
-                    </label>
-                    <label>
-                      <span>Ruta</span>
-                      <select value={locationForm.routeId} onChange={(event) => handleLocationFieldChange("routeId", event.target.value)}>
-                        {Object.values(ROUTE_META).map((route) => (
-                          <option key={route.id} value={route.id}>{route.name}</option>
-                        ))}
-                      </select>
-                    </label>
-                    <label>
-                      <span>Categoria</span>
-                      <input type="text" value={locationForm.categoryLabel} onChange={(event) => handleLocationFieldChange("categoryLabel", event.target.value)} placeholder="Patrimonial" />
-                    </label>
-                    <label>
-                      <span>Coordenada Longitud</span>
-                      <input type="number" step="any" value={locationForm.longitude} onChange={(event) => handleLocationFieldChange("longitude", event.target.value)} placeholder="-73.2435" />
-                    </label>
-                    <label>
-                      <span>Coordenada Latitud</span>
-                      <input type="number" step="any" value={locationForm.latitude} onChange={(event) => handleLocationFieldChange("latitude", event.target.value)} placeholder="10.4631" />
-                    </label>
-                    <label>
-                      <span>Imagen</span>
-                      <input type="url" value={locationForm.image} onChange={(event) => handleLocationFieldChange("image", event.target.value)} placeholder="https://..." />
-                    </label>
-                    <label className="admin-dashboard__form-full">
-                      <span>Subtitulo</span>
-                      <input type="text" value={locationForm.subtitle} onChange={(event) => handleLocationFieldChange("subtitle", event.target.value)} placeholder="Descripcion corta para el popup" />
-                    </label>
-                    <label className="admin-dashboard__form-full">
-                      <span>Descripcion</span>
-                      <textarea value={locationForm.description} onChange={(event) => handleLocationFieldChange("description", event.target.value)} rows="3" placeholder="Descripcion larga del lugar" />
-                    </label>
-                    <label>
-                      <span>Direccion</span>
-                      <input type="text" value={locationForm.address} onChange={(event) => handleLocationFieldChange("address", event.target.value)} placeholder="Direccion exacta" />
-                    </label>
-                    <label>
-                      <span>Costo</span>
-                      <input type="text" value={locationForm.costStatus} onChange={(event) => handleLocationFieldChange("costStatus", event.target.value)} placeholder="Acceso Libre" />
-                    </label>
-                    <label>
-                      <span>Horario</span>
-                      <input type="text" value={locationForm.hours} onChange={(event) => handleLocationFieldChange("hours", event.target.value)} placeholder="7:00 AM a 6:00 PM" />
-                    </label>
-                    <label>
-                      <span>Publico</span>
-                      <input type="text" value={locationForm.audience} onChange={(event) => handleLocationFieldChange("audience", event.target.value)} placeholder="Familiar" />
-                    </label>
-                  </div>
-
-                  <div className="admin-dashboard__form-actions">
-                    <button type="submit" className="admin-dashboard__primary-action">Guardar Cambios</button>
-                    <button type="button" className="admin-dashboard__secondary-action" onClick={handleDeleteLocation} disabled={!selectedLocationId}>Eliminar</button>
-                  </div>
-
-                  {mapEditorMessage ? <p className="admin-dashboard__form-message">{mapEditorMessage}</p> : null}
-                </form>
-              </div>
-            </section>
-
-            <section className="admin-dashboard__stats">
-              {dashboardStats.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <article key={item.label} className={`admin-dashboard__stat admin-dashboard__stat--${item.tone}`}>
-                    <div className="admin-dashboard__stat-icon"><Icon size={20} /></div>
-                    <p>{item.label}</p>
-                    <h3>{item.value}</h3>
-                  </article>
-                );
-              })}
-            </section>
-
-            <section className="admin-dashboard__table-card">
-              <div className="admin-dashboard__table-head">
-                <h3>Actividad Reciente</h3>
-                <button type="button">Ver todo</button>
-              </div>
-              <div className="admin-dashboard__table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Elemento</th>
-                      <th>Sección</th>
-                      <th>Fecha</th>
-                      <th>Estado</th>
-                      <th aria-label="Acción" />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {activity.map((row) => (
-                      <tr key={row.item}>
-                        <td>{row.item}</td>
-                        <td>{row.section}</td>
-                        <td>{row.date}</td>
-                        <td>
-                          <span className={row.state === "Publicado" ? "state-published" : "state-draft"}>{row.state}</span>
-                        </td>
-                        <td>
-                          <button type="button" className="admin-dashboard__row-action">
-                            <MoreVertical size={16} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          </div>
-        </main>
-      </div>
+      <style>{`
+        @media (max-width: 1023px) {
+          .admin-login-hero { display: none !important; }
+          .admin-login-form { width: 100% !important; }
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }

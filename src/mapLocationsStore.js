@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import { DbConnection } from "./admin/module_bindings";
+import { supabase } from "./supabaseClient";
 
 export const ROUTE_META = {
   patrimonial: { id: "patrimonial", name: "Ruta Patrimonial", chipClass: "patrimonial" },
@@ -80,20 +80,13 @@ export const DEFAULT_MAP_LOCATIONS = [
   },
 ];
 
+const TABLE_NAME = "ubicaciones_mapa";
 const listeners = new Set();
 let cachedLocations = fallbackLocations();
-let connection = null;
-let connectPromise = null;
-
-const SPACETIME_URI =
-  import.meta.env.VITE_SPACETIME_URI ||
-  import.meta.env.VITE_SPACETIMEDB_HOST ||
-  "https://maincloud.spacetimedb.com";
-const SPACETIME_DB =
-  import.meta.env.VITE_SPACETIME_DB ||
-  import.meta.env.VITE_SPACETIMEDB_DB_NAME ||
-  "rutasvallenatas-9wo5o";
-const SPACETIME_TOKEN_KEY = "rutas_spacetime_token";
+let realtimeChannel = null;
+let isConnecting = false;
+let isConnected = false;
+let pendingConnection = null;
 
 function cloneLocations(locations) {
   return locations.map((location) => ({
@@ -114,13 +107,13 @@ function cryptoId() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID();
   }
-
   return `location-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
 function normalizeLocation(location) {
   const routeId = ROUTE_META[location.routeId] ? location.routeId : "patrimonial";
   const coordinates = Array.isArray(location.coordinates) ? location.coordinates : [0, 0];
+  const images = Array.isArray(location.images) ? location.images : [];
 
   return {
     id: location.id || cryptoId(),
@@ -133,60 +126,161 @@ function normalizeLocation(location) {
     costStatus: location.costStatus?.trim() || "Sin definir",
     hours: location.hours?.trim() || "Sin definir",
     audience: location.audience?.trim() || "Sin definir",
-    image: location.image?.trim() || DEFAULT_MAP_LOCATIONS[0].image,
+    image: location.image?.trim() || images[0] || DEFAULT_MAP_LOCATIONS[0].image,
+    images,
     coordinates: [Number(coordinates[0]) || 0, Number(coordinates[1]) || 0],
   };
 }
 
+/** Convert frontend camelCase to Supabase snake_case row */
 function toRow(location) {
   return {
     id: location.id,
-    routeId: location.routeId,
-    categoryLabel: location.categoryLabel,
+    route_id: location.routeId,
+    category_label: location.categoryLabel,
     name: location.name,
     subtitle: location.subtitle,
     description: location.description,
     address: location.address,
-    costStatus: location.costStatus,
+    cost_status: location.costStatus,
     hours: location.hours,
     audience: location.audience,
     image: location.image,
-    longitude: String(location.coordinates[0]),
-    latitude: String(location.coordinates[1]),
+    images: location.images || [],
+    longitude: Number(location.coordinates[0]) || 0,
+    latitude: Number(location.coordinates[1]) || 0,
   };
 }
 
+/** Convert Supabase snake_case row to frontend camelCase */
 function fromRow(row) {
   return normalizeLocation({
     id: row.id,
-    routeId: row.routeId,
-    categoryLabel: row.categoryLabel,
+    routeId: row.route_id,
+    categoryLabel: row.category_label,
     name: row.name,
     subtitle: row.subtitle,
     description: row.description,
     address: row.address,
-    costStatus: row.costStatus,
+    costStatus: row.cost_status,
     hours: row.hours,
     audience: row.audience,
     image: row.image,
+    images: row.images || [],
     coordinates: [Number(row.longitude), Number(row.latitude)],
   });
 }
 
-function updateFromRemoteTable() {
-  if (!connection?.db?.ubicacionesMapa) {
+/** Check if Supabase is configured */
+function isSupabaseConfigured() {
+  return Boolean(
+    import.meta.env.VITE_SUPABASE_URL &&
+    import.meta.env.VITE_SUPABASE_ANON_KEY
+  );
+}
+
+/** Fetch locations from Supabase and update cache */
+async function fetchLocations() {
+  if (!isSupabaseConfigured()) {
+    return false;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from(TABLE_NAME)
+      .select("*")
+      .order("id");
+
+    if (error) {
+      console.warn("Supabase: Error fetching locations:", error.message);
+      return false;
+    }
+
+    if (data && data.length > 0) {
+      cachedLocations = data.map(fromRow);
+      emitChange();
+      return true;
+    }
+
+    return false;
+  } catch (err) {
+    console.warn("Supabase: Error fetching locations:", err);
+    return false;
+  }
+}
+
+/** Subscribe to real-time changes from Supabase */
+function subscribeRealtime() {
+  if (realtimeChannel) {
     return;
   }
 
-  const remoteRows = Array.from(connection.db.ubicacionesMapa.iter());
-  if (!remoteRows.length) {
-    cachedLocations = fallbackLocations();
-    emitChange();
+  if (!isSupabaseConfigured()) {
     return;
   }
 
-  cachedLocations = remoteRows.map(fromRow);
-  emitChange();
+  realtimeChannel = supabase
+    .channel("public:ubicaciones_mapa")
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: TABLE_NAME },
+      async () => {
+        await fetchLocations();
+      }
+    )
+    .subscribe((status) => {
+      if (status === "SUBSCRIBED") {
+        isConnected = true;
+      }
+    });
+}
+
+/** Ensure Supabase is connected and data is loaded */
+async function ensureConnection() {
+  if (!isSupabaseConfigured()) {
+    return false;
+  }
+
+  if (isConnected && cachedLocations.length > 0) {
+    return true;
+  }
+
+  if (isConnecting) {
+    return pendingConnection;
+  }
+
+  isConnecting = true;
+  pendingConnection = (async () => {
+    try {
+      const fetched = await fetchLocations();
+
+      if (!fetched) {
+        // Try to seed default data if table is empty
+        const { error } = await supabase.from(TABLE_NAME).upsert(
+          DEFAULT_MAP_LOCATIONS.map(toRow),
+          { onConflict: "id", ignoreDuplicates: true }
+        );
+
+        if (!error) {
+          await fetchLocations();
+        }
+      }
+
+      subscribeRealtime();
+      isConnected = true;
+      return true;
+    } catch (err) {
+      console.warn("Supabase: Connection error, using local data:", err);
+      cachedLocations = fallbackLocations();
+      emitChange();
+      return false;
+    } finally {
+      isConnecting = false;
+      pendingConnection = null;
+    }
+  })();
+
+  return pendingConnection;
 }
 
 function persistLocally(locations) {
@@ -195,100 +289,19 @@ function persistLocally(locations) {
   return cachedLocations;
 }
 
-async function ensureRealtimeConnection() {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  if (connection) {
-    return connection;
-  }
-
-  if (connectPromise) {
-    return connectPromise;
-  }
-
-  connectPromise = new Promise((resolve, reject) => {
-    let settled = false;
-
-    const finishResolve = (value) => {
-      if (settled) {
-        return;
-      }
-
-      settled = true;
-      resolve(value);
-    };
-
-    const finishReject = (error) => {
-      if (settled) {
-        return;
-      }
-
-      settled = true;
-      reject(error);
-    };
-
-    const conn = DbConnection.builder()
-      .withUri(SPACETIME_URI)
-      .withDatabaseName(SPACETIME_DB)
-      .withToken(localStorage.getItem(SPACETIME_TOKEN_KEY) || undefined)
-      .onConnect((_ctx, _identity, token) => {
-        localStorage.setItem(SPACETIME_TOKEN_KEY, token);
-
-        conn
-          .subscriptionBuilder()
-          .onApplied(() => {
-            updateFromRemoteTable();
-            finishResolve(conn);
-          })
-          .onError((ctx) => {
-            finishReject(ctx.error || new Error("No se pudo sincronizar ubicaciones en Spacetime."));
-          })
-          .subscribe("SELECT * FROM ubicaciones_mapa");
-      })
-      .onConnectError((_ctx, error) => {
-        finishReject(error || new Error("No se pudo conectar con Spacetime."));
-      })
-      .build();
-
-    connection = conn;
-  })
-    .catch((error) => {
-      connection = null;
-      throw error;
-    })
-    .finally(() => {
-      connectPromise = null;
-    });
-
-  return connectPromise;
-}
-
-async function callReducer(name, params) {
-  const conn = await ensureRealtimeConnection();
-  if (!conn) {
-    throw new Error("No hay conexion activa con Spacetime.");
-  }
-
-  const reducer = conn.reducers?.[name];
-  if (typeof reducer !== "function") {
-    throw new Error(`Reducer ${name} no disponible en los bindings actuales.`);
-  }
-
-  await reducer(params);
-}
-
 export function getMapLocationsSnapshot() {
   return cachedLocations;
 }
 
 export function subscribeMapLocations(listener) {
   listeners.add(listener);
-  ensureRealtimeConnection().catch(() => {
-    cachedLocations = fallbackLocations();
-    emitChange();
-  });
+
+  if (isSupabaseConfigured()) {
+    ensureConnection().catch(() => {
+      cachedLocations = fallbackLocations();
+      emitChange();
+    });
+  }
 
   return () => {
     listeners.delete(listener);
@@ -302,23 +315,39 @@ export function useMapLocations() {
 export async function setMapLocations(locations) {
   const normalized = cloneLocations(locations).map(normalizeLocation);
 
+  if (!isSupabaseConfigured()) {
+    return persistLocally(normalized);
+  }
+
   try {
-    const conn = await ensureRealtimeConnection();
-    if (!conn) {
-      return persistLocally(normalized);
+    // Get existing IDs from DB
+    const { data: existing } = await supabase
+      .from(TABLE_NAME)
+      .select("id");
+
+    const existingIds = new Set((existing || []).map((r) => r.id));
+    const newIds = new Set(normalized.map((l) => l.id));
+
+    // Upsert all locations
+    const rows = normalized.map(toRow);
+    const { error: upsertError } = await supabase
+      .from(TABLE_NAME)
+      .upsert(rows, { onConflict: "id" });
+
+    if (upsertError) throw upsertError;
+
+    // Delete removed locations
+    const toDelete = [...existingIds].filter((id) => !newIds.has(id));
+    if (toDelete.length > 0) {
+      const { error: deleteError } = await supabase
+        .from(TABLE_NAME)
+        .delete()
+        .in("id", toDelete);
+
+      if (deleteError) throw deleteError;
     }
 
-    const existing = new Set(Array.from(conn.db.ubicacionesMapa.iter()).map((item) => item.id));
-
-    for (const location of normalized) {
-      existing.delete(location.id);
-      await callReducer("upsertUbicacionMapa", toRow(location));
-    }
-
-    for (const id of existing) {
-      await callReducer("eliminarUbicacionMapa", { id });
-    }
-
+    await fetchLocations();
     return normalized;
   } catch {
     return persistLocally(normalized);
@@ -328,8 +357,21 @@ export async function setMapLocations(locations) {
 export async function upsertMapLocation(location) {
   const normalized = normalizeLocation(location);
 
+  if (!isSupabaseConfigured()) {
+    const current = getMapLocationsSnapshot();
+    const next = current.some((item) => item.id === normalized.id)
+      ? current.map((item) => (item.id === normalized.id ? normalized : item))
+      : [normalized, ...current];
+    return persistLocally(next);
+  }
+
   try {
-    await callReducer("upsertUbicacionMapa", toRow(normalized));
+    const { error } = await supabase
+      .from(TABLE_NAME)
+      .upsert(toRow(normalized), { onConflict: "id" });
+
+    if (error) throw error;
+    await fetchLocations();
     return normalized;
   } catch {
     const current = getMapLocationsSnapshot();
@@ -341,8 +383,18 @@ export async function upsertMapLocation(location) {
 }
 
 export async function removeMapLocation(id) {
+  if (!isSupabaseConfigured()) {
+    return persistLocally(getMapLocationsSnapshot().filter((location) => location.id !== id));
+  }
+
   try {
-    await callReducer("eliminarUbicacionMapa", { id });
+    const { error } = await supabase
+      .from(TABLE_NAME)
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+    await fetchLocations();
     return getMapLocationsSnapshot();
   } catch {
     return persistLocally(getMapLocationsSnapshot().filter((location) => location.id !== id));
@@ -350,8 +402,30 @@ export async function removeMapLocation(id) {
 }
 
 export async function resetMapLocations() {
+  if (!isSupabaseConfigured()) {
+    return persistLocally(DEFAULT_MAP_LOCATIONS);
+  }
+
   try {
-    await callReducer("resetUbicacionesMapa", {});
+    // Delete all existing locations
+    const { error: deleteError } = await supabase
+      .from(TABLE_NAME)
+      .delete()
+      .neq("id", "__nonexistent__"); // delete all
+
+    if (deleteError && deleteError.code !== "PGRST116") {
+      // PGRST116 means no rows affected, that's fine
+      throw deleteError;
+    }
+
+    // Insert defaults
+    const { error: insertError } = await supabase
+      .from(TABLE_NAME)
+      .insert(DEFAULT_MAP_LOCATIONS.map(toRow));
+
+    if (insertError) throw insertError;
+
+    await fetchLocations();
     return fallbackLocations();
   } catch {
     return persistLocally(DEFAULT_MAP_LOCATIONS);
