@@ -229,8 +229,8 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 14px;
-  color: rgba(255, 252, 230, 0.65);
+  padding: 11px 14px;
+  color: rgba(255, 252, 230, 0.85);
   text-decoration: none;
   border-radius: var(--radius-lg);
   font-family: var(--font-body);
@@ -239,28 +239,32 @@
   letter-spacing: 0.01em;
   transition: all 0.2s ease;
   position: relative;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .admin-sidebar__link:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.1);
   color: #fffce6;
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .admin-sidebar__link--active {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.14);
   color: #fffce6;
   font-weight: 600;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .admin-sidebar__link--active::before {
   content: "";
   position: absolute;
-  left: 0;
+  left: -1px;
   top: 50%;
   transform: translateY(-50%);
   width: 3px;
-  height: 20px;
+  height: 22px;
   border-radius: 0 3px 3px 0;
   background: var(--secondary-fixed-dim);
 }
@@ -1234,3 +1238,5 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+

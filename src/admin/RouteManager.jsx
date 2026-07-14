@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { removeMapLocation, useMapLocations } from "../mapLocationsStore";
 import RouteForm from "./RouteForm";
 
@@ -7,6 +8,7 @@ const ROUTE_ID_MAP = { "Patrimonio": "patrimonial", "Gastronomía": "gastronomic
 const ROUTE_LABEL_MAP = { patrimonial: "Patrimonio", gastronomica: "Gastronomía", mitos: "Mitos y Leyendas" };
 
 export default function RouteManager() {
+  const [searchParams] = useSearchParams();
   const locations = useMapLocations();
   const [activeCategory, setActiveCategory] = useState("Todas");
   const [searchText, setSearchText] = useState("");
@@ -14,6 +16,13 @@ export default function RouteManager() {
   const [formMode, setFormMode] = useState(null); // null | "create" | { location }
   const [message, setMessage] = useState({ type: "", text: "" });
   const [deleting, setDeleting] = useState(null);
+
+  // Auto-open form when ?crear=true is in URL
+  useEffect(() => {
+    if (searchParams.get("crear") === "true") {
+      setFormMode({ location: null });
+    }
+  }, [searchParams]);
 
   const filteredRoutes = useMemo(() => {
     return locations.filter((loc) => {

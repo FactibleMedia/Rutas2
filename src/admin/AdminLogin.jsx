@@ -369,6 +369,7 @@ export default function AdminLogin() {
                   width: "100%",
                   justifyContent: "center",
                   border: "1px solid var(--outline-variant)",
+                  background: "var(--surface-container-low)",
                   padding: "12px 16px",
                 }}
               >
@@ -384,6 +385,7 @@ export default function AdminLogin() {
                   width: "100%",
                   justifyContent: "center",
                   border: "1px solid var(--outline-variant)",
+                  background: "var(--surface-container-low)",
                   padding: "12px 16px",
                 }}
               >
