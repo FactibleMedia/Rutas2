@@ -1,5 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import DemoApp from "./demo/DemoApp";
+import InicioPage from "./inicio/InicioPage";
 import Glossary from "./Glossary";
 import AdminLogin from "./admin/AdminLogin";
 import AdminPanel from "./admin/AdminPanel";
@@ -12,8 +12,8 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/glosario" replace />} />
-        <Route path="/demo" element={<DemoApp />} />
+        <Route path="/" element={<Navigate to="/inicio" replace />} />
+        <Route path="/inicio" element={<InicioPage />} />
         <Route path="/mapas" element={<Mapas />} />
         <Route path="/navmap" element={<NavMap />} />
         <Route path="/glosario" element={<Glossary />} />

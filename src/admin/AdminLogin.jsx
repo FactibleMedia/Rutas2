@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { clearAdminSession, getAdminProfile, hasAdminSession, setAdminSession } from "./adminAuth";
 import { supabase, isSupabaseReady, getSupabaseStatus } from "../supabaseClient";
+import logoAlt from "../assets/mcp/logo_alt.png";
 import "./AdminPanel.css";
 
 function getInitials(name) {
@@ -76,101 +77,33 @@ export default function AdminLogin() {
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        fontFamily: "var(--font-body)",
-        backgroundColor: "var(--surface)",
-        backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E")`,
-      }}
-    >
+    <div className="admin-login-wrapper">
       {/* Left: Hero Image (visible on desktop) */}
-      <div
-        className="admin-login-hero"
-        style={{
-          width: "50%",
-          position: "relative",
-          overflow: "hidden",
-        }}
-      >
+      <div className="admin-login-hero">
         <div
+          className="admin-login-hero__image"
           style={{
-            position: "absolute",
-            inset: 0,
             backgroundImage: "url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200&h=1600&fit=crop')",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
           }}
         />
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "linear-gradient(to top, rgba(254, 249, 234, 0.85) 0%, rgba(254, 249, 234, 0.2) 50%, transparent 100%)",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            bottom: 48,
-            left: 48,
-            maxWidth: 400,
-          }}
-        >
-          <h2
-            style={{
-              fontFamily: "var(--font-display)",
-              fontSize: 32,
-              fontWeight: 700,
-              color: "var(--on-surface)",
-              margin: "0 0 8px",
-              letterSpacing: "-0.02em",
-            }}
-          >
+        <div className="admin-login-hero__overlay" />
+        <div className="admin-login-hero__content">
+          <h2 className="admin-login-hero__quote">
             Legado &amp; Patrimonio
           </h2>
-          <p
-            style={{
-              fontSize: 18,
-              lineHeight: "28px",
-              color: "var(--on-surface-variant)",
-              margin: 0,
-            }}
-          >
+          <p className="admin-login-hero__attribution">
             Descubre las historias contadas a través de la música y los paisajes de nuestra región.
           </p>
         </div>
       </div>
 
       {/* Right: Login Form */}
-      <div
-        className="admin-login-form"
-        style={{
-          width: "50%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "24px 20px",
-          overflow: "auto",
-        }}
-      >
-        <div style={{ width: "100%", maxWidth: 400 }}>
+      <div className="admin-login-form">
+        <div className="admin-login-form__inner">
           {/* Brand */}
-          <div style={{ textAlign: "center", marginBottom: 40 }}>
-            <h1
-              style={{
-                fontFamily: "var(--font-display)",
-                fontSize: 48,
-                fontWeight: 800,
-                letterSpacing: "-0.02em",
-                color: "var(--primary)",
-                margin: "0 0 4px",
-              }}
-            >
-              Rutas Vallenatas
-            </h1>
-            <p style={{ fontSize: 16, color: "var(--on-surface-variant)", margin: 0 }}>
+          <div className="admin-login-form__brand">
+            <img src={logoAlt} alt="Rutas de Valledupar" className="admin-login-form__logo" />
+            <p className="admin-login-form__brand-subtitle">
               Panel Administrativo
             </p>
           </div>
@@ -485,10 +418,6 @@ export default function AdminLogin() {
       </div>
 
       <style>{`
-        @media (max-width: 1023px) {
-          .admin-login-hero { display: none !important; }
-          .admin-login-form { width: 100% !important; }
-        }
         @keyframes spin {
           to { transform: rotate(360deg); }
         }

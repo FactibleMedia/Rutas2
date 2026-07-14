@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { clearAdminSession, getAdminProfile } from "./adminAuth";
 import { supabase } from "../supabaseClient";
@@ -6,6 +6,8 @@ import Dashboard from "./Dashboard";
 import RouteManager from "./RouteManager";
 import UserManager from "./UserManager";
 import ContentEditor from "./ContentEditor";
+import logoWhiteNav from "../assets/mcp/logo_white_nav.png";
+import logoAlt from "../assets/mcp/logo_alt.png";
 import "./AdminPanel.css";
 
 const NAV_ITEMS = [
@@ -16,65 +18,86 @@ const NAV_ITEMS = [
   { id: "config", label: "Configuración", icon: "settings", path: "/admin/panel/configuracion" },
 ];
 
-function getInitials(name) {
-  const parts = (name || "")
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2);
-  return parts.length ? parts.map((p) => p[0].toUpperCase()).join("") : "AD";
-}
-
-function Sidebar({ activeId, onNavigate, onLogout }) {
+function Sidebar({ activeId, onNavigate, onLogout, isMobileOpen, onCloseMobile }) {
   return (
-    <aside className="admin-sidebar">
-      <div className="admin-sidebar__header">
-        <div className="admin-sidebar__avatar">
-          <span className="material-symbols-outlined" style={{ color: "var(--primary)" }}>star</span>
-        </div>
-        <div>
-          <h2 className="admin-sidebar__title">Administración</h2>
-          <p className="admin-sidebar__subtitle">Portal Cultural</p>
-        </div>
-      </div>
+    <>
+      {/* Mobile overlay backdrop */}
+      <div
+        className={`admin-sidebar-overlay${isMobileOpen ? " admin-sidebar-overlay--open" : ""}`}
+        onClick={onCloseMobile}
+        aria-hidden="true"
+      />
 
-      <div className="admin-sidebar__cta">
-        <button className="admin-sidebar__cta-btn" type="button">
-          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>add</span>
-          Crear Nueva Ruta
-        </button>
-      </div>
+      <aside className={`admin-sidebar${isMobileOpen ? " admin-sidebar--mobile-open" : ""}`}>
+        <div className="admin-sidebar__header">
+          <img src={logoWhiteNav} alt="Rutas de Valledupar" className="admin-sidebar__logo" />
+          <div className="admin-sidebar__header-text">
+            <h2 className="admin-sidebar__title">Administración</h2>
+            <p className="admin-sidebar__subtitle">Portal Cultural</p>
+          </div>
+        </div>
 
-      <nav className="admin-sidebar__nav">
-        {NAV_ITEMS.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            className={`admin-sidebar__link${activeId === item.id ? " admin-sidebar__link--active" : ""}`}
-            onClick={() => onNavigate(item.path)}
-          >
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: activeId === item.id ? "'FILL' 1" : "'FILL' 0" }}>
-              {item.icon}
-            </span>
-            {item.label}
+        <div className="admin-sidebar__cta">
+          <button className="admin-sidebar__cta-btn" type="button">
+            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>add</span>
+            Crear Nueva Ruta
           </button>
-        ))}
-      </nav>
+        </div>
 
-      <div className="admin-sidebar__bottom">
-        <button type="button" className="admin-sidebar__logout" onClick={onLogout}>
-          <span className="material-symbols-outlined">logout</span>
-          Cerrar Sesión
-        </button>
-      </div>
-    </aside>
+        <nav className="admin-sidebar__nav">
+          {NAV_ITEMS.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={`admin-sidebar__link${activeId === item.id ? " admin-sidebar__link--active" : ""}`}
+              onClick={() => {
+                onNavigate(item.path);
+                onCloseMobile();
+              }}
+            >
+              <span className="material-symbols-outlined" style={{ fontVariationSettings: activeId === item.id ? "'FILL' 1" : "'FILL' 0" }}>
+                {item.icon}
+              </span>
+              {item.label}
+            </button>
+          ))}
+        </nav>
+
+        <div className="admin-sidebar__bottom">
+          <button type="button" className="admin-sidebar__logout" onClick={onLogout}>
+            <span className="material-symbols-outlined">logout</span>
+            Cerrar Sesión
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }
 
-function TopBar({ profile }) {
+function TopBar({ profile, onToggleMobile, isMobileOpen }) {
   return (
     <header className="admin-topbar">
-      <div className="admin-topbar__brand">Rutas Vallenatas</div>
+      <div className="admin-topbar__left">
+        {/* Hamburger button – visible only on mobile */}
+        <button
+          type="button"
+          className={`admin-hamburger${isMobileOpen ? " admin-hamburger--open" : ""}`}
+          onClick={onToggleMobile}
+          aria-label={isMobileOpen ? "Cerrar menú" : "Abrir menú"}
+          aria-expanded={isMobileOpen}
+        >
+          <span className="admin-hamburger__line" />
+          <span className="admin-hamburger__line" />
+          <span className="admin-hamburger__line" />
+        </button>
+
+        <div className="admin-topbar__brand">
+          <img src={logoAlt} alt="Rutas de Valledupar" className="admin-topbar__logo" />
+          <div className="admin-topbar__brand-divider" />
+          <span className="admin-topbar__brand-label">Panel de Administración</span>
+        </div>
+      </div>
+
       <div className="admin-topbar__right">
         <div className="admin-topbar__search">
           <span className="material-symbols-outlined">search</span>
@@ -100,6 +123,7 @@ export default function AdminPanel() {
   const navigate = useNavigate();
   const location = useLocation();
   const profile = useMemo(() => getAdminProfile() || { name: "Admin Principal", email: "admin@valledupar.gov.co", initials: "AD" }, []);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const activeId = useMemo(() => {
     const path = location.pathname;
@@ -107,22 +131,52 @@ export default function AdminPanel() {
     return found?.id || "dashboard";
   }, [location.pathname]);
 
-  const handleNavigate = (path) => {
+  const handleNavigate = useCallback((path) => {
     navigate(path);
-  };
+  }, [navigate]);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await supabase.auth.signOut();
     clearAdminSession();
     navigate("/admin", { replace: true });
-  };
+  }, [navigate]);
+
+  const toggleMobileSidebar = useCallback(() => {
+    setIsMobileSidebarOpen((prev) => !prev);
+  }, []);
+
+  const closeMobileSidebar = useCallback(() => {
+    setIsMobileSidebarOpen(false);
+  }, []);
+
+  // Lock body scroll when mobile sidebar is open
+  useEffect(() => {
+    if (isMobileSidebarOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMobileSidebarOpen]);
 
   return (
     <div className="admin-panel">
-      <Sidebar activeId={activeId} onNavigate={handleNavigate} onLogout={handleLogout} />
+      <Sidebar
+        activeId={activeId}
+        onNavigate={handleNavigate}
+        onLogout={handleLogout}
+        isMobileOpen={isMobileSidebarOpen}
+        onCloseMobile={closeMobileSidebar}
+      />
 
       <main className="admin-main">
-        <TopBar profile={profile} />
+        <TopBar
+          profile={profile}
+          onToggleMobile={toggleMobileSidebar}
+          isMobileOpen={isMobileSidebarOpen}
+        />
 
         <div className="admin-content">
           <Routes>

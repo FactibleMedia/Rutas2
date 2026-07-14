@@ -942,7 +942,7 @@ export default function Mapas() {
 
               <div id="footer" className="mapas-links">
                 <Link to="/" className="mapas-link-btn">Inicio</Link>
-                <Link to="/demo" className="mapas-link-btn mapas-link-btn--primary">Demo</Link>
+                <Link to="/inicio" className="mapas-link-btn mapas-link-btn--primary">Inicio</Link>
               </div>
             </div>
           </div>

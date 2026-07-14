@@ -428,7 +428,7 @@ function useScrollReveal() {
   }, []);
 }
 
-export default function DemoApp() {
+export default function InicioPage() {
   const [activeSection, setActiveSection] = useState("inicio");
   const [isRegistered, setIsRegistered] = useState(false);
 
