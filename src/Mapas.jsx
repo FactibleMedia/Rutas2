@@ -65,7 +65,7 @@ export default function Mapas() {
   const [routePlans, setRoutePlans] = useState({});
   const [routeStatus, setRouteStatus] = useState("idle");
   const [routeMessage, setRouteMessage] = useState("");
-  const [view, setView] = useState("list"); // "list" | "details" | "navigation"
+  const [view, setView] = useState("list"); // "list" | "compact" | "expanded" | "navigation"
   const [isRouteTrackingOpen, setIsRouteTrackingOpen] = useState(false);
   const [navigationElapsedSeconds, setNavigationElapsedSeconds] = useState(0);
   const [navigationPreviewProgress, setNavigationPreviewProgress] = useState(0);
@@ -179,7 +179,7 @@ export default function Mapas() {
         setPlacePopupPosition({ x: 24, y: 96 });
         setRoutePlans({});
         setRouteOrigin(null);
-        setView("details");
+        setView("compact");
         stopNavigationPlayback();
         clearRouteLayer();
       };
@@ -298,7 +298,7 @@ export default function Mapas() {
     setRouteOrigin(null);
     setRouteStatus("idle");
     setRouteMessage("");
-    setView("details");
+    setView("compact");
     stopNavigationPlayback();
     clearRouteLayer();
 
@@ -509,8 +509,6 @@ export default function Mapas() {
         });
       }
 
-      // Iniciar navegación en tiempo real automáticamente
-      startNavigationPlayback(defaultPlan);
     } catch {
       setRouteStatus("error");
       setRouteMessage("No se pudieron cargar los tiempos de ruta.");
@@ -693,7 +691,7 @@ export default function Mapas() {
                     <p>{activePlace.subtitle}</p>
                   </div>
                   <div className="mapas-floating-popup__actions">
-                    <button type="button" className="mapas-floating-popup__button" onClick={() => setView("details")}>
+                    <button type="button" className="mapas-floating-popup__button" onClick={() => { setView("expanded"); setIsPlacePopupOpen(false); }}>
                       Ver detalles
                     </button>
                     <button type="button" className="mapas-floating-popup__button mapas-floating-popup__button--primary" onClick={handleTraceRoute}>
@@ -718,122 +716,94 @@ export default function Mapas() {
               </button>
             )}
 
-            {/* Side Panel: List / Details / Navigation */}
+            {/* Side Panel: List / Navigation */}
             <div id="galeria" className="mapas-ui-middle">
               <aside className="mapas-side-panel" aria-label="Panel de rutas">
 
-                {/* VIEW: LIST - route selector + places */}
-                {view === "list" && (
-                  <article className="mapas-main-card mapas-ui-card">
-                    <button
-                      type="button"
-                      className="mapas-main-card-header"
-                      onClick={() => setIsRouteExpanded((v) => !v)}
-                    >
-                      <div>
-                        <p className="mapas-main-card-title">
-                          {routeStats.find((r) => r.id === selectedRouteId)?.name ?? "Ruta Patrimonial"}
-                        </p>
-                        <p className="mapas-main-card-count">
-                          {routeStats.find((r) => r.id === selectedRouteId)?.count ?? 0} sitios
-                        </p>
-                      </div>
-                      <span className={`mapas-chevron${isRouteExpanded ? " expanded" : ""}`}>v</span>
-                    </button>
+                {/* Route selector + places list (always visible, with compact detail) */}
+                <article className="mapas-main-card mapas-ui-card">
+                  <button
+                    type="button"
+                    className="mapas-main-card-header"
+                    onClick={() => setIsRouteExpanded((v) => !v)}
+                  >
+                    <div>
+                      <p className="mapas-main-card-title">
+                        {routeStats.find((r) => r.id === selectedRouteId)?.name ?? "Ruta Patrimonial"}
+                      </p>
+                      <p className="mapas-main-card-count">
+                        {routeStats.find((r) => r.id === selectedRouteId)?.count ?? 0} sitios
+                      </p>
+                    </div>
+                    <span className={`mapas-chevron${isRouteExpanded ? " expanded" : ""}`}>v</span>
+                  </button>
 
-                    {isRouteExpanded && (
-                      <div className="mapas-main-card-body">
-                        {SUBCATEGORIES[selectedRouteId] && (
-                          <div className="mapas-subcategory-list">
-                            {SUBCATEGORIES[selectedRouteId].map((sub) => (
-                              <button type="button" key={sub.id} className="mapas-subcategory-item">
-                                <span>{sub.name}</span>
-                                <span className="mapas-subcategory-count">{sub.count}</span>
-                              </button>
-                            ))}
-                          </div>
-                        )}
-
-                        <div className="mapas-places-list">
-                          {filteredPlaces.length > 0 ? (
-                            filteredPlaces.map((place) => (
-                              <button
-                                type="button"
-                                key={place.id}
-                                className={`mapas-place-item${selectedPlaceId === place.id ? " active" : ""}`}
-                                onClick={() => handleSelectPlace(place)}
-                              >
-                                <span className="mapas-place-dot" />
-                                <span>{place.name}</span>
-                              </button>
-                            ))
-                          ) : (
-                            <p className="mapas-empty-state">No hay lugares que coincidan con la búsqueda.</p>
-                          )}
+                  {isRouteExpanded && (
+                    <div className="mapas-main-card-body">
+                      {SUBCATEGORIES[selectedRouteId] && (
+                        <div className="mapas-subcategory-list">
+                          {SUBCATEGORIES[selectedRouteId].map((sub) => (
+                            <button type="button" key={sub.id} className="mapas-subcategory-item">
+                              <span>{sub.name}</span>
+                              <span className="mapas-subcategory-count">{sub.count}</span>
+                            </button>
+                          ))}
                         </div>
-                      </div>
-                    )}
-                  </article>
-                )}
+                      )}
 
-                {/* VIEW: DETAILS - selected place info */}
-                {view === "details" && activePlace && (
-                  <div className="mapas-side-card mapas-ui-card">
-                    <div className="mapas-side-card-header">
-                      <h3 className="mapas-side-card-title">{activePlace.name}</h3>
-                      <button type="button" className="mapas-side-card-close" onClick={goBackToList}>×</button>
-                    </div>
-
-                    <div className="mapas-side-card-image">
-                      <img src={activePlace.image} alt={activePlace.name} />
-                      <span className="mapas-side-card-badge">{activePlace.categoryLabel}</span>
-                    </div>
-
-                    <div className="mapas-side-card-body">
-                      {activePlace.subtitle && <p className="mapas-side-card-subtitle">{activePlace.subtitle}</p>}
-                      {activePlace.description && <p className="mapas-side-card-desc">{activePlace.description}</p>}
-
-                      <div className="mapas-side-card-info">
-                        {activePlace.address && (
-                          <div className="mapas-side-card-info-row">
-                            <span className="material-symbols-outlined">location_on</span>
-                            <span>{activePlace.address}</span>
-                          </div>
-                        )}
-                        {activePlace.hours && (
-                          <div className="mapas-side-card-info-row">
-                            <span className="material-symbols-outlined">schedule</span>
-                            <span>{activePlace.hours}</span>
-                          </div>
-                        )}
-                        {activePlace.costStatus && (
-                          <div className="mapas-side-card-info-row">
-                            <span className="material-symbols-outlined">payments</span>
-                            <span>{activePlace.costStatus}</span>
-                          </div>
-                        )}
-                        {activePlace.audience && (
-                          <div className="mapas-side-card-info-row">
-                            <span className="material-symbols-outlined">group</span>
-                            <span>{activePlace.audience}</span>
-                          </div>
+                      <div className="mapas-places-list">
+                        {filteredPlaces.length > 0 ? (
+                          filteredPlaces.map((place) => (
+                            <button
+                              type="button"
+                              key={place.id}
+                              className={`mapas-place-item${selectedPlaceId === place.id ? " active" : ""}`}
+                              onClick={() => handleSelectPlace(place)}
+                            >
+                              <span className="mapas-place-dot" />
+                              <span>{place.name}</span>
+                            </button>
+                          ))
+                        ) : (
+                          <p className="mapas-empty-state">No hay lugares que coincidan con la búsqueda.</p>
                         )}
                       </div>
 
-                      <div className="mapas-side-card-actions">
-                        <button
-                          type="button"
-                          className="mapas-route-btn mapas-route-btn--full"
-                          onClick={handleTraceRoute}
-                          disabled={routeStatus === "locating" || routeStatus === "routing"}
-                        >
-                          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>directions</span>
-                          {routeStatus === "locating" || routeStatus === "routing" ? "Calculando..." : "Cómo llegar"}
-                        </button>
-                      </div>
+                      {/* Compact place details */}
+                      {view === "compact" && activePlace && (
+                        <div className="mapas-compact-detail">
+                          <div className="mapas-compact-detail-top">
+                            <div className="mapas-compact-detail-thumb">
+                              <img src={activePlace.image} alt={activePlace.name} />
+                            </div>
+                            <div className="mapas-compact-detail-info">
+                              <span className="mapas-compact-detail-badge">{activePlace.categoryLabel}</span>
+                              <strong>{activePlace.name}</strong>
+                              {activePlace.subtitle && <small>{activePlace.subtitle}</small>}
+                            </div>
+                            <button type="button" className="mapas-compact-detail-close" onClick={goBackToList}>×</button>
+                          </div>
+                          {activePlace.address && (
+                            <div className="mapas-compact-detail-row">
+                              <span className="material-symbols-outlined">location_on</span>
+                              <span>{activePlace.address}</span>
+                            </div>
+                          )}
+                          <div className="mapas-compact-detail-actions">
+                            <button
+                              type="button"
+                              className="mapas-route-btn mapas-route-btn--compact"
+                              onClick={() => { setView("expanded"); }}
+                            >
+                              <span className="material-symbols-outlined" style={{ fontSize: 16 }}>open_in_full</span>
+                              Ver detalles
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                )}
+                  )}
+                </article>
 
                 {/* VIEW: NAVIGATION */}
                 {view === "navigation" && activePlace && (
@@ -976,6 +946,80 @@ export default function Mapas() {
               </div>
             </div>
           </div>
+
+          {/* EXPANDED VIEW: Full-page overlay over the entire map */}
+          {view === "expanded" && activePlace && (
+            <div className="mapas-expanded-overlay" onClick={(e) => { if (e.target === e.currentTarget) goBackToList(); }}>
+              <div className="mapas-expanded-panel">
+                <div className="mapas-expanded-header">
+                  <h2>{activePlace.name}</h2>
+                  <button type="button" className="mapas-expanded-close" onClick={goBackToList}>×</button>
+                </div>
+
+                <div className="mapas-expanded-scroll">
+                  <div className="mapas-expanded-image">
+                    <img src={activePlace.image} alt={activePlace.name} />
+                    <span className="mapas-expanded-badge">{activePlace.categoryLabel}</span>
+                  </div>
+
+                  <div className="mapas-expanded-body">
+                    {activePlace.subtitle && <p className="mapas-expanded-subtitle">{activePlace.subtitle}</p>}
+                    {activePlace.description && <p className="mapas-expanded-desc">{activePlace.description}</p>}
+
+                    <div className="mapas-expanded-info">
+                      {activePlace.address && (
+                        <div className="mapas-expanded-row">
+                          <span className="material-symbols-outlined">location_on</span>
+                          <div>
+                            <strong>Dirección</strong>
+                            <span>{activePlace.address}</span>
+                          </div>
+                        </div>
+                      )}
+                      {activePlace.hours && (
+                        <div className="mapas-expanded-row">
+                          <span className="material-symbols-outlined">schedule</span>
+                          <div>
+                            <strong>Horario</strong>
+                            <span>{activePlace.hours}</span>
+                          </div>
+                        </div>
+                      )}
+                      {activePlace.costStatus && (
+                        <div className="mapas-expanded-row">
+                          <span className="material-symbols-outlined">payments</span>
+                          <div>
+                            <strong>Costo</strong>
+                            <span>{activePlace.costStatus}</span>
+                          </div>
+                        </div>
+                      )}
+                      {activePlace.audience && (
+                        <div className="mapas-expanded-row">
+                          <span className="material-symbols-outlined">group</span>
+                          <div>
+                            <strong>Público</strong>
+                            <span>{activePlace.audience}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <button
+                      type="button"
+                      className="mapas-route-btn mapas-route-btn--full"
+                      onClick={() => { handleTraceRoute(); }}
+                      disabled={routeStatus === "locating" || routeStatus === "routing"}
+                      style={{ marginTop: 8 }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: 20 }}>directions</span>
+                      Cómo llegar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Route Tracking Dock (floating overlay on the map) */}
           {isRouteTrackingOpen && currentNavigationPlan && (

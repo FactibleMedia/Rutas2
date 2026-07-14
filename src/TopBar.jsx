@@ -5,7 +5,7 @@ import "./TopBar.css";
 const navItems = [
   { id: "inicio", label: "Inicio" },
   { id: "mapas", label: "Mapa", to: "/mapas" },
-  { id: "glosario", label: "Glosario" },
+  { id: "glosario", label: "Glosario", to: "/glosario" },
   { id: "galeria", label: "Galeria" },
   { id: "footer", label: "Acerca de" },
 ];

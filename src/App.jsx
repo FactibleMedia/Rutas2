@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import DemoApp from "./demo/DemoApp";
+import Glossary from "./Glossary";
 import AdminLogin from "./admin/AdminLogin";
 import AdminPanel from "./admin/AdminPanel";
 import AdminProtectedRoute from "./admin/AdminProtectedRoute";
@@ -11,10 +12,11 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/demo" replace />} />
+        <Route path="/" element={<Navigate to="/glosario" replace />} />
         <Route path="/demo" element={<DemoApp />} />
         <Route path="/mapas" element={<Mapas />} />
         <Route path="/navmap" element={<NavMap />} />
+        <Route path="/glosario" element={<Glossary />} />
 
         {/* Admin Login */}
         <Route
