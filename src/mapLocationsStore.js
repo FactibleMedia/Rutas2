@@ -114,6 +114,7 @@ function normalizeLocation(location) {
   const routeId = ROUTE_META[location.routeId] ? location.routeId : "patrimonial";
   const coordinates = Array.isArray(location.coordinates) ? location.coordinates : [0, 0];
   const images = Array.isArray(location.images) ? location.images : [];
+  const videos = Array.isArray(location.videos) ? location.videos : [];
 
   return {
     id: location.id || cryptoId(),
@@ -128,6 +129,7 @@ function normalizeLocation(location) {
     audience: location.audience?.trim() || "Sin definir",
     image: location.image?.trim() || images[0] || DEFAULT_MAP_LOCATIONS[0].image,
     images,
+    videos,
     coordinates: [Number(coordinates[0]) || 0, Number(coordinates[1]) || 0],
   };
 }
@@ -147,6 +149,7 @@ function toRow(location) {
     audience: location.audience,
     image: location.image,
     images: location.images || [],
+    videos: location.videos || [],
     longitude: Number(location.coordinates[0]) || 0,
     latitude: Number(location.coordinates[1]) || 0,
   };
@@ -167,6 +170,7 @@ function fromRow(row) {
     audience: row.audience,
     image: row.image,
     images: row.images || [],
+    videos: row.videos || [],
     coordinates: [Number(row.longitude), Number(row.latitude)],
   });
 }

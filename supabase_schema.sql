@@ -34,6 +34,8 @@ CREATE TABLE IF NOT EXISTS ubicaciones_mapa (
   hours TEXT DEFAULT '',
   audience TEXT DEFAULT '',
   image TEXT DEFAULT '',
+  images TEXT[] DEFAULT '{}',
+  videos TEXT[] DEFAULT '{}',
   longitude DOUBLE PRECISION NOT NULL DEFAULT 0,
   latitude DOUBLE PRECISION NOT NULL DEFAULT 0,
   actualizado_en TIMESTAMPTZ DEFAULT NOW()

@@ -76,6 +76,12 @@ export default function Mapas() {
   const isMobileDevice = typeof navigator !== "undefined" && MOBILE_USER_AGENT_REGEX.test(navigator.userAgent);
   const routeStats = useMemo(() => getRouteCounts(locations), [locations]);
 
+  const getYouTubeEmbedUrl = (url) => {
+    if (!url) return null;
+    const match = url.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|v\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+    return match ? `https://www.youtube.com/embed/${match[1]}` : null;
+  };
+
   const filteredPlaces = useMemo(() => {
     const routeFilter = selectedRouteId;
     const normalizedQuery = normalizeText(searchText.trim());
@@ -965,6 +971,24 @@ export default function Mapas() {
                   <div className="mapas-expanded-body">
                     {activePlace.subtitle && <p className="mapas-expanded-subtitle">{activePlace.subtitle}</p>}
                     {activePlace.description && <p className="mapas-expanded-desc">{activePlace.description}</p>}
+
+                    {activePlace.videos?.length > 0 && (
+                      <div className="mapas-expanded-video-grid">
+                        {activePlace.videos.map((url) => {
+                          const embedUrl = getYouTubeEmbedUrl(url);
+                          return embedUrl ? (
+                            <div key={url} className="mapas-expanded-video-card">
+                              <iframe
+                                src={embedUrl}
+                                title={`Video de ${activePlace.name}`}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                              />
+                            </div>
+                          ) : null;
+                        })}
+                      </div>
+                    )}
 
                     <div className="mapas-expanded-info">
                       {activePlace.address && (

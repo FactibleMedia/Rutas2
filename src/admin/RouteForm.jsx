@@ -3,15 +3,16 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { supabase } from "../supabaseClient";
 import { upsertMapLocation } from "../mapLocationsStore";
+import { FoodTray, MapPoint, History, VideoPlay } from "reicon";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const STORAGE_BUCKET = "media-rutas";
 const VALLEDUPAR = [-73.2532, 10.4631];
 
 const ROUTE_TYPES = [
-  { id: "patrimonial", label: "Patrimonial", icon: "landmark" },
-  { id: "gastronomica", label: "Gastronómica", icon: "restaurant" },
-  { id: "mitos", label: "Mitos y Leyendas", icon: "auto_stories" },
+  { id: "patrimonial", label: "Patrimonial", icon: MapPoint },
+  { id: "gastronomica", label: "Gastronómica", icon: FoodTray },
+  { id: "mitos", label: "Mitos y Leyendas", icon: History },
 ];
 
 const EMPTY_FORM = {
@@ -52,6 +53,8 @@ export default function RouteForm({ location = null, onSave, onCancel }) {
       : { ...EMPTY_FORM }
   );
   const [images, setImages] = useState(location?.images || []);
+  const [videos, setVideos] = useState(location?.videos || []);
+  const [videoUrl, setVideoUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [mapError, setMapError] = useState("");
@@ -119,6 +122,35 @@ export default function RouteForm({ location = null, onSave, onCancel }) {
   const handleFieldChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
     setMessage({ type: "", text: "" });
+  };
+
+  const getYouTubeVideoId = (url) => {
+    if (!url) return null;
+    const match = url.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|v\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+    return match ? match[1] : null;
+  };
+
+  const handleAddVideo = () => {
+    const trimmedUrl = videoUrl.trim();
+    if (!trimmedUrl) return;
+
+    if (!getYouTubeVideoId(trimmedUrl)) {
+      setMessage({ type: "error", text: "Ingresa una URL válida de YouTube." });
+      return;
+    }
+
+    if (videos.includes(trimmedUrl)) {
+      setMessage({ type: "error", text: "Este video ya fue agregado." });
+      return;
+    }
+
+    setVideos((prev) => [...prev, trimmedUrl]);
+    setVideoUrl("");
+    setMessage({ type: "success", text: "Video agregado." });
+  };
+
+  const removeVideo = (index) => {
+    setVideos((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleImageUpload = async (e) => {
@@ -195,6 +227,7 @@ export default function RouteForm({ location = null, onSave, onCancel }) {
         audience: form.audience.trim(),
         image: images[0] || "",
         images,
+        videos,
         coordinates: [lng, lat],
       };
 
@@ -278,36 +311,37 @@ export default function RouteForm({ location = null, onSave, onCancel }) {
               Tipo de Ruta
             </label>
             <div style={{ display: "flex", gap: 8 }}>
-              {ROUTE_TYPES.map((rt) => (
-                <button
-                  key={rt.id}
-                  type="button"
-                  onClick={() => handleFieldChange("routeId", rt.id)}
-                  style={{
-                    flex: 1,
-                    padding: "14px 12px",
-                    borderRadius: "var(--radius-lg)",
-                    border: form.routeId === rt.id ? "2px solid var(--primary)" : "1px solid var(--outline-variant)",
-                    background: form.routeId === rt.id ? "rgba(157, 61, 28, 0.06)" : "var(--surface-container-low)",
-                    color: form.routeId === rt.id ? "var(--primary)" : "var(--on-surface-variant)",
-                    fontFamily: "var(--font-body)",
-                    fontSize: 14,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "all 0.2s",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: 6,
-                    textAlign: "center",
-                  }}
-                >
-                  <span className="material-symbols-outlined" style={{ fontSize: 24, fontVariationSettings: form.routeId === rt.id ? "'FILL' 1" : "'FILL' 0" }}>
-                    {rt.icon}
-                  </span>
-                  {rt.label}
-                </button>
-              ))}
+              {ROUTE_TYPES.map((rt) => {
+                const Icon = rt.icon;
+                return (
+                  <button
+                    key={rt.id}
+                    type="button"
+                    onClick={() => handleFieldChange("routeId", rt.id)}
+                    style={{
+                      flex: 1,
+                      padding: "14px 12px",
+                      borderRadius: "var(--radius-lg)",
+                      border: form.routeId === rt.id ? "2px solid var(--primary)" : "1px solid var(--outline-variant)",
+                      background: form.routeId === rt.id ? "rgba(157, 61, 28, 0.06)" : "var(--surface-container-low)",
+                      color: form.routeId === rt.id ? "var(--primary)" : "var(--on-surface-variant)",
+                      fontFamily: "var(--font-body)",
+                      fontSize: 14,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      transition: "all 0.2s",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: 6,
+                      textAlign: "center",
+                    }}
+                  >
+                    <Icon style={{ width: 24, height: 24, color: form.routeId === rt.id ? "var(--primary)" : "var(--on-surface-variant)" }} />
+                    {rt.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -552,7 +586,7 @@ export default function RouteForm({ location = null, onSave, onCancel }) {
 
             {/* Image Gallery */}
             {images.length > 0 && (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 16 }}>
                 {images.map((url, index) => (
                   <div
                     key={index}
@@ -615,6 +649,70 @@ export default function RouteForm({ location = null, onSave, onCancel }) {
                 ))}
               </div>
             )}
+
+            <div style={{ padding: "18px 0 0", borderTop: "1px solid var(--outline-variant)" }}>
+              <div style={{ display: "flex", alignItems: "flex-end", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
+                <div style={{ flex: 1, minWidth: 220 }}>
+                  <label className="admin-form-label" style={{ marginBottom: 8, display: "block" }}>
+                    Agrega un video de YouTube
+                  </label>
+                  <input
+                    className="admin-form-input"
+                    type="text"
+                    value={videoUrl}
+                    onChange={(e) => setVideoUrl(e.target.value)}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    style={{ width: "100%" }}
+                  />
+                </div>
+                <button
+                  type="button"
+                  className="admin-btn admin-btn--secondary"
+                  onClick={handleAddVideo}
+                  style={{ whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 8 }}
+                >
+                  <VideoPlay size={18} />
+                  Agregar video
+                </button>
+              </div>
+
+              {videos.length > 0 && (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
+                  {videos.map((url, index) => (
+                    <div
+                      key={url}
+                      style={{
+                        position: "relative",
+                        borderRadius: "var(--radius-lg)",
+                        border: "1px solid var(--outline-variant)",
+                        overflow: "hidden",
+                        background: "var(--surface-container-low)",
+                        minHeight: 100,
+                        padding: 12,
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <VideoPlay size={18} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--on-surface)" }}>YouTube</div>
+                          <div style={{ fontSize: 12, color: "var(--on-surface-variant)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {url}
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeVideo(index)}
+                          style={{ border: "none", background: "transparent", color: "var(--error)", cursor: "pointer", fontSize: 18 }}
+                          aria-label="Eliminar video"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

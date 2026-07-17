@@ -58,6 +58,9 @@ CREATE POLICY "media_delete_admin"
 ALTER TABLE ubicaciones_mapa
 ADD COLUMN IF NOT EXISTS images TEXT[] DEFAULT '{}';
 
+ALTER TABLE ubicaciones_mapa
+ADD COLUMN IF NOT EXISTS videos TEXT[] DEFAULT '{}';
+
 -- Actualizar las ubicaciones existentes con su imagen principal como array
 UPDATE ubicaciones_mapa
 SET images = ARRAY[image]

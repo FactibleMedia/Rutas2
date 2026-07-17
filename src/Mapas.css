@@ -612,6 +612,28 @@
   text-align: justify;
 }
 
+.mapas-expanded-video-grid {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.mapas-expanded-video-card {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #000;
+  border: 1px solid rgba(75, 88, 66, 0.12);
+}
+
+.mapas-expanded-video-card iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
 .mapas-expanded-info {
   display: grid;
   gap: 10px;
