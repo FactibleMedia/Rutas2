@@ -5,6 +5,21 @@ import { supabase } from "../supabaseClient";
 import { upsertMapLocation } from "../mapLocationsStore";
 import { FoodTray, MapPoint, History, VideoPlay } from "reicon";
 
+/**
+ * React wrapper for reicon icons.
+ * reicon icons are plain functions returning real DOM SVG elements,
+ * not React components. This wrapper renders them safely.
+ */
+function Reicon({ icon, size = 24, color = "currentColor", className, style }) {
+  const svgMarkup = icon.toSvg({ size, color, className });
+  return (
+    <span
+      dangerouslySetInnerHTML={{ __html: svgMarkup }}
+      style={{ display: "inline-flex", alignItems: "center", ...style }}
+    />
+  );
+}
+
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const STORAGE_BUCKET = "media-rutas";
 const VALLEDUPAR = [-73.2532, 10.4631];
@@ -337,7 +352,7 @@ export default function RouteForm({ location = null, onSave, onCancel }) {
                       textAlign: "center",
                     }}
                   >
-                    <Icon style={{ width: 24, height: 24, color: form.routeId === rt.id ? "var(--primary)" : "var(--on-surface-variant)" }} />
+                    <Reicon icon={Icon} size={24} color={form.routeId === rt.id ? "var(--primary)" : "var(--on-surface-variant)"} />
                     {rt.label}
                   </button>
                 );
@@ -671,7 +686,7 @@ export default function RouteForm({ location = null, onSave, onCancel }) {
                   onClick={handleAddVideo}
                   style={{ whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 8 }}
                 >
-                  <VideoPlay size={18} />
+                  <Reicon icon={VideoPlay} size={18} />
                   Agregar video
                 </button>
               </div>
@@ -692,7 +707,7 @@ export default function RouteForm({ location = null, onSave, onCancel }) {
                       }}
                     >
                       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <VideoPlay size={18} />
+                        <Reicon icon={VideoPlay} size={18} />
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: 13, fontWeight: 700, color: "var(--on-surface)" }}>YouTube</div>
                           <div style={{ fontSize: 12, color: "var(--on-surface-variant)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
