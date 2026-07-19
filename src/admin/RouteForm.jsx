@@ -30,6 +30,32 @@ const ROUTE_TYPES = [
   { id: "mitos", label: "Mitos y Leyendas", icon: History },
 ];
 
+const POSITION_LABELS = {
+  "top-left": "Arriba izquierda",
+  top: "Arriba centro",
+  "top-right": "Arriba derecha",
+  left: "Centro izquierda",
+  center: "Centro",
+  right: "Centro derecha",
+  "bottom-left": "Abajo izquierda",
+  bottom: "Abajo centro",
+  "bottom-right": "Abajo derecha",
+};
+
+const POSITION_TRANSFORMS = {
+  "top-left": "translate(-4px, -4px)",
+  top: "translate(0, -4px)",
+  "top-right": "translate(4px, -4px)",
+  left: "translate(-4px, 0)",
+  center: "translate(0, 0)",
+  right: "translate(4px, 0)",
+  "bottom-left": "translate(-4px, 4px)",
+  bottom: "translate(0, 4px)",
+  "bottom-right": "translate(4px, 4px)",
+};
+
+const POSITION_KEYS = ["top-left", "top", "top-right", "left", "center", "right", "bottom-left", "bottom", "bottom-right"];
+
 const EMPTY_FORM = {
   id: "",
   routeId: "patrimonial",
@@ -68,6 +94,7 @@ export default function RouteForm({ location = null, onSave, onCancel }) {
       : { ...EMPTY_FORM }
   );
   const [images, setImages] = useState(location?.images || []);
+  const [imagePosition, setImagePosition] = useState(location?.imagePosition || "center");
   const [videos, setVideos] = useState(location?.videos || []);
   const [videoUrl, setVideoUrl] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -243,6 +270,7 @@ export default function RouteForm({ location = null, onSave, onCancel }) {
         image: images[0] || "",
         images,
         videos,
+        imagePosition,
         coordinates: [lng, lat],
       };
 
@@ -583,7 +611,7 @@ export default function RouteForm({ location = null, onSave, onCancel }) {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml"
                 multiple
                 onChange={handleImageUpload}
                 style={{ display: "none" }}
@@ -601,7 +629,7 @@ export default function RouteForm({ location = null, onSave, onCancel }) {
 
             {/* Image Gallery */}
             {images.length > 0 && (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 16 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 12 }}>
                 {images.map((url, index) => (
                   <div
                     key={index}
@@ -617,7 +645,7 @@ export default function RouteForm({ location = null, onSave, onCancel }) {
                     <img
                       src={url}
                       alt={`Foto ${index + 1}`}
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: imagePosition }}
                     />
                     <button
                       type="button"
@@ -662,6 +690,56 @@ export default function RouteForm({ location = null, onSave, onCancel }) {
                     )}
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* Image Position Selector */}
+            {images.length > 0 && (
+              <div style={{ marginBottom: 16 }}>
+                <label className="admin-form-label" style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 16 }}>center_focus_strong</span>
+                  Posición del recorte
+                </label>
+                <div style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(3, 1fr)",
+                  gap: 4,
+                  maxWidth: 200,
+                }}>
+                  {POSITION_KEYS.map((pos) => {
+                    const label = POSITION_LABELS[pos] || "Centro";
+                    const dotTransform = POSITION_TRANSFORMS[pos] || "translate(0, 0)";
+                    return (
+                      <button
+                        key={pos}
+                        type="button"
+                        onClick={() => setImagePosition(pos)}
+                        title={label}
+                        style={{
+                          width: "100%",
+                          aspectRatio: "1",
+                          border: imagePosition === pos ? "2px solid var(--primary)" : "1px solid var(--outline-variant)",
+                          borderRadius: "var(--radius-sm)",
+                          background: imagePosition === pos ? "rgba(157, 61, 28, 0.08)" : "var(--surface-container-low)",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          padding: 2,
+                          transition: "all 0.15s",
+                        }}
+                      >
+                        <div style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: "50%",
+                          background: imagePosition === pos ? "var(--primary)" : "var(--outline)",
+                          transform: dotTransform,
+                        }} />
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
 

@@ -9,6 +9,19 @@
 -- 1. TABLAS PRINCIPALES (CREAR PRIMERO TODO)
 -- ============================================================
 
+-- 1a. GLOSARIO DE PALABRAS
+CREATE TABLE IF NOT EXISTS glosario_palabras (
+  id BIGSERIAL PRIMARY KEY,
+  palabra TEXT NOT NULL,
+  significado TEXT NOT NULL DEFAULT '',
+  categoria TEXT NOT NULL DEFAULT 'Para referirse'
+    CHECK (categoria IN ('Objeto','Transporte','Material','Bebida','Alimento','Animal','Planta','Gesto','Expresión','Cuerpo','Para referirse','Vestimenta','Accesorio','Fantasía','Juego')),
+  color_postal TEXT NOT NULL DEFAULT 'verde' CHECK (color_postal IN ('verde','morado')),
+  activo BOOLEAN DEFAULT true,
+  creado_en TIMESTAMPTZ DEFAULT NOW(),
+  actualizado_en TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- 3a. USUARIOS (vinculada a auth.users de Supabase)
 CREATE TABLE IF NOT EXISTS usuarios (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -36,6 +49,7 @@ CREATE TABLE IF NOT EXISTS ubicaciones_mapa (
   image TEXT DEFAULT '',
   images TEXT[] DEFAULT '{}',
   videos TEXT[] DEFAULT '{}',
+  image_position TEXT DEFAULT 'center',
   longitude DOUBLE PRECISION NOT NULL DEFAULT 0,
   latitude DOUBLE PRECISION NOT NULL DEFAULT 0,
   actualizado_en TIMESTAMPTZ DEFAULT NOW()
@@ -98,11 +112,29 @@ $$;
 -- 4. ROW LEVEL SECURITY (RLS)
 -- ============================================================
 
+ALTER TABLE glosario_palabras ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ubicaciones_mapa ENABLE ROW LEVEL SECURITY;
 ALTER TABLE usuarios ENABLE ROW LEVEL SECURITY;
 ALTER TABLE categorias_rutas ENABLE ROW LEVEL SECURITY;
 ALTER TABLE admin_config ENABLE ROW LEVEL SECURITY;
 ALTER TABLE actividad_admin ENABLE ROW LEVEL SECURITY;
+
+-- -------- glosario_palabras --------
+CREATE POLICY "glosario_select_publico"
+  ON glosario_palabras FOR SELECT
+  USING (true);
+
+CREATE POLICY "glosario_insert_admin"
+  ON glosario_palabras FOR INSERT
+  WITH CHECK (public.es_administrador());
+
+CREATE POLICY "glosario_update_admin"
+  ON glosario_palabras FOR UPDATE
+  USING (public.es_administrador());
+
+CREATE POLICY "glosario_delete_admin"
+  ON glosario_palabras FOR DELETE
+  USING (public.es_administrador());
 
 -- -------- ubicaciones_mapa --------
 CREATE POLICY "ubicaciones_mapa_select_publico"

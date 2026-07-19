@@ -130,6 +130,7 @@ function normalizeLocation(location) {
     image: location.image?.trim() || images[0] || DEFAULT_MAP_LOCATIONS[0].image,
     images,
     videos,
+    imagePosition: location.imagePosition || "center",
     coordinates: [Number(coordinates[0]) || 0, Number(coordinates[1]) || 0],
   };
 }
@@ -150,6 +151,7 @@ function toRow(location) {
     image: location.image,
     images: location.images || [],
     videos: location.videos || [],
+    image_position: location.imagePosition || "center",
     longitude: Number(location.coordinates[0]) || 0,
     latitude: Number(location.coordinates[1]) || 0,
   };
@@ -171,6 +173,7 @@ function fromRow(row) {
     image: row.image,
     images: row.images || [],
     videos: row.videos || [],
+    imagePosition: row.image_position || "center",
     coordinates: [Number(row.longitude), Number(row.latitude)],
   });
 }

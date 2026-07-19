@@ -6,12 +6,14 @@ import Dashboard from "./Dashboard";
 import RouteManager from "./RouteManager";
 import UserManager from "./UserManager";
 import ContentEditor from "./ContentEditor";
+import GlossaryManager from "./GlossaryManager";
 import logoWhiteNav from "../assets/mcp/logo_white_nav.png";
 import logoAlt from "../assets/mcp/logo_alt.png";
 import "./AdminPanel.css";
 
 const NAV_ITEMS = [
   { id: "dashboard", label: "Dashboard", icon: "dashboard", path: "/admin/panel" },
+  { id: "glosario", label: "Glosario Vallenato", icon: "menu_book", path: "/admin/panel/glosario" },
   { id: "rutas", label: "Gestión de Rutas", icon: "map", path: "/admin/panel/rutas" },
   { id: "contenido", label: "Editor Multimedia", icon: "edit_note", path: "/admin/panel/contenido" },
   { id: "usuarios", label: "Usuarios y Roles", icon: "group", path: "/admin/panel/usuarios" },
@@ -183,6 +185,7 @@ export default function AdminPanel() {
             <Route index element={<Dashboard profile={profile} />} />
             <Route path="rutas" element={<RouteManager />} />
             <Route path="usuarios" element={<UserManager />} />
+            <Route path="glosario" element={<GlossaryManager />} />
             <Route path="contenido" element={<ContentEditor />} />
             <Route path="configuracion" element={<ConfigPage />} />
             <Route path="*" element={<Navigate to="/admin/panel" replace />} />

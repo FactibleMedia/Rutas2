@@ -1,18 +1,13 @@
 import { useEffect, useId, useRef, useState } from "react";
-import iconYoutube from "../assets/mcp/icon_youtube.png";
-import iconInstagram from "../assets/mcp/icon_instagram.png";
-import iconLocation from "../assets/mcp/icon_location.png";
-import iconMail from "../assets/mcp/icon_mail.png";
 import mapPat from "../assets/mcp/mapa_pat.png";
 import mapMis from "../assets/mcp/mapa_mis.png";
 import mapGas from "../assets/mcp/mapa_gas.png";
 import gal1 from "../assets/mcp/gal_slide1.png";
 import gal2 from "../assets/mcp/gal_slide2.png";
 import gal3 from "../assets/mcp/gal_slide3.png";
-import logoFooter from "../assets/mcp/logo_footer.png";
 import ctaBgIcon from "../assets/mcp/icon_bg_cta.png";
-import glossFramePurple from "../assets/mcp/gloss_frame_purple.png";
 import TopBar from "../TopBar";
+import Footer from "../Footer";
 import glossFrameGreen from "../assets/mcp/gloss_frame_green.png";
 import InitialSlider from "../InitialSlider";
 import glossBgLucas from "../assets/mcp/gloss_bg_lucas.png";
@@ -339,74 +334,6 @@ function CTASection() {
       <p>Planifica tu ruta ahora mismo desde el mapa interactivo</p>
       <button className="cta-section__btn">Ver el mapa interactivo</button>
     </section>
-  );
-}
-
-function Footer() {
-  return (
-    <footer id="footer" className="footer reveal">
-      <div className="footer__grid">
-        <div>
-          <img src={logoFooter} alt="Rutas de Valledupar" className="footer__logo" />
-          <p className="footer__desc">
-            Un proyecto turistico-cultural para explorar y preservar la identidad de Valledupar, capital mundial del vallenato.
-          </p>
-          <div className="footer__socials">
-            <a href="https://www.instagram.com/rutasvalledupar" target="_blank" rel="noreferrer" className="footer__social-btn">
-              <img src={iconInstagram} alt="Instagram" />
-            </a>
-            <a href="#" className="footer__social-btn">
-              <img src={iconYoutube} alt="YouTube" />
-            </a>
-          </div>
-        </div>
-
-        <div>
-          <h3 className="footer__col-title">Explorar</h3>
-          <a href="#mapas" className="footer__link">
-            Ruta Patrimonial
-          </a>
-          <a href="#mapas" className="footer__link">
-            Ruta Gastronomica
-          </a>
-          <a href="#mapas" className="footer__link">
-            Ruta Mistica
-          </a>
-          <a href="#glosario" className="footer__link">
-            Glosario vallenato
-          </a>
-          <a href="#galeria" className="footer__link">
-            Galeria
-          </a>
-        </div>
-
-        <div>
-          <h3 className="footer__col-title">Informacion</h3>
-          <a href="#" className="footer__link">
-            Terminos de uso
-          </a>
-        </div>
-
-        <div>
-          <h3 className="footer__col-title">Contacto</h3>
-          <div className="footer__contact-item">
-            <img src={iconLocation} alt="Ubicacion" />
-            <span>Valledupar, Cesar, Colombia</span>
-          </div>
-          <div className="footer__contact-item">
-            <img src={iconMail} alt="Email" />
-            <span>rutasvalledupar@gmail.com</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="footer__divider">
-        <p className="footer__copy">© 2026 Rutas de Valledupar. Todos los derechos reservados. Hecho con amor en Colombia.</p>
-        <button className="footer__back-top" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-          ↑
-        </button>
-      </div>
-    </footer>
   );
 }
 

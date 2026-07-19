@@ -72,6 +72,12 @@ export default function Mapas() {
   const [locationPermissionState, setLocationPermissionState] = useState("idle");
   const [locationPermissionMessage, setLocationPermissionMessage] = useState("");
   const [loadError, setLoadError] = useState("");
+  const [videoPlayingId, setVideoPlayingId] = useState(null); // index of video being played in hero
+  const [imgErrors, setImgErrors] = useState({}); // track image load errors
+
+  const handleImgError = (id) => {
+    setImgErrors((prev) => ({ ...prev, [id]: true }));
+  };
 
   const isMobileDevice = typeof navigator !== "undefined" && MOBILE_USER_AGENT_REGEX.test(navigator.userAgent);
   const routeStats = useMemo(() => getRouteCounts(locations), [locations]);
@@ -188,6 +194,7 @@ export default function Mapas() {
         setView("compact");
         stopNavigationPlayback();
         clearRouteLayer();
+        setImgErrors({});
       };
 
       const marker = new mapboxgl.Marker(markerElement)
@@ -307,6 +314,8 @@ export default function Mapas() {
     setView("compact");
     stopNavigationPlayback();
     clearRouteLayer();
+    setVideoPlayingId(null);
+    setImgErrors({});
 
     if (mapRef.current) {
       mapRef.current.flyTo({
@@ -324,6 +333,7 @@ export default function Mapas() {
     setIsNavigationOpen(false);
     setRoutePlans({});
     clearRouteLayer();
+    setVideoPlayingId(null);
   };
 
   const collapsePlacePopup = () => {
@@ -689,7 +699,19 @@ export default function Mapas() {
                 <button type="button" className="mapas-floating-popup__drag" onPointerDown={handlePopupPointerDown} aria-label="Mover popup">
                   <span /><span /><span />
                 </button>
-                <div className="mapas-floating-popup__image" style={{ backgroundImage: `url('${activePlace.image}')` }} />
+                <div className="mapas-floating-popup__image" style={{
+                  backgroundImage: imgErrors[activePlace.id]
+                    ? `url('data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="124" viewBox="0 0 200 124"><rect width="200" height="124" fill="#eaddcb"/><text x="100" y="62" text-anchor="middle" dominant-baseline="middle" font-family="Bebas Neue, sans-serif" font-size="16" fill="#8a7a6a">SIN ILUSTRACIÓN</text></svg>')}'`
+                    : `url('${activePlace.image}')`,
+                  backgroundPosition: activePlace.imagePosition || "center",
+                }}>
+                  <img
+                    src={activePlace.image}
+                    alt=""
+                    onError={() => handleImgError(activePlace.id)}
+                    style={{ position: "absolute", width: 0, height: 0, overflow: "hidden" }}
+                  />
+                </div>
                 <div className="mapas-floating-popup__content">
                   <div>
                     <p className="mapas-floating-popup__kicker">{activePlace.categoryLabel}</p>
@@ -780,7 +802,16 @@ export default function Mapas() {
                         <div className="mapas-compact-detail">
                           <div className="mapas-compact-detail-top">
                             <div className="mapas-compact-detail-thumb">
-                              <img src={activePlace.image} alt={activePlace.name} />
+                              {imgErrors[activePlace.id] ? (
+                                <div className="mapas-img-placeholder">SIN ILUSTRACIÓN</div>
+                              ) : (
+                                <img
+                                  src={activePlace.image}
+                                  alt={activePlace.name}
+                                  onError={() => handleImgError(activePlace.id)}
+                                  style={{ objectPosition: activePlace.imagePosition || "center" }}
+                                />
+                              )}
                             </div>
                             <div className="mapas-compact-detail-info">
                               <span className="mapas-compact-detail-badge">{activePlace.categoryLabel}</span>
@@ -953,94 +984,196 @@ export default function Mapas() {
             </div>
           </div>
 
-          {/* EXPANDED VIEW: Full-page overlay over the entire map */}
+          {/* EXPANDED VIEW: Full-window hero + two-column detail */}
           {view === "expanded" && activePlace && (
             <div className="mapas-expanded-overlay" onClick={(e) => { if (e.target === e.currentTarget) goBackToList(); }}>
-              <div className="mapas-expanded-panel">
-                <div className="mapas-expanded-header">
-                  <h2>{activePlace.name}</h2>
-                  <button type="button" className="mapas-expanded-close" onClick={goBackToList}>×</button>
-                </div>
+              <div className="mapas-expanded-wrap">
+                {/* Back Button */}
+                <button
+                  type="button"
+                  className="mapas-expanded-back"
+                  onClick={goBackToList}
+                  aria-label="Volver"
+                >
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M19 12H5" />
+                    <path d="M12 19l-7-7 7-7" />
+                  </svg>
+                </button>
 
-                <div className="mapas-expanded-scroll">
-                  <div className="mapas-expanded-image">
-                    <img src={activePlace.image} alt={activePlace.name} />
-                    <span className="mapas-expanded-badge">{activePlace.categoryLabel}</span>
-                  </div>
+                {/* Hero Section */}                <section className={`mapas-expanded-hero${videoPlayingId !== null ? ' mapas-expanded-hero--playing' : ''}`}>
+                  {/* Background image (only when video is not playing) */}
+                  {videoPlayingId === null && (
+                    <>
+                      {imgErrors[activePlace.id] ? (
+                        <div className="mapas-expanded-hero-placeholder">
+                          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                            <circle cx="8.5" cy="8.5" r="1.5" />
+                            <path d="M21 15l-5-5L5 21" />
+                          </svg>
+                          <span>Sin ilustración</span>
+                        </div>
+                      ) : (
+                        <img
+                          className="mapas-expanded-hero-img"
+                          src={activePlace.image || activePlace.images?.[0]}
+                          alt={activePlace.name}
+                          onError={() => handleImgError(activePlace.id)}
+                          style={{ objectPosition: activePlace.imagePosition || "center" }}
+                        />
+                      )}
+                      <div className="mapas-expanded-hero-overlay" />
+                    </>
+                  )}
 
-                  <div className="mapas-expanded-body">
-                    {activePlace.subtitle && <p className="mapas-expanded-subtitle">{activePlace.subtitle}</p>}
-                    {activePlace.description && <p className="mapas-expanded-desc">{activePlace.description}</p>}
-
-                    {activePlace.videos?.length > 0 && (
-                      <div className="mapas-expanded-video-grid">
-                        {activePlace.videos.map((url) => {
-                          const embedUrl = getYouTubeEmbedUrl(url);
-                          return embedUrl ? (
-                            <div key={url} className="mapas-expanded-video-card">
-                              <iframe
-                                src={embedUrl}
-                                title={`Video de ${activePlace.name}`}
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                              />
-                            </div>
-                          ) : null;
-                        })}
+                  {/* Play button / Video embed in hero */}
+                  {activePlace.videos?.length > 0 && (
+                    videoPlayingId !== null && getYouTubeEmbedUrl(activePlace.videos[videoPlayingId]) ? (
+                      <div className="mapas-expanded-hero-video">
+                        <button
+                          type="button"
+                          className="mapas-expanded-hero-video-close"
+                          onClick={() => setVideoPlayingId(null)}
+                          aria-label="Cerrar video"
+                        >
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M18 6L6 18" /><path d="M6 6l12 12" />
+                          </svg>
+                        </button>
+                        <iframe
+                          src={getYouTubeEmbedUrl(activePlace.videos[videoPlayingId]) + "?autoplay=1&rel=0"}
+                          title={`Video de ${activePlace.name}`}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
                       </div>
-                    )}
+                    ) : (
+                      <div className="mapas-expanded-play">
+                        <button
+                          type="button"
+                          className="mapas-expanded-play-btn"
+                          onClick={() => setVideoPlayingId(0)}
+                          aria-label="Reproducir video"
+                        >
+                          <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                        </button>
+                      </div>
+                    )
+                  )}
+                </section>
 
-                    <div className="mapas-expanded-info">
+                {/* Content: Two columns */}
+                <main className="mapas-expanded-content">
+                  <div className="mapas-expanded-layout">
+                    {/* LEFT: Title + Description */}
+                    <article className="mapas-expanded-description">
+                      <h1 className="mapas-expanded-title">{activePlace.name}</h1>
+
                       {activePlace.address && (
-                        <div className="mapas-expanded-row">
-                          <span className="material-symbols-outlined">location_on</span>
-                          <div>
-                            <strong>Dirección</strong>
-                            <span>{activePlace.address}</span>
-                          </div>
+                        <div className="mapas-expanded-address">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                            <circle cx="12" cy="10" r="3" />
+                          </svg>
+                          <span>{activePlace.address}</span>
                         </div>
                       )}
-                      {activePlace.hours && (
-                        <div className="mapas-expanded-row">
-                          <span className="material-symbols-outlined">schedule</span>
-                          <div>
-                            <strong>Horario</strong>
-                            <span>{activePlace.hours}</span>
-                          </div>
-                        </div>
-                      )}
-                      {activePlace.costStatus && (
-                        <div className="mapas-expanded-row">
-                          <span className="material-symbols-outlined">payments</span>
-                          <div>
-                            <strong>Costo</strong>
-                            <span>{activePlace.costStatus}</span>
-                          </div>
-                        </div>
-                      )}
-                      {activePlace.audience && (
-                        <div className="mapas-expanded-row">
-                          <span className="material-symbols-outlined">group</span>
-                          <div>
-                            <strong>Público</strong>
-                            <span>{activePlace.audience}</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
 
-                    <button
-                      type="button"
-                      className="mapas-route-btn mapas-route-btn--full"
-                      onClick={() => { handleTraceRoute(); }}
-                      disabled={routeStatus === "locating" || routeStatus === "routing"}
-                      style={{ marginTop: 8 }}
-                    >
-                      <span className="material-symbols-outlined" style={{ fontSize: 20 }}>directions</span>
-                      Cómo llegar
-                    </button>
+                      {activePlace.subtitle && (
+                        <p className="mapas-expanded-subtitle">{activePlace.subtitle}</p>
+                      )}
+
+                      {activePlace.description && (
+                        <p className="mapas-expanded-desc">{activePlace.description}</p>
+                      )}
+                    </article>
+
+                    {/* RIGHT: Info Card + Actions */}
+                    <aside className="mapas-expanded-aside">
+                      {/* Info Card */}
+                      <div className="mapas-expanded-infocard">
+                        {activePlace.costStatus && (
+                          <div className="mapas-expanded-infocard-row">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                            </svg>
+                            <p><strong>Estado de Costo:</strong> {activePlace.costStatus}</p>
+                          </div>
+                        )}
+                        {activePlace.hours && (
+                          <div className="mapas-expanded-infocard-row">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="12" cy="12" r="10" />
+                              <path d="M12 6v6l4 2" />
+                            </svg>
+                            <p><strong>Horario Recomendado:</strong> {activePlace.hours}</p>
+                          </div>
+                        )}
+                        {activePlace.audience && (
+                          <div className="mapas-expanded-infocard-row">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                              <circle cx="9" cy="7" r="4" />
+                              <path d="M23 21v-2a4 4 0 00-3-3.87" />
+                              <path d="M16 3.13a4 4 0 010 7.75" />
+                            </svg>
+                            <p><strong>Apto para:</strong> {activePlace.audience}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="mapas-expanded-actions">
+                        <button
+                          type="button"
+                          className="mapas-expanded-btn mapas-expanded-btn--primary"
+                          onClick={() => { handleTraceRoute(); }}
+                          disabled={routeStatus === "locating" || routeStatus === "routing"}
+                        >
+                          Cómo llego
+                        </button>
+                        {activePlace.videos?.length > 0 && (
+                          <button
+                            type="button"
+                            className="mapas-expanded-btn mapas-expanded-btn--secondary"
+                            onClick={() => {
+                              setVideoPlayingId(0);
+                              // Scroll to the hero
+                              document.querySelector('.mapas-expanded-hero')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                            Ver video
+                          </button>
+                        )}
+                      </div>
+
+                      {/* YouTube videos grid (if more than one) */}
+                      {activePlace.videos?.length > 1 && (
+                        <div className="mapas-expanded-videogrid">
+                          {activePlace.videos.map((url) => {
+                            const embedUrl = getYouTubeEmbedUrl(url);
+                            return embedUrl ? (
+                              <div key={url} className="mapas-expanded-videocard">
+                                <iframe
+                                  src={embedUrl}
+                                  title={`Video de ${activePlace.name}`}
+                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                  allowFullScreen
+                                />
+                              </div>
+                            ) : null;
+                          })}
+                        </div>
+                      )}
+                    </aside>
                   </div>
-                </div>
+                </main>
               </div>
             </div>
           )}
