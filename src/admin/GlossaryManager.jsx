@@ -77,6 +77,11 @@ export default function GlossaryManager() {
   const [searchText, setSearchText] = useState("");
   const [filterCategory, setFilterCategory] = useState("Todas");
 
+  // Suggestions state
+  const [suggestions, setSuggestions] = useState([]);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("glosario"); // "glosario" | "sugerencias"
+
   // Fetch words
   const fetchWords = useCallback(async () => {
     setLoading(true);
@@ -101,9 +106,34 @@ export default function GlossaryManager() {
     }
   }, [filterCategory]);
 
+  // Fetch pending suggestions
+  const fetchSuggestions = useCallback(async () => {
+    setSuggestionsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("glosario_sugerencias")
+        .select("*")
+        .order("creado_en", { ascending: false });
+
+      if (error) throw error;
+      setSuggestions(data || []);
+    } catch (err) {
+      console.warn("Error fetching suggestions:", err);
+      setSuggestions([]);
+    } finally {
+      setSuggestionsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchWords();
   }, [fetchWords]);
+
+  useEffect(() => {
+    if (activeTab === "sugerencias") {
+      fetchSuggestions();
+    }
+  }, [activeTab, fetchSuggestions]);
 
   // Filter by search
   const filteredWords = useMemo(() => {
@@ -143,6 +173,76 @@ export default function GlossaryManager() {
     setEditingId(null);
     setShowForm(true);
     setMessage({ type: "", text: "" });
+  };
+
+  // Get current admin user ID
+  const getAdminId = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    return user?.id || null;
+  };
+
+  // Approve a suggestion: copy to glosario_palabras and mark as approved
+  const handleApproveSuggestion = async (suggestion) => {
+    if (!window.confirm(`¿Aprobar "${suggestion.palabra}" y agregarla al glosario?`)) return;
+
+    try {
+      const adminId = await getAdminId();
+
+      // Insert into glosario_palabras
+      const { error: insertError } = await supabase
+        .from("glosario_palabras")
+        .insert({
+          palabra: suggestion.palabra,
+          significado: suggestion.significado,
+          categoria: suggestion.categoria,
+          color_postal: suggestion.id % 2 === 0 ? "verde" : "morado",
+        });
+
+      if (insertError) throw insertError;
+
+      // Mark suggestion as approved
+      const { error: updateError } = await supabase
+        .from("glosario_sugerencias")
+        .update({
+          estado: "aprobado",
+          revisado_en: new Date().toISOString(),
+          revisado_por: adminId,
+        })
+        .eq("id", suggestion.id);
+
+      if (updateError) throw updateError;
+
+      setMessage({ type: "success", text: `"${suggestion.palabra}" aprobada y agregada al glosario.` });
+      fetchWords();
+      fetchSuggestions();
+    } catch (err) {
+      setMessage({ type: "error", text: `Error: ${err.message}` });
+    }
+  };
+
+  // Reject a suggestion
+  const handleRejectSuggestion = async (suggestion) => {
+    if (!window.confirm(`¿Rechazar "${suggestion.palabra}"?`)) return;
+
+    try {
+      const adminId = await getAdminId();
+
+      const { error } = await supabase
+        .from("glosario_sugerencias")
+        .update({
+          estado: "rechazado",
+          revisado_en: new Date().toISOString(),
+          revisado_por: adminId,
+        })
+        .eq("id", suggestion.id);
+
+      if (error) throw error;
+
+      setMessage({ type: "success", text: `"${suggestion.palabra}" rechazada.` });
+      fetchSuggestions();
+    } catch (err) {
+      setMessage({ type: "error", text: `Error: ${err.message}` });
+    }
   };
 
   const handleDelete = async (word) => {
@@ -231,6 +331,68 @@ export default function GlossaryManager() {
             </button>
           )}
         </div>
+
+        {/* Tabs */}
+        <div style={{ display: "flex", gap: 4, marginTop: 20, borderBottom: "1px solid var(--outline-variant)" }}>
+          <button
+            type="button"
+            onClick={() => setActiveTab("glosario")}
+            style={{
+              padding: "10px 20px",
+              fontFamily: "var(--font-body)",
+              fontSize: 14,
+              fontWeight: 600,
+              color: activeTab === "glosario" ? "var(--primary)" : "var(--on-surface-variant)",
+              background: "none",
+              border: "none",
+              borderBottom: activeTab === "glosario" ? "2px solid var(--primary)" : "2px solid transparent",
+              cursor: "pointer",
+              transition: "all 0.2s",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>menu_book</span>
+            Glosario
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("sugerencias")}
+            style={{
+              padding: "10px 20px",
+              fontFamily: "var(--font-body)",
+              fontSize: 14,
+              fontWeight: 600,
+              color: activeTab === "sugerencias" ? "var(--primary)" : "var(--on-surface-variant)",
+              background: "none",
+              border: "none",
+              borderBottom: activeTab === "sugerencias" ? "2px solid var(--primary)" : "2px solid transparent",
+              cursor: "pointer",
+              transition: "all 0.2s",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>rate_review</span>
+            Sugerencias Pendientes
+            {suggestions.filter((s) => s.estado === "pendiente").length > 0 && (
+              <span style={{
+                background: "var(--primary)",
+                color: "#fff",
+                fontSize: 10,
+                fontWeight: 700,
+                padding: "2px 8px",
+                borderRadius: "999px",
+                minWidth: 20,
+                textAlign: "center",
+              }}>
+                {suggestions.filter((s) => s.estado === "pendiente").length}
+              </span>
+            )}
+          </button>
+        </div>
       </div>
 
       {message.text && (
@@ -288,7 +450,121 @@ export default function GlossaryManager() {
         ))}
       </div>
 
-      {showForm ? (
+      {activeTab === "sugerencias" ? (
+        /* ===== SUGGESTIONS TAB ===== */
+        <>
+          <div style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
+            <span className="material-symbols-outlined" style={{ color: "var(--primary)", fontSize: 20 }}>rate_review</span>
+            <span style={{ fontFamily: "var(--font-body)", fontSize: 14, color: "var(--on-surface-variant)" }}>
+              Palabras sugeridas por usuarios pendientes de revisión
+            </span>
+          </div>
+
+          {suggestionsLoading ? (
+            <div className="admin-card" style={{ padding: 48, textAlign: "center", color: "var(--on-surface-variant)" }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 40, opacity: 0.3, marginBottom: 12, display: "block", animation: "spin 1s linear infinite" }}>sync</span>
+              <p>Cargando sugerencias...</p>
+            </div>
+          ) : suggestions.length === 0 ? (
+            <div className="admin-card" style={{ padding: 48, textAlign: "center", color: "var(--on-surface-variant)" }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 64, opacity: 0.3, marginBottom: 16, display: "block" }}>check_circle</span>
+              <p>No hay sugerencias pendientes.</p>
+            </div>
+          ) : (
+            <div className="admin-card" style={{ overflow: "hidden" }}>
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Palabra</th>
+                    <th>Significado</th>
+                    <th>Categoría</th>
+                    <th>Sugerido por</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                    <th style={{ width: 140 }}>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {suggestions.map((s) => (
+                    <tr key={s.id}>
+                      <td style={{ fontWeight: 700 }}>{s.palabra}</td>
+                      <td style={{ fontSize: 14, color: "var(--on-surface-variant)", maxWidth: 250, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {s.significado}
+                      </td>
+                      <td>
+                        <span className="admin-badge admin-badge--published">{s.categoria}</span>
+                      </td>
+                      <td style={{ fontSize: 13, color: "var(--on-surface-variant)" }}>
+                        {s.usuario_nombre || "Anónimo"}
+                      </td>
+                      <td style={{ fontSize: 13, color: "var(--on-surface-variant)", whiteSpace: "nowrap" }}>
+                        {new Date(s.creado_en).toLocaleDateString()}
+                      </td>
+                      <td>
+                        <span style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 4,
+                          padding: "4px 10px",
+                          borderRadius: "var(--radius-full)",
+                          fontSize: 11,
+                          fontWeight: 600,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.05em",
+                          ...(s.estado === "pendiente"
+                            ? { background: "rgba(232, 152, 27, 0.12)", color: "#8a6a00" }
+                            : s.estado === "aprobado"
+                            ? { background: "rgba(70, 76, 51, 0.12)", color: "#464c33" }
+                            : { background: "rgba(192, 57, 43, 0.1)", color: "#c0392b" }),
+                        }}>
+                          <span style={{
+                            width: 6,
+                            height: 6,
+                            borderRadius: "50%",
+                            display: "inline-block",
+                            background: s.estado === "pendiente" ? "#e8981b" : s.estado === "aprobado" ? "#464c33" : "#c0392b",
+                          }} />
+                          {s.estado}
+                        </span>
+                      </td>
+                      <td>
+                        {s.estado === "pendiente" ? (
+                          <div style={{ display: "flex", gap: 4 }}>
+                            <button
+                              className="admin-btn admin-btn--primary"
+                              type="button"
+                              title="Aprobar"
+                              onClick={() => handleApproveSuggestion(s)}
+                              style={{ padding: "6px 12px", fontSize: 12, minHeight: 0 }}
+                            >
+                              <span className="material-symbols-outlined" style={{ fontSize: 16 }}>check</span>
+                              Aprobar
+                            </button>
+                            <button
+                              className="admin-btn admin-btn--ghost"
+                              type="button"
+                              title="Rechazar"
+                              onClick={() => handleRejectSuggestion(s)}
+                              style={{ padding: "6px 12px", fontSize: 12, minHeight: 0, border: "1px solid var(--outline)", color: "var(--error)" }}
+                            >
+                              <span className="material-symbols-outlined" style={{ fontSize: 16 }}>close</span>
+                              Rechazar
+                            </button>
+                          </div>
+                        ) : (
+                          <span style={{ fontSize: 13, color: "var(--on-surface-variant)" }}>
+                            {s.estado === "aprobado" ? "✓ Aprobada" : "✗ Rechazada"}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
+      ) : showForm ? (
         /* ===== FORM ===== */
         <div className="admin-card" style={{ padding: 32 }}>
           <h3 style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, margin: "0 0 24px", display: "flex", alignItems: "center", gap: 8 }}>

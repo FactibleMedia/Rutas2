@@ -9,6 +9,7 @@ import Mapas from "./Mapas";
 
 import GalleryPage from "./GalleryPage";
 import Gallery2 from "./Gallery2";
+import AcercaDe from "./acerca de/AcercaDe";
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
         <Route path="/glosario" element={<Glossary />} />
         <Route path="/galeria" element={<GalleryPage />} />
         <Route path="/galeria2" element={<Gallery2 />} />
+        <Route path="/acerca-de" element={<AcercaDe />} />
 
         {/* Admin Login */}
         <Route

@@ -3,6 +3,7 @@ import { Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import TopBar from './TopBar';
 import Footer from './Footer';
+import SubmitWordModal from './SubmitWordModal';
 import { supabase } from './supabaseClient';
 import './Glossary.css';
 
@@ -352,7 +353,7 @@ const StampCard = ({ data }) => {
   );
 };
 
-function SugerirSeccion() {
+function SugerirSeccion({ onOpenSubmitModal }) {
   const col1Data = palabrasSugerir.slice(0, Math.ceil(palabrasSugerir.length / 2));
   const col2Data = palabrasSugerir.slice(Math.ceil(palabrasSugerir.length / 2));
   const infiniteCol1 = [...col1Data, ...col1Data];
@@ -393,7 +394,7 @@ function SugerirSeccion() {
           <p className="gloss-sugerir__desc">
             Si te sabes un término bien valduparense que no aparece aquí, escríbelo ya mismo con su significado. ¡Haz que tu palabra sea parte del patrimonio del Valle!
           </p>
-          <button className="gloss-sugerir__btn">
+          <button className="gloss-sugerir__btn" onClick={onOpenSubmitModal}>
             Escribe tu palabra
           </button>
         </div>
@@ -412,6 +413,7 @@ export default function Glossary() {
   const [isSearching, setIsSearching] = useState(false);
   const [glossaryData, setGlossaryData] = useState([]);
   const [categoryCounts, setCategoryCounts] = useState({});
+  const [showSubmitModal, setShowSubmitModal] = useState(false);
 
   // Fetch glossary words from Supabase
   const fetchWords = useCallback(async () => {
@@ -508,7 +510,7 @@ export default function Glossary() {
   return (
     <div className="gloss-page">
       {/* ===== NAVBAR ===== */}
-      <TopBar activeSection="glosario" isAuthenticated={false} user={{ name: "Usuario Valido", initials: "UV" }} onSectionChange={() => {}} />
+      <TopBar activeSection="glosario" onSectionChange={() => {}} />
 
       {/* ===== HERO ===== */}
       <section className="gloss-hero">
@@ -594,10 +596,21 @@ export default function Glossary() {
       <CategoriesSection categoryCounts={categoryCounts} glossaryData={glossaryData} />
 
       {/* ===== SUGERIR PALABRA ===== */}
-      <SugerirSeccion />
+      <SugerirSeccion onOpenSubmitModal={() => setShowSubmitModal(true)} />
 
       {/* ===== FOOTER ===== */}
       <Footer />
+
+      {/* Submit Word Modal */}
+      {showSubmitModal && (
+        <SubmitWordModal
+          onClose={() => setShowSubmitModal(false)}
+          onWordSubmitted={() => {
+            // Refresh glossary data after submission
+            fetchWords();
+          }}
+        />
+      )}
     </div>
   );
 }
