@@ -1,5 +1,7 @@
 import React from "react";
-import "./TermsModal.css";
+import { useNavigate } from "react-router-dom";
+import TopBar from "./TopBar";
+import Footer from "./Footer";
 import {
   TopLeftGlyph,
   TopRightTicketWhisk,
@@ -8,48 +10,50 @@ import {
   BottomLeftChurch,
   BottomRightSwirl,
 } from "./TermsDecorations";
+import "./TermsPage.css";
 
 /* =========================================================
-   TermsModal component
+   TermsPage component
    ========================================================= */
-export default function TermsModal({ onClose }) {
-  return (
-    <div className="terms-modal__overlay" onClick={onClose}>
-      <div className="terms-modal__bg" />
-      <div className="terms-modal__card" onClick={(e) => e.stopPropagation()}>
-        <div className="terms-modal__paper-bg" />
+export default function TermsPage() {
+  const navigate = useNavigate();
 
-        {/* Close */}
-        <button className="terms-modal__close" onClick={onClose} aria-label="Cerrar">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+  return (
+    <>
+      <TopBar
+        activeSection="terminos"
+        isAuthenticated={false}
+        user={{ name: "Usuario Valido", initials: "UV" }}
+        onSectionChange={() => {}}
+      />
+
+      <div className="terms-page">
+        <div className="terms-page__paper-bg" />
 
         {/* Decorative illustrations */}
-        <div className="terms-modal__decor terms-modal__decor--tl">
+        <div className="terms-page__decor terms-page__decor--tl">
           <TopLeftGlyph />
         </div>
-        <div className="terms-modal__decor terms-modal__decor--tr">
+        <div className="terms-page__decor terms-page__decor--tr">
           <TopRightTicketWhisk />
         </div>
-        <div className="terms-modal__decor terms-modal__decor--ml">
+        <div className="terms-page__decor terms-page__decor--ml">
           <MiddleLeftMermaid />
         </div>
-        <div className="terms-modal__decor terms-modal__decor--mr">
+        <div className="terms-page__decor terms-page__decor--mr">
           <MiddleRightLightbulb />
         </div>
-        <div className="terms-modal__decor terms-modal__decor--bl">
+        <div className="terms-page__decor terms-page__decor--bl">
           <BottomLeftChurch />
         </div>
-        <div className="terms-modal__decor terms-modal__decor--br">
+        <div className="terms-page__decor terms-page__decor--br">
           <BottomRightSwirl />
         </div>
 
         {/* Scrollable content */}
-        <div className="terms-modal__scroll">
+        <div className="terms-page__scroll">
           {/* Back button */}
-          <button className="terms-modal__back" onClick={onClose}>
+          <button className="terms-page__back" onClick={() => navigate(-1)}>
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
@@ -57,33 +61,33 @@ export default function TermsModal({ onClose }) {
           </button>
 
           {/* Header */}
-          <div className="terms-modal__header">
-            <div className="terms-modal__header-row">
-              <span className="terms-modal__tilde">~</span>
-              <h1 className="terms-modal__title">Términos y condiciones.</h1>
-              <span className="terms-modal__tilde">~</span>
+          <div className="terms-page__header">
+            <div className="terms-page__header-row">
+              <span className="terms-page__tilde">~</span>
+              <h1 className="terms-page__title">Términos y condiciones.</h1>
+              <span className="terms-page__tilde">~</span>
             </div>
-            <p className="terms-modal__subtitle">
+            <p className="terms-page__subtitle">
               Términos, condiciones de uso y política de tratamiento de datos
             </p>
           </div>
 
           {/* Body */}
-          <div className="terms-modal__body">
+          <div className="terms-page__body">
             <p>
               Bienvenido a la página web de Rutas de Valledupar. Al acceder, navegar, colaborar o interactuar en este sitio web, usted acepta de manera consciente, expresa e irrevocable los presentes Términos y Condiciones de Uso. Si no está de acuerdo con estas cláusulas, le solicitamos abstenerse de utilizar la plataforma y sus servicios.
             </p>
 
             <div>
-              <h3 className="terms-modal__section-title">1. Objeto de la Plataforma</h3>
+              <h3 className="terms-page__section-title">1. Objeto de la Plataforma</h3>
               <p>
                 La presente plataforma web es un proyecto de carácter cultural, educativo y transmedia cuyo objetivo es la recopilación, salvaguarda, difusión y visibilización del patrimonio inmaterial, léxico y tradicional de Valledupar y la región del Cesar. La plataforma permite la consulta de un glosario multimedia y la participación activa de los usuarios mediante el envío de palabras, definiciones, categorías y ejemplos de uso local.
               </p>
             </div>
 
             <div>
-              <h3 className="terms-modal__section-title">2. Condiciones de Participación y Contenido Generado por el Usuario (CGU)</h3>
-              <p className="mb-3">
+              <h3 className="terms-page__section-title">2. Condiciones de Participación y Contenido Generado por el Usuario (CGU)</h3>
+              <p>
                 Al enviar cualquier tipo de información, texto, palabra, significado o ejemplo a través de nuestros formularios de colaboración, el Usuario garantiza y acepta que:
               </p>
               <ul>
@@ -103,7 +107,7 @@ export default function TermsModal({ onClose }) {
             </div>
 
             <div>
-              <h3 className="terms-modal__section-title">3. Propiedad Intelectual de la Plataforma</h3>
+              <h3 className="terms-page__section-title">3. Propiedad Intelectual de la Plataforma</h3>
               <p>
                 Todo el material dispuesto en este sitio web, incluyendo de forma enunciativa pero no limitativa: diseños de interfaz, maquetación, ilustraciones, bitácoras digitales, código fuente, registros audiovisuales, piezas de audio, textos de la galería y logotipos, son propiedad exclusiva de los creadores del proyecto Rutas de Valledupar o cuentan con las autorizaciones debidas.
               </p>
@@ -118,7 +122,7 @@ export default function TermsModal({ onClose }) {
             </div>
 
             <div>
-              <h3 className="terms-modal__section-title">4. Política de Tratamiento de Datos Personales (Ley 1581 de 2012)</h3>
+              <h3 className="terms-page__section-title">4. Política de Tratamiento de Datos Personales (Ley 1581 de 2012)</h3>
               <p>
                 En cumplimiento de la legislación colombiana vigente en materia de protección de datos personales, le informamos que:
               </p>
@@ -136,14 +140,16 @@ export default function TermsModal({ onClose }) {
             </div>
 
             {/* Footer button */}
-            <div className="terms-modal__footer">
-              <button className="terms-modal__btn-back" onClick={onClose}>
-                VOLVER AL FORMULARIO
+            <div className="terms-page__footer">
+              <button className="terms-page__btn-back" onClick={() => navigate(-1)}>
+                VOLVER
               </button>
             </div>
           </div>
         </div>
       </div>
-    </div>
+
+      <Footer />
+    </>
   );
 }

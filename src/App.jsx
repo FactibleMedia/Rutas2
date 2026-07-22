@@ -10,6 +10,8 @@ import Mapas from "./Mapas";
 import GalleryPage from "./GalleryPage";
 import Gallery2 from "./Gallery2";
 import AcercaDe from "./acerca de/AcercaDe";
+import TermsPage from "./TermsPage";
+import TermsCookies from "./TermsCookies";
 
 export default function App() {
   return (
@@ -22,6 +24,8 @@ export default function App() {
         <Route path="/galeria" element={<GalleryPage />} />
         <Route path="/galeria2" element={<Gallery2 />} />
         <Route path="/acerca-de" element={<AcercaDe />} />
+        <Route path="/terminos-y-condiciones" element={<TermsPage />} />
+        <Route path="/terminos-de-uso-y-cookies" element={<TermsCookies />} />
 
         {/* Admin Login */}
         <Route

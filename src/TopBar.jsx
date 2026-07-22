@@ -35,7 +35,9 @@ export default function TopBar({
   const [showAuth, setShowAuth] = useState(null); // null | "login" | "register"
   const [showProfile, setShowProfile] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [showMobileNav, setShowMobileNav] = useState(false);
   const menuRef = useRef(null);
+  const mobileNavRef = useRef(null);
 
   // Restore session from Supabase on mount (page refresh / OAuth redirect)
   // Always refreshes profile data (avatar, role) even if localStorage has a cached session
@@ -88,16 +90,30 @@ export default function TopBar({
   const effectiveUser = authUser || propUser;
   const isAuthenticated = propIsAuthenticated || !!authUser;
 
-  // Close menu on outside click
+  // Close menus on outside click
   useEffect(() => {
     const handleClick = (e) => {
+      // Close user dropdown when clicking outside
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setShowMenu(false);
       }
+      // Close mobile nav when clicking outside (but not the hamburger itself)
+      if (mobileNavRef.current && showMobileNav) {
+        const hamburger = document.querySelector('.topbar__hamburger');
+        const isHamburgerClick = hamburger && hamburger.contains(e.target);
+        const isOutsideDrawer = !mobileNavRef.current.contains(e.target);
+        if (isOutsideDrawer && !isHamburgerClick) {
+          setShowMobileNav(false);
+        }
+      }
     };
     document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
+    document.addEventListener("touchstart", handleClick);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("touchstart", handleClick);
+    };
+  }, [showMobileNav]);
 
   const handleAuthSuccess = useCallback((userData) => {
     const session = {
@@ -184,6 +200,20 @@ export default function TopBar({
       <header className="topbar">
         <div className="topbar__inner">
           <div className="topbar__brand">
+            {/* Mobile hamburger - left side next to logo */}
+            <button
+              type="button"
+              className="topbar__hamburger"
+              aria-label="Abrir menú de navegación"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowMobileNav((v) => !v);
+              }}
+            >
+              <span className={`topbar__hamburger-line${showMobileNav ? " open" : ""}`} />
+              <span className={`topbar__hamburger-line${showMobileNav ? " open" : ""}`} />
+              <span className={`topbar__hamburger-line${showMobileNav ? " open" : ""}`} />
+            </button>
             <img src={logoWhiteHero} alt="Rutas de Valledupar" className="topbar__logo" />
           </div>
 
@@ -217,7 +247,7 @@ export default function TopBar({
             </button>
 
             {isAuthenticated ? (
-              <div ref={menuRef} style={{ position: "relative", display: "flex", alignItems: "center", gap: 8 }}>
+              <div ref={menuRef} className="topbar__user-area">
                 {/* Menu button */}
                 <button
                   type="button"
@@ -397,11 +427,17 @@ export default function TopBar({
               <>
                 <button
                   type="button"
-                  className="topbar__btn"
-                  style={{ background: "transparent", border: "1px solid rgba(255,252,230,0.25)", color: "#fffce6" }}
+                  className="topbar__btn topbar__btn--login"
                   onClick={() => { setShowAuth("login"); }}
                 >
-                  Iniciar sesión
+                  <span className="topbar__btn-label">Iniciar sesión</span>
+                  <span className="topbar__btn-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4" />
+                      <polyline points="10 17 15 12 10 7" />
+                      <line x1="15" y1="12" x2="3" y2="12" />
+                    </svg>
+                  </span>
                 </button>
                 <button
                   type="button"
@@ -414,6 +450,154 @@ export default function TopBar({
             )}
           </div>
         </div>
+
+        {/* Mobile Navigation Drawer */}
+        {showMobileNav && (
+          <>
+            <div className="topbar__mobile-overlay" onClick={() => setShowMobileNav(false)} />
+            <nav ref={mobileNavRef} className="topbar__mobile-drawer" aria-label="Navegación móvil">
+              <div className="topbar__mobile-drawer-header">
+                <img src={logoWhiteHero} alt="Rutas de Valledupar" className="topbar__mobile-logo" />
+                <button
+                  type="button"
+                  className="topbar__mobile-close"
+                  aria-label="Cerrar menú"
+                  onClick={() => setShowMobileNav(false)}
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M18 6L6 18" /><path d="M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="topbar__mobile-nav-items">
+                {navItems.map((item) => {
+                  const content = (
+                    <>
+                      <NavIcon id={item.id} />
+                      <span>{item.label}</span>
+                    </>
+                  );
+
+                  if (item.to) {
+                    return (
+                      <Link
+                        key={item.id}
+                        to={item.to}
+                        className={`topbar__mobile-link${activeSection === item.id ? " active" : ""}`}
+                        onClick={() => setShowMobileNav(false)}
+                      >
+                        {content}
+                      </Link>
+                    );
+                  }
+
+                  return (
+                    <a
+                      key={item.id}
+                      href={`#${item.id}`}
+                      className={`topbar__mobile-link${activeSection === item.id ? " active" : ""}`}
+                      onClick={() => {
+                        onSectionChange(item.id);
+                        setShowMobileNav(false);
+                      }}
+                    >
+                      {content}
+                    </a>
+                  );
+                })}
+              </div>
+
+              {isAuthenticated ? (
+                <div className="topbar__mobile-footer">
+                  <div className="topbar__mobile-user">
+                    <div className="topbar__avatar">
+                      {avatar ? (
+                        <img src={avatar} alt={userName} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+                      ) : (
+                        initials
+                      )}
+                    </div>
+                    <div className="topbar__mobile-user-info">
+                      <p className="topbar__mobile-user-name">{userName}</p>
+                      {isAdmin && <span className="topbar__mobile-user-badge">Administrador</span>}
+                    </div>
+                  </div>
+
+                  {/* User menu items */}
+                  <div className="topbar__mobile-menu-items">
+                    {menuItems.map((item) => {
+                      if (item.id === "logout") return null;
+
+                      if (item.action === "profile") {
+                        return (
+                          <button
+                            key={item.id}
+                            type="button"
+                            className="topbar__mobile-menu-item"
+                            onClick={() => {
+                              setShowMobileNav(false);
+                              setShowProfile(true);
+                            }}
+                          >
+                            <Icon name={item.icon} />
+                            <span>{item.label}</span>
+                          </button>
+                        );
+                      }
+
+                      const ItemTag = item.external ? "a" : Link;
+                      const extraProps = item.external
+                        ? { href: item.to }
+                        : { to: item.to, onClick: () => setShowMobileNav(false) };
+
+                      return (
+                        <ItemTag
+                          key={item.id}
+                          {...extraProps}
+                          className="topbar__mobile-menu-item"
+                        >
+                          <Icon name={item.icon} />
+                          <span>{item.label}</span>
+                        </ItemTag>
+                      );
+                    })}
+                  </div>
+
+                  <button
+                    type="button"
+                    className="topbar__mobile-logout"
+                    onClick={handleLogout}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+                      <polyline points="16 17 21 12 16 7" />
+                      <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                    Cerrar sesión
+                  </button>
+                </div>
+              ) : (
+                <div className="topbar__mobile-footer">
+                  <button
+                    type="button"
+                    className="topbar__mobile-auth-btn"
+                    onClick={() => { setShowAuth("register"); setShowMobileNav(false); }}
+                  >
+                    Crear cuenta
+                  </button>
+                  <button
+                    type="button"
+                    className="topbar__mobile-auth-btn topbar__mobile-auth-btn--secondary"
+                    onClick={() => { setShowAuth("login"); setShowMobileNav(false); }}
+                  >
+                    Iniciar sesión
+                  </button>
+                </div>
+              )}
+            </nav>
+          </>
+        )}
       </header>
 
       {/* Auth Modal */}
@@ -443,6 +627,25 @@ function getInitials(name) {
     .map((w) => w.charAt(0).toUpperCase())
     .slice(0, 2)
     .join("");
+}
+
+function NavIcon({ id }) {
+  const s = 18;
+  const p = { width: s, height: s, fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" };
+  switch (id) {
+    case "inicio":
+      return <svg {...p} viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>;
+    case "mapas":
+      return <svg {...p} viewBox="0 0 24 24"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z" /><path d="M8 2v16" /><path d="M16 6v16" /></svg>;
+    case "glosario":
+      return <svg {...p} viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" /></svg>;
+    case "galeria":
+      return <svg {...p} viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" /></svg>;
+    case "acerca":
+      return <svg {...p} viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>;
+    default:
+      return <svg {...p} viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" /></svg>;
+  }
 }
 
 function Icon({ name }) {

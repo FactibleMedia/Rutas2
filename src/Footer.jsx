@@ -46,9 +46,12 @@ export default function Footer() {
 
         <div>
           <h3 className="footer__col-title">Informacion</h3>
-          <a href="#terminos" className="footer__link">
-            Terminos de uso
-          </a>
+          <Link to="/terminos-y-condiciones" className="footer__link">
+            Términos y condiciones
+          </Link>
+          <Link to="/terminos-de-uso-y-cookies" className="footer__link">
+            Términos de uso y cookies
+          </Link>
         </div>
 
         <div>

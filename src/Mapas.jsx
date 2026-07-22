@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import TopBar from "./TopBar";
 import { getRouteCounts, useMapLocations } from "./mapLocationsStore";
@@ -9,24 +8,42 @@ import "./Mapas.css";
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const MAP_CENTER = [-73.2435, 10.4631];
 const MAP_ZOOM = 14.2;
-const MAP_PITCH = 45;
-const MAP_BEARING = -17.6;
+const MAP_PITCH = 0;
+const MAP_BEARING = 0;
 const MOBILE_USER_AGENT_REGEX = /Android|iPhone|iPad|iPod/i;
 
-const SUBCATEGORIES = {
-  patrimonial: [
-    { id: "arq-colonial", name: "Arquitectura Colonial", count: 2 },
-    { id: "museos", name: "Museos y Cultura", count: 1 },
-    { id: "parques", name: "Parques Historicos", count: 1 },
-  ],
-  gastronomica: [
-    { id: "comida-tipica", name: "Comida Tipica", count: 6 },
-    { id: "postres", name: "Postres y Dulces", count: 3 },
-  ],
-  mitos: [
-    { id: "relatos-urbanos", name: "Relatos Urbanos", count: 5 },
-    { id: "espiritu-campesino", name: "Memoria Campesina", count: 4 },
-  ],
+// Warm pastel sand background for the entire map
+const MAP_BACKGROUND = "#f5ead0";
+
+// Color palettes that change based on the selected route
+const ROUTE_PALETTES = {
+  patrimonial: {
+    label: "Patrimonial",
+    roads: "#2463eb",
+    water: "#c5d9f2",
+    park: "#dce6f5",
+    building: "#f0f4fa",
+    background: MAP_BACKGROUND,
+    accent: "#2463eb",
+  },
+  gastronomica: {
+    label: "Gastronómica",
+    roads: "#e8871a",
+    water: "#f5e6cc",
+    park: "#f5eddc",
+    building: "#faf4ea",
+    background: MAP_BACKGROUND,
+    accent: "#e8871a",
+  },
+  mitos: {
+    label: "Mitos y Leyendas",
+    roads: "#5b2fb3",
+    water: "#e0d6f2",
+    park: "#ede6f5",
+    building: "#f5f0fa",
+    background: MAP_BACKGROUND,
+    accent: "#5b2fb3",
+  },
 };
 
 function normalizeText(value) {
@@ -73,10 +90,37 @@ export default function Mapas() {
   const [loadError, setLoadError] = useState("");
   const [videoPlayingId, setVideoPlayingId] = useState(null); // index of video being played in hero
   const [imgErrors, setImgErrors] = useState({}); // track image load errors
-
   const handleImgError = (id) => {
     setImgErrors((prev) => ({ ...prev, [id]: true }));
   };
+
+  // Apply or re-apply route-based colors to the map
+  const applyRouteColors = useCallback((map, routeId) => {
+    const palette = ROUTE_PALETTES[routeId] || ROUTE_PALETTES.patrimonial;
+    if (!map || !map.getStyle()) return;
+
+    const layers = map.getStyle().layers;
+    layers.forEach((layer) => {
+      try {
+        const id = layer.id;
+        if (layer.type === "line" && (id.includes("road") || id.includes("bridge") || id.includes("tunnel"))) {
+          map.setPaintProperty(id, "line-color", palette.roads);
+        } else if (layer.type === "fill") {
+          if (id === "water" || id === "waterway") {
+            map.setPaintProperty(id, "fill-color", palette.water);
+          } else if (id.includes("park") || id.includes("grass") || id.includes("forest")) {
+            map.setPaintProperty(id, "fill-color", palette.park);
+          } else if (id === "building" || id.includes("building")) {
+            map.setPaintProperty(id, "fill-color", palette.building);
+          } else if (id === "background" || id === "land") {
+            map.setPaintProperty(id, "background-color", palette.background);
+          }
+        }
+      } catch {
+        // Silently skip layers that can't be modified
+      }
+    });
+  }, []);
 
   const isMobileDevice = typeof navigator !== "undefined" && MOBILE_USER_AGENT_REGEX.test(navigator.userAgent);
   const routeStats = useMemo(() => getRouteCounts(locations), [locations]);
@@ -150,7 +194,10 @@ export default function Mapas() {
 
     mapRef.current = map;
     map.addControl(new mapboxgl.NavigationControl(), "top-left");
-    map.on("load", () => setIsMapReady(true));
+    map.on("load", () => {
+      setIsMapReady(true);
+      // Route colors are applied via the useEffect below when isMapReady becomes true
+    });
     map.on("error", () => setLoadError("Error al cargar mapa. Verifica el token."));
 
     return () => {
@@ -178,6 +225,11 @@ export default function Mapas() {
       markerElement.type = "button";
       markerElement.className = `mapas-custom-marker mapas-custom-marker--${place.routeId}`;
       markerElement.setAttribute("aria-label", place.name);
+
+      // Inner dot with hover transitions (isolated from Mapbox positioning)
+      const markerDot = document.createElement("span");
+      markerDot.className = "mapas-custom-marker__dot";
+      markerElement.appendChild(markerDot);
 
       const openPlace = () => {
         setSelectedRouteId(place.routeId);
@@ -320,8 +372,8 @@ export default function Mapas() {
       mapRef.current.flyTo({
         center: place.coordinates,
         zoom: 15.2,
-        pitch: 48,
-        bearing: MAP_BEARING,
+        pitch: 0,
+        bearing: 0,
         duration: 1100,
       });
     }
@@ -441,8 +493,8 @@ export default function Mapas() {
         mapRef.current.easeTo({
           center: currentPoint,
           zoom: 15.6,
-          pitch: 58,
-          bearing: MAP_BEARING,
+          pitch: 0,
+          bearing: 0,
           duration: 350,
           essential: true,
         });
@@ -520,7 +572,7 @@ export default function Mapas() {
         mapRef.current.fitBounds(new mapboxgl.LngLatBounds(origin, destination), {
           padding: 120,
           duration: 1200,
-          pitch: 45,
+          pitch: 0,
         });
       }
 
@@ -620,6 +672,12 @@ export default function Mapas() {
     if (!routePlans[travelMode]) return;
     drawRouteForPlan(routePlans[travelMode]);
   }, [travelMode, routePlans]);
+
+  // Apply route colors when selected route changes
+  useEffect(() => {
+    if (!mapRef.current || !isMapReady) return;
+    applyRouteColors(mapRef.current, selectedRouteId);
+  }, [selectedRouteId, isMapReady, applyRouteColors]);
 
   return (
     <div className="mapas-page">
@@ -738,17 +796,6 @@ export default function Mapas() {
 
                   {isRouteExpanded && (
                     <div className="mapas-main-card-body">
-                      {SUBCATEGORIES[selectedRouteId] && (
-                        <div className="mapas-subcategory-list">
-                          {SUBCATEGORIES[selectedRouteId].map((sub) => (
-                            <button type="button" key={sub.id} className="mapas-subcategory-item">
-                              <span>{sub.name}</span>
-                              <span className="mapas-subcategory-count">{sub.count}</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-
                       <div className="mapas-places-list">
                         {filteredPlaces.length > 0 ? (
                           filteredPlaces.map((place) => (
@@ -1000,13 +1047,8 @@ export default function Mapas() {
                   <span className="mapas-chip mapas-chip--mitos" />
                   <span>Mitos y leyendas</span>
                 </div>
-                <div className="mapas-legend-footnote">Línea punteada: ruta trazada</div>
               </section>
 
-              <div id="footer" className="mapas-links">
-                <Link to="/" className="mapas-link-btn">Inicio</Link>
-                <Link to="/inicio" className="mapas-link-btn mapas-link-btn--primary">Inicio</Link>
-              </div>
             </div>
           </div>
 
