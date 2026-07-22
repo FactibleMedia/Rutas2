@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "./supabaseClient";
+import TermsModal from "./TermsModal";
 import "./SubmitWordModal.css";
 
 /* =========================================================
@@ -27,6 +28,7 @@ export default function SubmitWordModal({ onClose, onWordSubmitted }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
   const [form, setForm] = useState({ word: "", category: "", meaning: "" });
 
   // Check auth on mount: first from localStorage (same source as TopBar), then verify with Supabase
@@ -255,7 +257,7 @@ export default function SubmitWordModal({ onClose, onWordSubmitted }) {
                 {/* Compact terms + submit row */}
                 <div className="submit-word__actions">
                   <div className="submit-word__terms">
-                    <button type="button" className="submit-word__terms-link" onClick={() => alert("Términos y condiciones: Las palabras enviadas serán revisadas por un administrador antes de ser publicadas.")}>
+                    <button type="button" className="submit-word__terms-link" onClick={() => setShowTerms(true)}>
                       Términos y condiciones
                     </button>
                   </div>
@@ -286,6 +288,9 @@ export default function SubmitWordModal({ onClose, onWordSubmitted }) {
           <img src="/assets/glosario/icono_sirena.png" alt="Sirena" style={{ width: "100%", height: "auto", filter: "drop-shadow(0 10px 15px rgba(0,0,0,0.15))" }} />
         </div>
       </div>
+
+      {/* Terms Modal */}
+      {showTerms && <TermsModal onClose={() => setShowTerms(false)} />}
     </div>
   );
 }

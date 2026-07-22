@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "./supabaseClient";
+import TermsModal from "./TermsModal";
 import "./AuthModal.css";
 
 /* =========================================================
@@ -10,6 +11,7 @@ export default function AuthModal({ onClose, onAuthSuccess, initialView }) {
   const [currentView, setCurrentView] = useState(initialView || "register"); // register | login | recovery
   const [form, setForm] = useState({ nombre: "", apellido: "", email: "", password: "" });
   const [message, setMessage] = useState("");
+  const [showTerms, setShowTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -223,7 +225,7 @@ export default function AuthModal({ onClose, onAuthSuccess, initialView }) {
           {/* Links */}
           {currentView === "register" && (
             <div style={{ textAlign: "center" }}>
-              <button type="button" className="auth-modal__link" onClick={() => setMessage("Términos y condiciones próximamente.")}>
+              <button type="button" className="auth-modal__link" onClick={() => setShowTerms(true)}>
                 Términos y condiciones
               </button>
             </div>
@@ -305,6 +307,9 @@ export default function AuthModal({ onClose, onAuthSuccess, initialView }) {
           )}
         </div>
       </div>
+
+      {/* Terms Modal */}
+      {showTerms && <TermsModal onClose={() => setShowTerms(false)} />}
     </div>
   );
 }
