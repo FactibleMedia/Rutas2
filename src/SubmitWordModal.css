@@ -1,27 +1,34 @@
 /* =========================================================
-   SUBMIT WORD MODAL STYLES
+   SUBMIT WORD – FULL WINDOW
    ========================================================= */
 
 @import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Inter:wght@400;500;600;700&display=swap');
 
-@keyframes submit-word-float {
+@keyframes sw-float {
   0% { transform: translateY(0px) rotate(0deg); }
-  30% { transform: translateY(-8px) rotate(1.5deg); }
+  30% { transform: translateY(-10px) rotate(1.5deg); }
   50% { transform: translateY(0px) rotate(0deg); }
-  75% { transform: translateY(-4px) rotate(-1deg); }
+  75% { transform: translateY(-6px) rotate(-1deg); }
   100% { transform: translateY(0px) rotate(0deg); }
 }
 
-@keyframes submit-word-fade-in {
+@keyframes sw-fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-@keyframes submit-word-slide-up {
-  0% { opacity: 0; transform: translateY(30px) scale(0.97); }
+@keyframes sw-slide-up {
+  0% { opacity: 0; transform: translateY(40px) scale(0.97); }
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+@keyframes sw-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* =========================================================
+   OVERLAY — full viewport
+   ========================================================= */
 .submit-word__overlay {
   position: fixed;
   inset: 0;
@@ -29,223 +36,354 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px;
-  animation: submit-word-fade-in 0.3s ease;
   overflow-y: auto;
+  animation: sw-fade-in 0.3s ease;
 }
 
 .submit-word__paper-bg {
   position: absolute;
   inset: 0;
-  background-color: #f7f3e8;
-  background-image: radial-gradient(#e5dec9 1px, transparent 1px), radial-gradient(#e5dec9 1px, #f7f3e8 1px);
-  background-size: 40px 40px;
-  background-position: 0 0, 20px 20px;
+  background-color: #f5efe0;
+  background-image:
+    radial-gradient(#e0d5be 1px, transparent 1px),
+    radial-gradient(#e0d5be 1px, #f5efe0 1px);
+  background-size: 48px 48px;
+  background-position: 0 0, 24px 24px;
 }
 
+/* =========================================================
+   CARD — fills entire viewport
+   ========================================================= */
 .submit-word__card {
   position: relative;
-  width: 100%;
-  max-width: 1000px;
-  background: #f5f0e1;
-  border: 2px solid #d9ceb5;
-  border-radius: 12px;
-  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.35);
-  padding: 24px 20px;
+  width: 100vw;
+  height: 100vh;
   display: flex;
   flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  animation: submit-word-slide-up 0.4s cubic-bezier(0.25, 0.1, 0.25, 1) both;
-  min-height: 500px;
+  align-items: stretch;
   overflow: hidden;
+  animation: sw-fade-in 0.35s ease;
+  background: transparent;
 }
 
-@media (min-width: 640px) {
-  .submit-word__card {
-    padding: 40px 32px;
-    border-radius: 12px;
-  }
-}
-
-/* Close button */
+/* =========================================================
+   CLOSE BUTTON
+   ========================================================= */
 .submit-word__close {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  color: #666;
-  background: none;
+  top: 24px;
+  right: 28px;
+  z-index: 100;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.06);
   border: none;
+  border-radius: 50%;
+  color: #555;
   cursor: pointer;
-  padding: 6px;
-  border-radius: 8px;
   transition: all 0.2s;
-  z-index: 20;
 }
 
 .submit-word__close:hover {
+  background: rgba(0, 0, 0, 0.12);
   color: #000;
-  background: rgba(0, 0, 0, 0.05);
+  transform: scale(1.08);
 }
 
 .submit-word__close svg {
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   stroke-width: 2.5;
 }
 
-/* Left sticker */
-.submit-word__sticker-left {
-  display: none;
-  flex: 0 0 auto;
-  width: 280px;
-  align-self: flex-end;
-  margin-bottom: -40px;
-}
-
-.submit-word__sticker-left svg {
-  width: 100%;
-  height: auto;
-  filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.15));
-}
-
-.submit-word__sticker-left--animated {
-  animation: submit-word-float 5s ease-in-out infinite;
-}
-
-/* Right sticker */
+/* =========================================================
+   SIDE STICKERS — giant
+   ========================================================= */
+.submit-word__sticker-left,
 .submit-word__sticker-right {
   display: none;
-  flex: 0 0 auto;
-  width: 280px;
-  align-self: flex-end;
-  margin-bottom: -40px;
 }
 
-.submit-word__sticker-right svg {
-  width: 100%;
-  height: auto;
-  filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.15));
+@media (min-width: 900px) {
+  .submit-word__sticker-left,
+  .submit-word__sticker-right {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 30vw;
+    max-width: 980px;
+    position: relative;
+  }
+
+  .submit-word__sticker-left {
+    padding: 40px 0 40px 20px;
+  }
+
+  .submit-word__sticker-right {
+    padding: 40px 20px 40px 0;
+  }
+
+  .submit-word__sticker-left img,
+  .submit-word__sticker-right img {
+    width: 100%;
+    height: auto;
+    max-height: 85vh;
+    object-fit: contain;
+    filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.12));
+  }
+
+  .submit-word__sticker-left--animated img {
+    animation: sw-float 5s ease-in-out infinite;
+    transform-origin: center;
+  }
+
+  .submit-word__sticker-right--animated img {
+    animation: sw-float 4.5s ease-in-out infinite 0.5s;
+    transform-origin: center;
+  }
 }
 
-.submit-word__sticker-right--animated {
-  animation: submit-word-float 4.5s ease-in-out infinite 0.5s;
-}
-
-@media (min-width: 1024px) {
-  .submit-word__sticker-left { display: block; }
-  .submit-word__sticker-right { display: block; }
-  .submit-word__card { padding: 40px; }
-}
-
-/* Center content */
+/* =========================================================
+   CENTER CONTENT
+   ========================================================= */
 .submit-word__content {
   flex: 1;
-  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0 8px;
+  justify-content: center;
+  padding: 40px 24px;
   z-index: 10;
-}
-
-@media (min-width: 640px) {
-  .submit-word__content {
-    padding: 0 24px;
-  }
+  min-width: 0;
+  max-width: 640px;
+  margin: 0 auto;
 }
 
 .submit-word__title {
   font-family: 'Special Elite', cursive, monospace;
-  font-size: 24px;
+  font-size: clamp(26px, 4vw, 44px);
   font-weight: 700;
   color: #2b2b2b;
   letter-spacing: 0.04em;
   text-align: center;
-  margin: 0 0 24px;
+  margin: 0 0 32px;
 }
 
-@media (min-width: 640px) {
-  .submit-word__title {
-    font-size: 28px;
+/* =========================================================
+   AUTH BANNER — redesigned
+   ========================================================= */
+.submit-word__auth-banner {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  background: linear-gradient(135deg, #a04310 0%, #c95d1e 40%, #d97706 100%);
+  border-radius: 16px;
+  padding: 22px 24px;
+  margin-bottom: 28px;
+  box-shadow:
+    0 6px 24px rgba(184, 74, 18, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  animation: sw-slide-up 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Decorative corner accents */
+.submit-word__auth-banner::before,
+.submit-word__auth-banner::after {
+  content: "";
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-color: rgba(255, 255, 255, 0.12);
+  border-style: solid;
+  pointer-events: none;
+}
+
+.submit-word__auth-banner::before {
+  top: 8px;
+  left: 8px;
+  border-width: 2px 0 0 2px;
+  border-radius: 4px 0 0 0;
+}
+
+.submit-word__auth-banner::after {
+  bottom: 8px;
+  right: 8px;
+  border-width: 0 2px 2px 0;
+  border-radius: 0 0 4px 0;
+}
+
+.submit-word__auth-avatar {
+  min-width: 56px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: 2.5px solid rgba(255, 255, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Special Elite', cursive, monospace;
+  font-weight: 700;
+  font-size: 20px;
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.submit-word__auth-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.submit-word__auth-greeting {
+  font-family: 'Special Elite', cursive, monospace;
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.submit-word__auth-sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.75);
+  letter-spacing: 0.02em;
+}
+
+.submit-word__auth-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 20px;
+  padding: 6px 14px;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.submit-word__auth-badge svg {
+  width: 15px;
+  height: 15px;
+}
+
+@media (max-width: 500px) {
+  .submit-word__auth-banner {
+    flex-wrap: wrap;
+    padding: 18px;
+    gap: 12px;
+    border-radius: 12px;
+  }
+  .submit-word__auth-badge {
+    margin-left: auto;
   }
 }
 
-/* Login prompt */
-.submit-word__login-prompt {
-  background: rgba(184, 74, 18, 0.06);
-  border: 1px solid rgba(184, 74, 18, 0.2);
-  border-radius: 12px;
-  padding: 32px 24px;
-  text-align: center;
-  width: 100%;
-  max-width: 400px;
-  margin: 24px auto;
-}
-
-.submit-word__login-prompt p {
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  color: #555;
-  margin: 0 0 20px;
-  line-height: 1.5;
-}
-
-.submit-word__btn-login {
-  background: #b84a12;
-  color: #fff;
-  font-family: 'Special Elite', cursive, monospace;
-  font-size: 14px;
-  padding: 12px 32px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(184, 74, 18, 0.3);
-}
-
-.submit-word__btn-login:hover {
-  background: #9a3d0e;
-  transform: translateY(-1px);
-}
-
-/* Form */
+/* =========================================================
+   FORM
+   ========================================================= */
 .submit-word__form {
   width: 100%;
-  max-width: 480px;
+  max-width: 520px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
+  animation: sw-slide-up 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) both 0.08s;
 }
 
 .submit-word__field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
 }
 
-.submit-word__input {
-  width: 100%;
-  padding: 12px 16px;
-  background: #f0f2f5;
-  border: 1px solid #d6d6d6;
-  border-radius: 8px;
+.submit-word__label {
   font-family: 'Inter', sans-serif;
-  font-size: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #5a4a3a;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Auth inputs – larger & cleaner */
+.submit-word__input--auth,
+.submit-word__select--auth,
+.submit-word__textarea--auth {
+  width: 100%;
+  padding: 14px 18px;
+  background: #fff;
+  border: 2px solid #ddd2c2;
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
   color: #333;
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
 }
 
-.submit-word__input:focus {
+.submit-word__input--auth:focus,
+.submit-word__select--auth:focus,
+.submit-word__textarea--auth:focus {
   border-color: #b84a12;
-  box-shadow: 0 0 0 3px rgba(184, 74, 18, 0.1), inset 0 2px 4px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 0 0 4px rgba(184, 74, 18, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  transform: translateY(-1px);
 }
 
-.submit-word__input::placeholder {
-  color: #aaa;
+.submit-word__input--auth::placeholder,
+.submit-word__textarea--auth::placeholder {
+  color: #b5a99a;
+}
+
+.submit-word__select--auth {
+  appearance: none;
+  cursor: pointer;
+}
+
+.submit-word__select-wrap {
+  position: relative;
+}
+
+.submit-word__select-arrow {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #d97706;
+}
+
+.submit-word__select-arrow svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+.submit-word__textarea--auth {
+  min-height: 100px;
+  resize: vertical;
 }
 
 .submit-word__hint {
@@ -255,69 +393,39 @@
   margin: 2px 0 0 4px;
 }
 
-.submit-word__select-wrap {
-  position: relative;
+/* =========================================================
+   ACTIONS ROW
+   ========================================================= */
+.submit-word__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 10px;
+  padding-top: 18px;
+  border-top: 1px solid #e0d6c8;
 }
 
-.submit-word__select {
-  width: 100%;
-  padding: 12px 16px;
-  background: #f0f2f5;
-  border: 1px solid #d6d6d6;
-  border-radius: 8px;
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  color: #333;
-  outline: none;
-  appearance: none;
-  cursor: pointer;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
+.submit-word__actions .submit-word__terms {
+  text-align: left;
+  margin: 0;
 }
 
-.submit-word__select:focus {
-  border-color: #b84a12;
-  box-shadow: 0 0 0 3px rgba(184, 74, 18, 0.1), inset 0 2px 4px rgba(0, 0, 0, 0.03);
+.submit-word__actions .submit-word__btn-submit {
+  margin: 0;
 }
 
-.submit-word__select-arrow {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  color: #d97706;
-}
-
-.submit-word__select-arrow svg {
-  width: 16px;
-  height: 16px;
-  fill: currentColor;
-}
-
-.submit-word__textarea {
-  width: 100%;
-  padding: 12px 16px;
-  background: #f0f2f5;
-  border: 1px solid #d6d6d6;
-  border-radius: 8px;
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  color: #333;
-  outline: none;
-  resize: vertical;
-  min-height: 80px;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
-}
-
-.submit-word__textarea:focus {
-  border-color: #b84a12;
-  box-shadow: 0 0 0 3px rgba(184, 74, 18, 0.1), inset 0 2px 4px rgba(0, 0, 0, 0.03);
-}
-
-.submit-word__textarea::placeholder {
-  color: #aaa;
+@media (max-width: 500px) {
+  .submit-word__actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+  .submit-word__actions .submit-word__terms {
+    text-align: center;
+  }
+  .submit-word__actions .submit-word__btn-submit {
+    width: 100%;
+  }
 }
 
 .submit-word__terms {
@@ -352,25 +460,24 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   background: #b84a12;
   color: #fff;
   font-family: 'Special Elite', cursive, monospace;
-  font-size: 15px;
+  font-size: 16px;
   letter-spacing: 0.04em;
-  padding: 14px 40px;
+  padding: 16px 44px;
   border: 1px solid #8a3307;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(184, 74, 18, 0.3);
-  margin-top: 8px;
+  box-shadow: 0 4px 14px rgba(184, 74, 18, 0.3);
 }
 
 .submit-word__btn-submit:hover {
   background: #9a3d0e;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(184, 74, 18, 0.35);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(184, 74, 18, 0.4);
 }
 
 .submit-word__btn-submit:active {
@@ -383,42 +490,86 @@
   transform: none;
 }
 
-/* Success state */
+/* =========================================================
+   LOGIN PROMPT (not authenticated)
+   ========================================================= */
+.submit-word__login-prompt {
+  background: rgba(184, 74, 18, 0.05);
+  border: 1px solid rgba(184, 74, 18, 0.15);
+  border-radius: 16px;
+  padding: 44px 32px;
+  text-align: center;
+  width: 100%;
+  max-width: 480px;
+  margin: 28px auto;
+  animation: sw-slide-up 0.45s ease both;
+}
+
+.submit-word__login-prompt p {
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  color: #555;
+  margin: 0 0 24px;
+  line-height: 1.6;
+}
+
+.submit-word__btn-login {
+  background: #b84a12;
+  color: #fff;
+  font-family: 'Special Elite', cursive, monospace;
+  font-size: 15px;
+  padding: 14px 40px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 14px rgba(184, 74, 18, 0.3);
+}
+
+.submit-word__btn-login:hover {
+  background: #9a3d0e;
+  transform: translateY(-1px);
+}
+
+/* =========================================================
+   SUCCESS STATE
+   ========================================================= */
 .submit-word__success {
   background: #e2edd8;
   border: 1px solid #b4d2a1;
-  border-radius: 12px;
-  padding: 32px 24px;
+  border-radius: 16px;
+  padding: 44px 32px;
   text-align: center;
   width: 100%;
-  max-width: 400px;
-  margin: 24px auto;
+  max-width: 480px;
+  margin: 28px auto;
+  animation: sw-slide-up 0.45s ease both;
 }
 
 .submit-word__success h3 {
   font-family: 'Special Elite', cursive, monospace;
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 700;
   color: #2d5a1e;
-  margin: 0 0 8px;
+  margin: 0 0 10px;
 }
 
 .submit-word__success p {
   font-family: 'Inter', sans-serif;
-  font-size: 13px;
+  font-size: 14px;
   color: #416a34;
   margin: 0;
 }
 
 .submit-word__btn-another {
-  margin-top: 16px;
+  margin-top: 20px;
   background: #b84a12;
   color: #fff;
   font-family: 'Special Elite', cursive, monospace;
-  font-size: 13px;
-  padding: 10px 24px;
+  font-size: 14px;
+  padding: 12px 28px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -427,27 +578,26 @@
   background: #9a3d0e;
 }
 
+/* =========================================================
+   SPINNER & ERROR
+   ========================================================= */
 .submit-word__spinner {
-  width: 18px;
-  height: 18px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  width: 20px;
+  height: 20px;
+  border: 2.5px solid rgba(255, 255, 255, 0.25);
   border-top-color: #fff;
   border-radius: 50%;
-  animation: submit-word-spin 0.7s linear infinite;
-}
-
-@keyframes submit-word-spin {
-  to { transform: rotate(360deg); }
+  animation: sw-spin 0.7s linear infinite;
 }
 
 .submit-word__error {
   font-family: 'Inter', sans-serif;
-  font-size: 12px;
+  font-size: 13px;
   color: #c0392b;
   background: rgba(192, 57, 43, 0.06);
   border: 1px solid rgba(192, 57, 43, 0.15);
-  border-radius: 8px;
-  padding: 8px 12px;
+  border-radius: 10px;
+  padding: 10px 14px;
   text-align: center;
   margin: 0;
 }

@@ -58,10 +58,10 @@ export default function AuthModal({ onClose, onAuthSuccess, initialView }) {
         // Fetch profile
         let displayName = form.email;
         let isAdmin = false;
+        let avatar = "";
 
         if (data?.user) {
           const uid = data.user.id;
-          let avatar = "";
 
           // Fetch profile from perfiles_usuario (may not exist for admins created via admin panel)
           const { data: perfil } = await supabase
