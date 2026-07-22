@@ -6,7 +6,9 @@ import AdminPanel from "./admin/AdminPanel";
 import AdminProtectedRoute from "./admin/AdminProtectedRoute";
 import { hasAdminSession } from "./admin/adminAuth";
 import Mapas from "./Mapas";
-import NavMap from "./NavMap";
+
+import GalleryPage from "./GalleryPage";
+import Gallery2 from "./Gallery2";
 
 export default function App() {
   return (
@@ -15,8 +17,9 @@ export default function App() {
         <Route path="/" element={<Navigate to="/inicio" replace />} />
         <Route path="/inicio" element={<InicioPage />} />
         <Route path="/mapas" element={<Mapas />} />
-        <Route path="/navmap" element={<NavMap />} />
         <Route path="/glosario" element={<Glossary />} />
+        <Route path="/galeria" element={<GalleryPage />} />
+        <Route path="/galeria2" element={<Gallery2 />} />
 
         {/* Admin Login */}
         <Route

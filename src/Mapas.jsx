@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import mapboxgl from "mapbox-gl";
 import TopBar from "./TopBar";
 import { getRouteCounts, useMapLocations } from "./mapLocationsStore";
@@ -37,7 +37,6 @@ function normalizeText(value) {
 }
 
 export default function Mapas() {
-  const navigate = useNavigate();
   const locations = useMapLocations();
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
@@ -534,35 +533,6 @@ export default function Mapas() {
     }
   };
 
-  const startNavigation = () => {
-    const currentPlan = routePlans[travelMode];
-    if (!routeOrigin || !activePlace || !currentPlan) {
-      setRouteMessage("Primero obten tu ubicación.");
-      return;
-    }
-
-    const navigationState = {
-      routeRequestId: `${Date.now()}-${activePlace.id}-${travelMode}`,
-      routeOrigin,
-      destination: activePlace.coordinates,
-      travelMode,
-      routePlan: null,
-      forceRecalculate: true,
-      place: {
-        id: activePlace.id,
-        name: activePlace.name,
-        subtitle: activePlace.subtitle,
-        image: activePlace.image,
-        address: activePlace.address,
-        categoryLabel: activePlace.categoryLabel,
-      },
-      autoStart: true,
-    };
-
-    sessionStorage.setItem("rutas_navmap_state", JSON.stringify(navigationState));
-    navigate("/navmap", { state: navigationState });
-  };
-
   const clearRouteLayer = () => {
     if (!mapRef.current) return;
     if (routeAnimationRef.current) { cancelAnimationFrame(routeAnimationRef.current); routeAnimationRef.current = null; }
@@ -842,92 +812,148 @@ export default function Mapas() {
                   )}
                 </article>
 
-                {/* VIEW: NAVIGATION */}
+                {/* VIEW: NAVIGATION - compact like route cards */}
                 {view === "navigation" && activePlace && (
-                  <div className="mapas-side-card mapas-ui-card">
-                    <div className="mapas-side-card-header">
-                      <h3 className="mapas-side-card-title">Navegación</h3>
-                      <button type="button" className="mapas-side-card-close" onClick={goBackToList}>×</button>
+                  <div className="mapas-ui-card" style={{
+                    marginTop: 2,
+                    padding: 0,
+                    overflow: "hidden",
+                  }}>
+                    {/* Compact header row */}
+                    <div style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      background: "#eaddcb",
+                      padding: "6px 10px",
+                    }}>
+                      <span style={{
+                        fontFamily: "'Bebas Neue', sans-serif",
+                        fontSize: 13,
+                        letterSpacing: "0.04em",
+                        color: "var(--mapas-green)",
+                      }}>Cómo llegar</span>
+                      <button
+                        type="button"
+                        onClick={goBackToList}
+                        style={{
+                          border: "none",
+                          background: "var(--mapas-green)",
+                          color: "#fff",
+                          borderRadius: "50%",
+                          width: 20,
+                          height: 20,
+                          fontSize: 11,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          lineHeight: 1,
+                        }}
+                      >×</button>
                     </div>
 
-                    <div className="mapas-side-card-body">
-                      {/* Destination info */}
-                      <div className="mapas-nav-dest">
-                        <p className="mapas-nav-dest-name">{activePlace.name}</p>
-                        <p className="mapas-nav-dest-label">Destino</p>
+                    <div style={{ padding: "8px 10px" }}>
+                      {/* One-liner: destination + route info */}
+                      <div style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 6,
+                        marginBottom: 6,
+                      }}>
+                        <strong style={{ fontSize: 12, color: "#243126", lineHeight: 1.2, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {activePlace.name}
+                        </strong>
+                        {currentNavigationPlan && (
+                          <span style={{ fontSize: 11, color: "#66715e", whiteSpace: "nowrap" }}>
+                            {formatDuration(currentNavigationRemainingSeconds)}
+                          </span>
+                        )}
                       </div>
 
-                      {/* Route status message */}
-                      {routeMessage && (
-                        <div className={`mapas-route-message ${routeStatus}`}>
+                      {/* Mode pills row */}
+                      {isRouteLoading ? (
+                        <div style={{ fontSize: 11, color: "#91570a", background: "rgba(241,154,32,0.1)", padding: "4px 8px", borderRadius: 6, marginBottom: 6 }}>
+                          Calculando ruta...
+                        </div>
+                      ) : (
+                        <div style={{ display: "flex", gap: 4, marginBottom: 6, flexWrap: "wrap" }}>
+                          {[
+                            { key: "walking", label: "🚶", dur: formatDuration(routePlans["walking"]?.duration) },
+                            { key: "car", label: "🚗", dur: formatDuration(routePlans["car"]?.duration) },
+                            { key: "transit", label: "🚌", dur: formatDuration(routePlans["transit"]?.duration) },
+                          ].map((mode) => {
+                            const hasPlan = !!routePlans[mode.key];
+                            return (
+                              <button
+                                key={mode.key}
+                                type="button"
+                                onClick={() => setTravelMode(mode.key)}
+                                disabled={!hasPlan}
+                                style={{
+                                  border: travelMode === mode.key ? "1px solid var(--mapas-orange)" : "1px solid #d8cbb8",
+                                  background: travelMode === mode.key ? "rgba(241,154,32,0.08)" : "#faf8f2",
+                                  borderRadius: 999,
+                                  padding: "2px 8px",
+                                  fontSize: 11,
+                                  cursor: hasPlan ? "pointer" : "not-allowed",
+                                  opacity: hasPlan ? 1 : 0.5,
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: 3,
+                                  color: "#2f3729",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                <span>{mode.label}</span>
+                                {hasPlan && <span style={{ color: "#66715e", fontSize: 10 }}>{mode.dur}</span>}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* Cómo llegar button - compact */}
+                      <button
+                        type="button"
+                        onClick={handleTraceRoute}
+                        disabled={isRouteLoading}
+                        style={{
+                          width: "100%",
+                          border: "none",
+                          borderRadius: 8,
+                          background: "var(--mapas-orange)",
+                          color: "#fff",
+                          fontWeight: 700,
+                          fontSize: 12,
+                          letterSpacing: "0.06em",
+                          textTransform: "uppercase",
+                          padding: "8px 12px",
+                          cursor: isRouteLoading ? "wait" : "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 6,
+                          boxShadow: "0 4px 10px rgba(194,89,39,0.25)",
+                          opacity: isRouteLoading ? 0.8 : 1,
+                        }}
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: 14 }}>directions</span>
+                        {isRouteLoading ? "Calculando..." : "Cómo llegar"}
+                      </button>
+
+                      {/* Route status/error message */}
+                      {routeMessage && !isRouteLoading && (
+                        <div style={{
+                          fontSize: 10,
+                          lineHeight: 1.3,
+                          paddingTop: 4,
+                          color: routeStatus === "error" ? "#b91c1c" : routeStatus === "success" ? "#1d4ed8" : "#66715e",
+                        }}>
                           {routeMessage}
                         </div>
                       )}
-
-                      {/* Mode selector */}
-                      <div className="mapas-mode-grid">
-                        {[
-                          { key: "walking", label: "Caminando", icon: "🚶" },
-                          { key: "car", label: "Carro", icon: "🚗" },
-                          { key: "transit", label: "Transporte público", icon: "🚌" },
-                        ].map((mode) => {
-                          const plan = routePlans[mode.key];
-                          return (
-                            <button
-                              type="button"
-                              key={mode.key}
-                              className={`mapas-mode-card${travelMode === mode.key ? " active" : ""}`}
-                              onClick={() => setTravelMode(mode.key)}
-                              disabled={!plan}
-                            >
-                              <span className="mapas-mode-icon">{mode.icon}</span>
-                              <div>
-                                <strong>{mode.label}</strong>
-                                <small>
-                                  {plan
-                                    ? `${formatDuration(plan.duration)} · ${formatDistance(plan.distance)}`
-                                    : isRouteLoading
-                                      ? "Cargando..."
-                                      : "No disponible"}
-                                </small>
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      {/* ETA Card */}
-                      {currentNavigationPlan && (
-                        <div className="mapas-eta-card">
-                          <span className="mapas-eta-label">ETA</span>
-                          <strong>{formatEta(currentNavigationRemainingSeconds)}</strong>
-                          <small>
-                            Llegada estimada · {formatDuration(currentNavigationRemainingSeconds)} restantes
-                          </small>
-                        </div>
-                      )}
-
-                      {/* Navigation buttons */}
-                      <div className="mapas-side-card-actions" style={{ flexDirection: "column" }}>
-                        <button
-                          type="button"
-                          className="mapas-route-btn mapas-route-btn--full"
-                          onClick={startNavigation}
-                          disabled={!routeOrigin || !routePlans[travelMode]}
-                        >
-                          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>navigation</span>
-                          Iniciar navegación
-                        </button>
-                        <button
-                          type="button"
-                          className="mapas-route-btn mapas-route-btn--secondary mapas-route-btn--full"
-                          onClick={handleTraceRoute}
-                          disabled={isRouteLoading}
-                        >
-                          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>refresh</span>
-                          Recalcular ruta
-                        </button>
-                      </div>
                     </div>
                   </div>
                 )}

@@ -6,7 +6,7 @@ const navItems = [
   { id: "inicio", label: "Inicio" },
   { id: "mapas", label: "Mapa", to: "/mapas" },
   { id: "glosario", label: "Glosario", to: "/glosario" },
-  { id: "galeria", label: "Galeria" },
+  { id: "galeria", label: "Galeria", to: "/galeria" },
   { id: "footer", label: "Acerca de" },
 ];
 

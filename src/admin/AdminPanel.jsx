@@ -7,6 +7,7 @@ import RouteManager from "./RouteManager";
 import UserManager from "./UserManager";
 import ContentEditor from "./ContentEditor";
 import GlossaryManager from "./GlossaryManager";
+import GalleryManager from "./GalleryManager";
 import logoWhiteNav from "../assets/mcp/logo_white_nav.png";
 import logoAlt from "../assets/mcp/logo_alt.png";
 import "./AdminPanel.css";
@@ -15,7 +16,7 @@ const NAV_ITEMS = [
   { id: "dashboard", label: "Dashboard", icon: "dashboard", path: "/admin/panel" },
   { id: "glosario", label: "Glosario Vallenato", icon: "menu_book", path: "/admin/panel/glosario" },
   { id: "rutas", label: "Gestión de Rutas", icon: "map", path: "/admin/panel/rutas" },
-  { id: "contenido", label: "Editor Multimedia", icon: "edit_note", path: "/admin/panel/contenido" },
+  { id: "galeria", label: "Gestión de Galería Multimedia", icon: "photo_library", path: "/admin/panel/galeria" },
   { id: "usuarios", label: "Usuarios y Roles", icon: "group", path: "/admin/panel/usuarios" },
   { id: "config", label: "Configuración", icon: "settings", path: "/admin/panel/configuracion" },
 ];
@@ -187,6 +188,7 @@ export default function AdminPanel() {
             <Route path="usuarios" element={<UserManager />} />
             <Route path="glosario" element={<GlossaryManager />} />
             <Route path="contenido" element={<ContentEditor />} />
+            <Route path="galeria" element={<GalleryManager />} />
             <Route path="configuracion" element={<ConfigPage />} />
             <Route path="*" element={<Navigate to="/admin/panel" replace />} />
           </Routes>
