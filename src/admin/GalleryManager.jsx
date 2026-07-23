@@ -676,30 +676,54 @@ export default function GalleryManager() {
                       onChange={(val) => setForm((p) => ({ ...p, video_imagen: val }))}
                     />
                     <div className="admin-form-group">
-                      <label className="admin-form-label">Enlace de YouTube</label>
+                      <label className="admin-form-label">Enlace de Video (YouTube / Google Drive)</label>
                       <input
                         className="admin-form-input"
                         type="text"
                         value={form.video_url}
                         onChange={(e) => setForm((p) => ({ ...p, video_url: e.target.value }))}
-                        placeholder="https://www.youtube.com/watch?v=..."
+                        placeholder="https://www.youtube.com/watch?v=... o https://drive.google.com/file/d/..."
                       />
-                      {form.video_url && (form.video_url.includes("youtube") || form.video_url.includes("youtu.be")) && (() => {
+                      {form.video_url && (() => {
                         try {
-                          const u = new URL(form.video_url.startsWith("http") ? form.video_url : `https://${form.video_url}`);
-                          const vid = u.searchParams.get("v") || u.pathname.slice(1);
-                          if (!vid) return null;
-                          return (
-                            <div style={{ marginTop: 8, aspectRatio: "16/9", borderRadius: "var(--radius-sm)", overflow: "hidden" }}>
-                              <iframe
-                                src={`https://www.youtube.com/embed/${vid}`}
-                                title="Vista previa"
-                                style={{ width: "100%", height: "100%", border: "none" }}
-                                allow="accelerometer; autoplay; encrypted-media"
-                                allowFullScreen
-                              />
-                            </div>
-                          );
+                          const url = form.video_url.startsWith("http") ? form.video_url : `https://${form.video_url}`;
+                          const u = new URL(url);
+
+                          // YouTube preview
+                          if (u.hostname.includes("youtube.com") || u.hostname === "youtu.be") {
+                            const vid = u.searchParams.get("v") || u.pathname.slice(1);
+                            if (!vid) return null;
+                            return (
+                              <div style={{ marginTop: 8, aspectRatio: "16/9", borderRadius: "var(--radius-sm)", overflow: "hidden" }}>
+                                <iframe
+                                  src={`https://www.youtube.com/embed/${vid}`}
+                                  title="Vista previa"
+                                  style={{ width: "100%", height: "100%", border: "none" }}
+                                  allow="accelerometer; autoplay; encrypted-media"
+                                  allowFullScreen
+                                />
+                              </div>
+                            );
+                          }
+
+                          // Google Drive preview
+                          if (u.hostname.includes("drive.google.com")) {
+                            const fileId = u.pathname.match(/\/file\/d\/([-\w]+)/)?.[1] || u.searchParams.get("id");
+                            if (!fileId) return null;
+                            return (
+                              <div style={{ marginTop: 8, aspectRatio: "16/9", borderRadius: "var(--radius-sm)", overflow: "hidden", background: "#f0f0f0", position: "relative" }}>
+                                <iframe
+                                  src={`https://drive.google.com/file/d/${fileId}/preview`}
+                                  title="Vista previa Google Drive"
+                                  style={{ width: "100%", height: "100%", border: "none" }}
+                                  allow="autoplay"
+                                  allowFullScreen
+                                />
+                              </div>
+                            );
+                          }
+
+                          return null;
                         } catch { return null; }
                       })()}
                     </div>

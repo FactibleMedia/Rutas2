@@ -160,16 +160,25 @@ export default function Gallery2() {
   const catLabel = (cat) => TIPO_SITIO_LABELS[cat] || { name: cat, subtitle: "", icon: null };
   const mediaLabel = (cat) => TIPO_MULTIMEDIA_LABELS[cat] || { name: cat, icon: null };
 
-  // Get YouTube embed URL
-  const getYouTubeEmbedUrl = (url) => {
+  // Get embed URL for YouTube or Google Drive videos
+  const getEmbedUrl = (url) => {
     if (!url) return null;
     try {
       const u = new URL(url);
-      if (u.hostname.includes("youtube.com") && u.searchParams.get("v")) {
-        return `https://www.youtube.com/embed/${u.searchParams.get("v")}?rel=0`;
+
+      // YouTube
+      if (u.hostname.includes("youtube.com")) {
+        const vid = u.searchParams.get("v");
+        if (vid) return `https://www.youtube.com/embed/${vid}?rel=0`;
       }
       if (u.hostname === "youtu.be") {
         return `https://www.youtube.com/embed/${u.pathname.slice(1)}?rel=0`;
+      }
+
+      // Google Drive
+      if (u.hostname.includes("drive.google.com")) {
+        const fileId = u.pathname.match(/\/file\/d\/([-\w]+)/)?.[1] || u.searchParams.get("id");
+        if (fileId) return `https://drive.google.com/file/d/${fileId}/preview`;
       }
     } catch {}
     return null;
@@ -402,9 +411,9 @@ export default function Gallery2() {
 
             {/* Media */}
             <div className="gallery2__click-media">
-              {selectedItem.tipo_multimedia === "Video" && getYouTubeEmbedUrl(selectedItem.video_url) ? (
+              {selectedItem.tipo_multimedia === "Video" && getEmbedUrl(selectedItem.video_url) ? (
                 <iframe
-                  src={getYouTubeEmbedUrl(selectedItem.video_url) + "&autoplay=1"}
+                  src={getEmbedUrl(selectedItem.video_url) + (selectedItem.video_url.includes("youtube") || selectedItem.video_url.includes("youtu.be") ? "&autoplay=1" : "")}
                   title={selectedItem.titulo}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
