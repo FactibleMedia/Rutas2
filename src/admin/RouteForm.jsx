@@ -172,12 +172,36 @@ export default function RouteForm({ location = null, onSave, onCancel }) {
     return match ? match[1] : null;
   };
 
+  const getDriveFileId = (url) => {
+    if (!url) return null;
+    // Matches: https://drive.google.com/file/d/{FILE_ID}/view or https://drive.google.com/open?id={FILE_ID}
+    const match = url.match(/drive\.google\.com\/(?:file\/d\/([\w-]+)\/|open\?id=([\w-]+))/);
+    return match ? (match[1] || match[2]) : null;
+  };
+
+  const isVideoUrlValid = (url) => {
+    return getYouTubeVideoId(url) !== null || getDriveFileId(url) !== null;
+  };
+
+  const getVideoType = (url) => {
+    if (getYouTubeVideoId(url)) return "youtube";
+    if (getDriveFileId(url)) return "drive";
+    return null;
+  };
+
+  const getVideoLabel = (url) => {
+    const type = getVideoType(url);
+    if (type === "youtube") return "YouTube";
+    if (type === "drive") return "Google Drive";
+    return "Video";
+  };
+
   const handleAddVideo = () => {
     const trimmedUrl = videoUrl.trim();
     if (!trimmedUrl) return;
 
-    if (!getYouTubeVideoId(trimmedUrl)) {
-      setMessage({ type: "error", text: "Ingresa una URL válida de YouTube." });
+    if (!isVideoUrlValid(trimmedUrl)) {
+      setMessage({ type: "error", text: "Ingresa una URL válida de YouTube o Google Drive." });
       return;
     }
 
@@ -745,18 +769,17 @@ export default function RouteForm({ location = null, onSave, onCancel }) {
 
             <div style={{ padding: "18px 0 0", borderTop: "1px solid var(--outline-variant)" }}>
               <div style={{ display: "flex", alignItems: "flex-end", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
-                <div style={{ flex: 1, minWidth: 220 }}>
-                  <label className="admin-form-label" style={{ marginBottom: 8, display: "block" }}>
-                    Agrega un video de YouTube
-                  </label>
-                  <input
-                    className="admin-form-input"
-                    type="text"
-                    value={videoUrl}
-                    onChange={(e) => setVideoUrl(e.target.value)}
-                    placeholder="https://www.youtube.com/watch?v=..."
-                    style={{ width: "100%" }}
-                  />
+                <div style={{ flex: 1, minWidth: 220 }}>                    <label className="admin-form-label" style={{ marginBottom: 8, display: "block" }}>
+                      Agrega un video (YouTube o Google Drive)
+                    </label>
+                    <input
+                      className="admin-form-input"
+                      type="text"
+                      value={videoUrl}
+                      onChange={(e) => setVideoUrl(e.target.value)}
+                      placeholder="https://www.youtube.com/watch?v=... o https://drive.google.com/file/d/..."
+                      style={{ width: "100%" }}
+                    />
                 </div>
                 <button
                   type="button"
@@ -771,9 +794,7 @@ export default function RouteForm({ location = null, onSave, onCancel }) {
 
               {videos.length > 0 && (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
-                  {videos.map((url, index) => (
-                    <div
-                      key={url}
+                  {videos.map((url, index) => (                    <div key={url}
                       style={{
                         position: "relative",
                         borderRadius: "var(--radius-lg)",
@@ -787,7 +808,7 @@ export default function RouteForm({ location = null, onSave, onCancel }) {
                       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                         <Reicon icon={VideoPlay} size={18} />
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--on-surface)" }}>YouTube</div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--on-surface)" }}>{getVideoLabel(url)}</div>
                           <div style={{ fontSize: 12, color: "var(--on-surface-variant)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                             {url}
                           </div>

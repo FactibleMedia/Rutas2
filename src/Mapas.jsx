@@ -131,6 +131,21 @@ export default function Mapas() {
     return match ? `https://www.youtube.com/embed/${match[1]}` : null;
   };
 
+  const getDriveFileId = (url) => {
+    if (!url) return null;
+    const match = url.match(/drive\.google\.com\/(?:file\/d\/([\w-]+)\/|open\?id=([\w-]+))/);
+    return match ? (match[1] || match[2]) : null;
+  };
+
+  const getDriveEmbedUrl = (url) => {
+    const fileId = getDriveFileId(url);
+    return fileId ? `https://drive.google.com/file/d/${fileId}/preview` : null;
+  };
+
+  const getVideoEmbedUrl = (url) => {
+    return getYouTubeEmbedUrl(url) || getDriveEmbedUrl(url);
+  };
+
   const filteredPlaces = useMemo(() => {
     const routeFilter = selectedRouteId;
     const normalizedQuery = normalizeText(searchText.trim());
@@ -1097,7 +1112,7 @@ export default function Mapas() {
 
                   {/* Play button / Video embed in hero */}
                   {activePlace.videos?.length > 0 && (
-                    videoPlayingId !== null && getYouTubeEmbedUrl(activePlace.videos[videoPlayingId]) ? (
+                    videoPlayingId !== null && getVideoEmbedUrl(activePlace.videos[videoPlayingId]) ? (
                       <div className="mapas-expanded-hero-video">
                         <button
                           type="button"
@@ -1110,7 +1125,11 @@ export default function Mapas() {
                           </svg>
                         </button>
                         <iframe
-                          src={getYouTubeEmbedUrl(activePlace.videos[videoPlayingId]) + "?autoplay=1&rel=0"}
+                          src={(() => {
+                            const baseUrl = getVideoEmbedUrl(activePlace.videos[videoPlayingId]);
+                            const isYoutube = getYouTubeEmbedUrl(activePlace.videos[videoPlayingId]);
+                            return isYoutube ? baseUrl + "?autoplay=1&rel=0" : baseUrl;
+                          })()}
                           title={`Video de ${activePlace.name}`}
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                           allowFullScreen
@@ -1225,7 +1244,7 @@ export default function Mapas() {
                       {activePlace.videos?.length > 1 && (
                         <div className="mapas-expanded-videogrid">
                           {activePlace.videos.map((url) => {
-                            const embedUrl = getYouTubeEmbedUrl(url);
+                            const embedUrl = getVideoEmbedUrl(url);
                             return embedUrl ? (
                               <div key={url} className="mapas-expanded-videocard">
                                 <iframe
