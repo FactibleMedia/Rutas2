@@ -578,6 +578,20 @@
   border: none;
 }
 
+/* Portrait / vertical video (Google Drive) in hero */
+.mapas-expanded-hero-video--drive {
+  background: #000;
+}
+
+.mapas-expanded-hero-video--drive iframe {
+  width: auto;
+  height: 100%;
+  max-width: 100%;
+  aspect-ratio: 9 / 16;
+  margin: 0 auto;
+  display: block;
+}
+
 .mapas-expanded-hero-video-close {
   position: absolute;
   top: 16px;
@@ -813,6 +827,13 @@
   width: 100%;
   height: 100%;
   border: none;
+}
+
+/* Portrait / vertical video card (Google Drive) */
+.mapas-expanded-videocard--portrait {
+  aspect-ratio: 9 / 16;
+  max-width: 360px;
+  justify-self: center;
 }
 
 /* Mobile */

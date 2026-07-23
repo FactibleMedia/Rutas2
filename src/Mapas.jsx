@@ -146,6 +146,10 @@ export default function Mapas() {
     return getYouTubeEmbedUrl(url) || getDriveEmbedUrl(url);
   };
 
+  const isDriveVideo = (url) => {
+    return getDriveFileId(url) !== null;
+  };
+
   const filteredPlaces = useMemo(() => {
     const routeFilter = selectedRouteId;
     const normalizedQuery = normalizeText(searchText.trim());
@@ -1113,7 +1117,7 @@ export default function Mapas() {
                   {/* Play button / Video embed in hero */}
                   {activePlace.videos?.length > 0 && (
                     videoPlayingId !== null && getVideoEmbedUrl(activePlace.videos[videoPlayingId]) ? (
-                      <div className="mapas-expanded-hero-video">
+                      <div className={`mapas-expanded-hero-video${isDriveVideo(activePlace.videos[videoPlayingId]) ? ' mapas-expanded-hero-video--drive' : ''}`}>
                         <button
                           type="button"
                           className="mapas-expanded-hero-video-close"
@@ -1246,7 +1250,7 @@ export default function Mapas() {
                           {activePlace.videos.map((url) => {
                             const embedUrl = getVideoEmbedUrl(url);
                             return embedUrl ? (
-                              <div key={url} className="mapas-expanded-videocard">
+                              <div key={url} className={`mapas-expanded-videocard${isDriveVideo(url) ? ' mapas-expanded-videocard--portrait' : ''}`}>
                                 <iframe
                                   src={embedUrl}
                                   title={`Video de ${activePlace.name}`}

@@ -412,11 +412,13 @@ function ConfigPage() {
         )
       );
 
-      await supabase.from("actividad_admin").insert({
-        accion: "Configuración actualizada",
-        detalle: `${keysToUpdate.length} campo(s) modificado(s)`,
-        tipo: "configuracion",
-      }).catch(() => {});
+      try {
+        await supabase.from("actividad_admin").insert({
+          accion: "Configuración actualizada",
+          detalle: `${keysToUpdate.length} campo(s) modificado(s)`,
+          tipo: "configuracion",
+        });
+      } catch { /* silencioso */ }
 
       setDirty({});
       setSuccessMsg("Configuración guardada correctamente.");

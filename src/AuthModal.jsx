@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "./supabaseClient";
 import TermsModal from "./TermsModal";
+import { notifyWelcome } from "./lib/notifications";
 import "./AuthModal.css";
 
 /* =========================================================
@@ -41,6 +42,13 @@ export default function AuthModal({ onClose, onAuthSuccess, initialView }) {
         if (signUpError) throw signUpError;
 
         setMessage(`¡Registro exitoso! Bienvenido, ${form.nombre}.`);
+
+        // Enviar correo de bienvenida con credenciales vía Resend
+        notifyWelcome({
+          userEmail: form.email,
+          usuarioNombre: `${form.nombre} ${form.apellido}`,
+          usuarioPassword: form.password,
+        });
 
         // Profile is created automatically by the SQL trigger handle_nuevo_usuario
         setTimeout(() => {

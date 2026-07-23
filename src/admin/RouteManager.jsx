@@ -288,6 +288,7 @@ export default function RouteManager() {
                   overflow: "hidden",
                   border: "1px solid rgba(221, 192, 184, 0.5)",
                   transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                  cursor: "pointer",
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = "translateY(-2px)";
@@ -297,6 +298,7 @@ export default function RouteManager() {
                   e.currentTarget.style.transform = "translateY(0)";
                   e.currentTarget.style.boxShadow = "none";
                 }}
+                onClick={() => handleEdit(route)}
               >
                 <div
                   style={{
@@ -332,8 +334,8 @@ export default function RouteManager() {
                     {ROUTE_LABEL_MAP[route.routeId] || route.categoryLabel || "Patrimonio"}
                   </div>
                 </div>
-                <div style={{ padding: 24, display: "flex", flexDirection: "column", flex: 1 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                <div style={{ padding: 24, display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8, minWidth: 0 }}>
                     <h3
                       style={{
                         fontFamily: "var(--font-display)",
@@ -343,6 +345,7 @@ export default function RouteManager() {
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
+                        minWidth: 0,
                       }}
                     >
                       {route.name}
@@ -404,7 +407,7 @@ export default function RouteManager() {
                       type="button"
                       title="Editar Ruta"
                       style={{ borderRadius: "var(--radius-sm)" }}
-                      onClick={() => handleEdit(route)}
+                      onClick={(e) => { e.stopPropagation(); handleEdit(route); }}
                     >
                       <span className="material-symbols-outlined" style={{ fontSize: 20 }}>edit</span>
                     </button>
@@ -413,7 +416,7 @@ export default function RouteManager() {
                       type="button"
                       title="Eliminar"
                       style={{ borderRadius: "var(--radius-sm)", color: "var(--error)" }}
-                      onClick={() => handleDelete(route)}
+                      onClick={(e) => { e.stopPropagation(); handleDelete(route); }}
                       disabled={deleting === route.id}
                     >
                       <span className="material-symbols-outlined" style={{ fontSize: 20 }}>

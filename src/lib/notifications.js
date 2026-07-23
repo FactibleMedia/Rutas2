@@ -150,3 +150,24 @@ export async function notifyNewGalleryItem({
     },
   });
 }
+
+/**
+ * Helper: Enviar correo de bienvenida al nuevo usuario registrado.
+ * Incluye sus credenciales (email y contraseña) para que las recuerde.
+ */
+export async function notifyWelcome({
+  userEmail,
+  usuarioNombre,
+  usuarioPassword,
+}) {
+  return sendNotification({
+    tipo: "bienvenida",
+    destinatario: userEmail,
+    variables: {
+      usuario_nombre: usuarioNombre,
+      usuario_email: userEmail,
+      usuario_password: usuarioPassword || "********",
+      sitio_url: window.location.origin,
+    },
+  });
+}

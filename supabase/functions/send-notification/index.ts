@@ -48,7 +48,8 @@ type TipoNotificacion =
   | "palabra_aceptada"
   | "palabra_rechazada"
   | "nueva_ruta"
-  | "nueva_galeria";
+  | "nueva_galeria"
+  | "bienvenida";
 
 // Mapa de tipos a claves de plantilla en admin_config
 const TEMPLATE_MAP: Record<TipoNotificacion, string> = {
@@ -57,6 +58,7 @@ const TEMPLATE_MAP: Record<TipoNotificacion, string> = {
   palabra_rechazada: "template_palabra_rechazada",
   nueva_ruta: "template_nueva_ruta",
   nueva_galeria: "template_nueva_galeria",
+  bienvenida: "template_bienvenida",
 };
 
 // Mapa de tipos a asuntos de correo
@@ -66,6 +68,7 @@ const SUBJECT_MAP: Record<TipoNotificacion, string> = {
   palabra_rechazada: "📝 Actualización sobre tu sugerencia en el Glosario",
   nueva_ruta: "🗺️ Nueva ruta sugerida en Rutas Vallenatas",
   nueva_galeria: "🖼️ Nuevo contenido multimedia sugerido",
+  bienvenida: "🎉 ¡Bienvenido a Rutas de Valledupar!",
 };
 
 // ============================================================
