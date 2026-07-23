@@ -59,10 +59,9 @@ export default function UserManager() {
     setError("");
 
     try {
+      // Usar RPC function para evitar recursión RLS
       const { data, error: fetchError } = await supabase
-        .from("usuarios")
-        .select("id, nombre, correo, avatar_url, rol, activo, ultimo_acceso, creado_en")
-        .order("creado_en", { ascending: false });
+        .rpc("get_all_usuarios");
 
       if (fetchError) throw fetchError;
       setUsers(data || []);
@@ -83,10 +82,12 @@ export default function UserManager() {
     setSuccessMsg("");
 
     try {
+      // Usar RPC function para evitar recursión RLS
       const { error: updateError } = await supabase
-        .from("usuarios")
-        .update({ rol: newRole })
-        .eq("id", userId);
+        .rpc("admin_update_usuario", {
+          uid: userId,
+          updates: { rol: newRole },
+        });
 
       if (updateError) throw updateError;
 

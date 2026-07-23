@@ -40,13 +40,12 @@ export default function Dashboard({ profile }) {
 
     async function fetchData() {
       try {
-        // Fetch user count
-        const { count, error: countError } = await supabase
-          .from("usuarios")
-          .select("*", { count: "exact", head: true });
+        // Fetch user count usando RPC para evitar recursión RLS
+        const { data: countData, error: countError } = await supabase
+          .rpc("get_usuarios_count");
 
         if (!cancelled && !countError) {
-          setUserCount(count || 0);
+          setUserCount(countData || 0);
         }
 
         // Fetch recent activity
