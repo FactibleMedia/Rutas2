@@ -84,6 +84,7 @@
 
   /* Sidebar */
   --sidebar-width: 300px;
+  --sidebar-collapsed-width: 72px;
 
   /* TopBar */
   --topbar-height: 72px;
@@ -134,9 +135,58 @@
   box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
   display: flex;
   flex-direction: column;
-  padding: 28px 16px 20px;
+  padding: 28px 12px 20px;
   z-index: 50;
   overflow-y: auto;
+  /* overflow-x NO debe ser hidden porque los tooltips ::after se posicionan fuera del sidebar */
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===== Collapsed state ===== */
+.admin-sidebar--collapsed {
+  width: var(--sidebar-collapsed-width);
+}
+
+.admin-sidebar--collapsed .admin-sidebar__logo {
+  max-width: 40px;
+}
+
+.admin-sidebar--collapsed .admin-sidebar__header-text,
+.admin-sidebar--collapsed .admin-sidebar__link-label,
+.admin-sidebar--collapsed .admin-sidebar__cta-label,
+.admin-sidebar--collapsed .admin-sidebar__logout-label {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: opacity 0.15s ease, width 0.15s ease;
+}
+
+.admin-sidebar--collapsed .admin-sidebar__link {
+  justify-content: center;
+  padding: 11px 0;
+  gap: 0;
+}
+
+.admin-sidebar--collapsed .admin-sidebar__link .material-symbols-outlined {
+  margin: 0;
+}
+
+.admin-sidebar--collapsed .admin-sidebar__cta-btn {
+  justify-content: center;
+  padding: 12px 0;
+  gap: 0;
+}
+
+.admin-sidebar--collapsed .admin-sidebar__logout {
+  justify-content: center;
+  padding: 10px 0;
+  gap: 0;
+}
+
+.admin-sidebar--collapsed .admin-sidebar__header {
+  padding: 0 0 16px;
+  gap: 8px;
 }
 
 .admin-sidebar__header {
@@ -144,21 +194,28 @@
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  padding: 0 12px 24px;
-  margin-bottom: 8px;
+  padding: 0 8px 24px;
+  margin-bottom: 4px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  transition: padding 0.35s ease, gap 0.35s ease;
 }
 
 .admin-sidebar__logo {
   width: 100%;
-  max-width: 180px;
+  max-width: 160px;
   height: auto;
   object-fit: contain;
   display: block;
+  transition: max-width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
 }
 
 .admin-sidebar__header-text {
   text-align: center;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: opacity 0.25s ease;
 }
 
 .admin-sidebar__title {
@@ -182,8 +239,41 @@
   line-height: 1.4;
 }
 
+/* ===== Toggle button ===== */
+.admin-sidebar__toggle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 252, 230, 0.6);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 8px;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+}
+
+.admin-sidebar__toggle:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fffce6;
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.admin-sidebar__toggle .material-symbols-outlined {
+  font-size: 16px;
+  transition: transform 0.3s ease;
+}
+
+.admin-sidebar--collapsed .admin-sidebar__toggle .material-symbols-outlined {
+  transform: rotate(180deg);
+}
+
 .admin-sidebar__cta {
-  margin: 8px 4px 20px;
+  margin: 4px 4px 16px;
 }
 
 .admin-sidebar__cta-btn {
@@ -204,6 +294,7 @@
   gap: 10px;
   transition: all 0.25s ease;
   box-shadow: 0 4px 12px rgba(157, 61, 28, 0.25);
+  overflow: hidden;
 }
 
 .admin-sidebar__cta-btn:hover {
@@ -241,6 +332,8 @@
   position: relative;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .admin-sidebar__link:hover {
@@ -273,6 +366,174 @@
   font-size: 20px;
   width: 20px;
   text-align: center;
+  flex-shrink: 0;
+}
+
+.admin-sidebar__link-label {
+  overflow: hidden;
+  white-space: nowrap;
+  transition: opacity 0.2s ease;
+}
+
+/* ===== Custom tooltips (collapsed sidebar) ===== */
+.admin-sidebar__link--tooltip {
+  position: relative;
+}
+
+.admin-sidebar__link--tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: calc(100% + 14px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #1a1a1a;
+  color: #fffce6;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  padding: 7px 14px;
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 100;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35), 0 1px 3px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Tooltip arrow */
+.admin-sidebar__link--tooltip::before {
+  content: "";
+  position: absolute;
+  left: calc(100% + 6px);
+  top: 50%;
+  transform: translateY(-50%);
+  border: 6px solid transparent;
+  border-right-color: #1a1a1a;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 100;
+  pointer-events: none;
+}
+
+.admin-sidebar__link--tooltip:hover::after,
+.admin-sidebar__link--tooltip:hover::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+.admin-sidebar__link--tooltip:hover::after {
+  transform: translateY(-50%) translateX(4px);
+}
+
+/* Toggle also gets a tooltip - con los mismos tamaños que los links */
+.admin-sidebar__toggle--tooltip {
+  position: relative;
+}
+
+.admin-sidebar__toggle--tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: calc(100% + 14px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #1a1a1a;
+  color: #fffce6;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 7px 14px;
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 100;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35), 0 1px 3px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.admin-sidebar__toggle--tooltip::before {
+  content: "";
+  position: absolute;
+  left: calc(100% + 6px);
+  top: 50%;
+  transform: translateY(-50%);
+  border: 6px solid transparent;
+  border-right-color: #1a1a1a;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 100;
+  pointer-events: none;
+}
+
+.admin-sidebar__toggle--tooltip:hover::after,
+.admin-sidebar__toggle--tooltip:hover::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+.admin-sidebar__toggle--tooltip:hover::after {
+  transform: translateY(-50%) translateX(4px);
+}
+
+/* CTA button also gets a tooltip - same style as links and toggle */
+.admin-sidebar__cta-btn--tooltip {
+  position: relative;
+}
+
+.admin-sidebar__cta-btn--tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: calc(100% + 14px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #1a1a1a;
+  color: #fffce6;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 7px 14px;
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 100;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35), 0 1px 3px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.admin-sidebar__cta-btn--tooltip::before {
+  content: "";
+  position: absolute;
+  left: calc(100% + 6px);
+  top: 50%;
+  transform: translateY(-50%);
+  border: 6px solid transparent;
+  border-right-color: #1a1a1a;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 100;
+  pointer-events: none;
+}
+
+.admin-sidebar__cta-btn--tooltip:hover::after,
+.admin-sidebar__cta-btn--tooltip:hover::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+.admin-sidebar__cta-btn--tooltip:hover::after {
+  transform: translateY(-50%) translateX(4px);
 }
 
 .admin-sidebar__bottom {
@@ -299,11 +560,19 @@
   text-align: left;
   cursor: pointer;
   transition: all 0.2s ease;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .admin-sidebar__logout:hover {
   background: rgba(255, 68, 68, 0.1);
   color: #ff6b6b;
+}
+
+.admin-sidebar__logout-label {
+  overflow: hidden;
+  white-space: nowrap;
+  transition: opacity 0.2s ease;
 }
 
 /* =====================================================
@@ -542,10 +811,16 @@
     display: block;
   }
 
+  .admin-sidebar-overlay--open {
+    -webkit-tap-highlight-color: transparent;
+  }
+
   .admin-sidebar {
+    width: min(85vw, 300px);
     transform: translateX(-110%);
     transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 49;
+    overscroll-behavior: contain;
   }
 
   .admin-sidebar--mobile-open {
@@ -560,6 +835,31 @@
   .admin-hamburger {
     z-index: 52;
   }
+
+  .admin-topbar__left {
+    width: auto;
+    gap: 4px;
+  }
+
+  .admin-topbar__right {
+    gap: 4px;
+  }
+
+  .admin-topbar__actions {
+    gap: 2px;
+    padding-left: 8px;
+  }
+
+  .admin-topbar__icon-btn {
+    width: 34px;
+    height: 34px;
+  }
+
+  .admin-topbar__avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 11px;
+  }
 }
 
 /* =====================================================
@@ -572,6 +872,15 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-panel--sidebar-collapsed .admin-main {
+  margin-left: var(--sidebar-collapsed-width);
+}
+
+.admin-panel--sidebar-collapsed .admin-content {
+  max-width: calc(var(--space-container-max) + (var(--sidebar-width) - var(--sidebar-collapsed-width)));
 }
 
 .admin-content {
@@ -1132,6 +1441,258 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   font-family: var(--font-body);
+}
+
+/* =====================================================
+   Config Page - Toggle Switch
+   ===================================================== */
+
+.admin-toggle {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  padding: 8px 0;
+  user-select: none;
+}
+
+.admin-toggle__input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.admin-toggle__slider {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: var(--outline-variant);
+  border-radius: 12px;
+  transition: background 0.25s ease;
+  flex-shrink: 0;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.admin-toggle__slider::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  background: #ffffff;
+  border-radius: 50%;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+
+.admin-toggle__input:checked + .admin-toggle__slider {
+  background: var(--tertiary);
+}
+
+.admin-toggle__input:checked + .admin-toggle__slider::after {
+  transform: translateX(20px);
+}
+
+.admin-toggle__input:focus-visible + .admin-toggle__slider {
+  box-shadow: 0 0 0 3px rgba(58, 79, 49, 0.15);
+}
+
+.admin-toggle:hover .admin-toggle__slider {
+  box-shadow: 0 0 0 3px rgba(58, 79, 49, 0.08);
+}
+
+.admin-toggle__label {
+  font-size: 14px;
+  color: var(--on-surface-variant);
+  line-height: 1.4;
+  flex: 1;
+}
+
+.admin-toggle__input:checked ~ .admin-toggle__label {
+  color: var(--on-surface);
+  font-weight: 500;
+}
+
+/* =====================================================
+   Config Page - Template Editor
+   ===================================================== */
+
+.admin-template-editor {
+  margin-top: 4px;
+}
+
+.admin-template-editor__toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.admin-template-editor__textarea {
+  width: 100%;
+  padding: 14px 16px;
+  background: #1e1e1e;
+  border: 1px solid #3a3a3a;
+  border-radius: var(--radius-md);
+  font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #d4d4d4;
+  outline: none;
+  resize: vertical;
+  min-height: 200px;
+  transition: border-color 0.2s ease;
+  tab-size: 2;
+}
+
+.admin-template-editor__textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(157, 61, 28, 0.12);
+}
+
+.admin-template-editor__preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--surface-container-low);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-template-editor__preview:hover {
+  background: var(--surface-container);
+  border-color: var(--outline);
+}
+
+/* =====================================================
+   Config Page - Template Preview Modal
+   ===================================================== */
+
+.admin-template-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  backdrop-filter: blur(4px);
+  animation: admin-fade-in 0.2s ease-out;
+}
+
+.admin-template-modal {
+  width: 100%;
+  max-width: 740px;
+  max-height: calc(100vh - 48px);
+  background: var(--surface-container-lowest);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: admin-route-enter 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.admin-template-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--outline-variant);
+  gap: 16px;
+}
+
+.admin-template-modal__title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--on-surface);
+}
+
+.admin-template-modal__subtitle {
+  font-size: 13px;
+  color: var(--on-surface-variant);
+  margin: 4px 0 0;
+  line-height: 1.5;
+}
+
+.admin-template-modal__close {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-lg);
+  border: none;
+  background: transparent;
+  color: var(--on-surface-variant);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.admin-template-modal__close:hover {
+  background: var(--surface-container-high);
+  color: var(--on-surface);
+}
+
+.admin-template-modal__body {
+  flex: 1;
+  overflow: hidden;
+  background: #f5f5f0;
+}
+
+.admin-template-modal__iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+  min-height: 500px;
+}
+
+/* =====================================================
+   Config Page - Messages
+   ===================================================== */
+
+.admin-config-msg {
+  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  margin-bottom: 24px;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: admin-fade-in 0.25s ease-out;
+}
+
+.admin-config-msg--success {
+  background: rgba(58, 79, 49, 0.1);
+  color: var(--tertiary);
+}
+
+.admin-config-msg--error {
+  background: var(--error-container);
+  color: var(--on-error-container);
+}
+
+/* =====================================================
+   Config Page - Section spacing
+   ===================================================== */
+
+.admin-config-section {
+  transition: all 0.25s ease;
+}
+
+.admin-config-section:hover {
+  box-shadow: var(--shadow-md);
 }
 
 /* =====================================================

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { clearAdminSession, getAdminProfile, hasAdminSession, setAdminSession } from "./adminAuth";
 import { supabase, isSupabaseReady, getSupabaseStatus } from "../supabaseClient";
-import logoWhiteHero from "../assets/mcp/logo_white_hero.png";
+import logoAdmin from "../assets/mcp/logo_admin.png";
 import "./AdminPanel.css";
 
 function getInitials(name) {
@@ -82,7 +82,7 @@ export default function AdminLogin() {
         <div className="admin-login-form__inner">
           {/* Brand - Logo central */}
           <div className="admin-login-form__brand">
-            <img src={logoWhiteHero} alt="Rutas de Valledupar" className="admin-login-form__logo" />
+            <img src={logoAdmin} alt="Rutas de Valledupar" className="admin-login-form__logo" />
             <p className="admin-login-form__brand-subtitle">
               Panel Administrativo
             </p>
