@@ -9,8 +9,9 @@ import "./TopBar.css";
 const USER_SESSION_KEY = "rutas_user_session";
 
 const navItems = [
-  { id: "inicio", label: "Inicio" },
+  { id: "inicio", label: "Inicio", to: "/inicio" },
   { id: "mapas", label: "Mapa", to: "/mapas" },
+  { id: "rutas-interactivas", label: "Rutas", to: "/rutas-interactivas" },
   { id: "glosario", label: "Glosario", to: "/glosario" },
   { id: "galeria", label: "Galeria", to: "/galeria" },
   { id: "acerca", label: "Acerca de", to: "/acerca-de" },

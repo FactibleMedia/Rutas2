@@ -13,6 +13,7 @@ import AcercaDe from "./acerca de/AcercaDe";
 import MisAportes from "./MisAportes";
 import TermsPage from "./TermsPage";
 import TermsCookies from "./TermsCookies";
+import RutasInteractivas from "./rutas-interactivas/RutasInteractivas";
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
         <Route path="/acerca-de" element={<AcercaDe />} />
         <Route path="/terminos-y-condiciones" element={<TermsPage />} />
         <Route path="/terminos-de-uso-y-cookies" element={<TermsCookies />} />
+        <Route path="/rutas-interactivas" element={<RutasInteractivas />} />
 
         {/* Admin Login */}
         <Route

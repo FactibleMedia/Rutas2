@@ -573,8 +573,6 @@ export default function GalleryPage() {
     <>
       <TopBar
         activeSection="galeria"
-        isAuthenticated={false}
-        user={{ name: "Usuario Valido", initials: "UV" }}
         onSectionChange={() => {}}
       />
 

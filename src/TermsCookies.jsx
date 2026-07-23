@@ -305,8 +305,6 @@ export default function TermsCookies() {
     <>
       <TopBar
         activeSection="terminos"
-        isAuthenticated={false}
-        user={{ name: "Usuario Valido", initials: "UV" }}
         onSectionChange={() => {}}
       />
 

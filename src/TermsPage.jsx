@@ -22,8 +22,6 @@ export default function TermsPage() {
     <>
       <TopBar
         activeSection="terminos"
-        isAuthenticated={false}
-        user={{ name: "Usuario Valido", initials: "UV" }}
         onSectionChange={() => {}}
       />
 

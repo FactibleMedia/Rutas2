@@ -700,7 +700,7 @@ export default function Mapas() {
 
   return (
     <div className="mapas-page">
-      <TopBar activeSection="mapas" isAuthenticated user={{ name: "Usuario Valido", initials: "UV" }} onSectionChange={() => {}} />
+      <TopBar activeSection="mapas" onSectionChange={() => {}} />
 
       <main className="mapas-main">
         <section id="inicio" className="mapas-stage" aria-label="Mapa interactivo">
