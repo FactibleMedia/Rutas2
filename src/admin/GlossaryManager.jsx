@@ -525,6 +525,7 @@ export default function GlossaryManager() {
             </div>
           ) : (
             <div className="admin-card" style={{ overflow: "hidden" }}>
+              <div style={{ overflowX: "auto" }}>
               <table className="admin-table">
                 <thead>
                   <tr>
@@ -540,20 +541,20 @@ export default function GlossaryManager() {
                 <tbody>
                   {suggestions.map((s) => (
                     <tr key={s.id}>
-                      <td style={{ fontWeight: 700 }}>{s.palabra}</td>
-                      <td style={{ fontSize: 14, color: "var(--on-surface-variant)", maxWidth: 250, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <td data-label="Palabra" style={{ fontWeight: 700 }}>{s.palabra}</td>
+                      <td data-label="Significado" style={{ fontSize: 14, color: "var(--on-surface-variant)", maxWidth: 250, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {s.significado}
                       </td>
-                      <td>
+                      <td data-label="Categoría">
                         <span className="admin-badge admin-badge--published">{s.categoria}</span>
                       </td>
-                      <td style={{ fontSize: 13, color: "var(--on-surface-variant)" }}>
+                      <td data-label="Sugerido por" style={{ fontSize: 13, color: "var(--on-surface-variant)" }}>
                         {s.usuario_nombre || "Anónimo"}
                       </td>
-                      <td style={{ fontSize: 13, color: "var(--on-surface-variant)", whiteSpace: "nowrap" }}>
+                      <td data-label="Fecha" style={{ fontSize: 13, color: "var(--on-surface-variant)", whiteSpace: "nowrap" }}>
                         {new Date(s.creado_en).toLocaleDateString()}
                       </td>
-                      <td>
+                      <td data-label="Estado">
                         <span style={{
                           display: "inline-flex",
                           alignItems: "center",
@@ -580,7 +581,7 @@ export default function GlossaryManager() {
                           {s.estado}
                         </span>
                       </td>
-                      <td>
+                      <td data-label="Acciones">
                         {s.estado === "pendiente" ? (
                           <div style={{ display: "flex", gap: 4 }}>
                             <button
@@ -614,6 +615,7 @@ export default function GlossaryManager() {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
           )}
         </>
@@ -786,6 +788,7 @@ export default function GlossaryManager() {
             </div>
           ) : (
             <div className="admin-card" style={{ overflow: "hidden" }}>
+              <div style={{ overflowX: "auto" }}>
               <table className="admin-table">
                 <thead>
                   <tr>
@@ -799,14 +802,14 @@ export default function GlossaryManager() {
                 <tbody>
                   {filteredWords.map((w) => (
                     <tr key={w.id}>
-                      <td style={{ fontWeight: 700 }}>{w.palabra}</td>
-                      <td style={{ fontSize: 14, color: "var(--on-surface-variant)", maxWidth: 300, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <td data-label="Palabra" style={{ fontWeight: 700 }}>{w.palabra}</td>
+                      <td data-label="Significado" style={{ fontSize: 14, color: "var(--on-surface-variant)", maxWidth: 300, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {w.significado}
                       </td>
-                      <td>
+                      <td data-label="Categoría">
                         <span className="admin-badge admin-badge--published">{w.categoria}</span>
                       </td>
-                      <td>
+                      <td data-label="Postal">
                         <span style={{
                           display: "inline-flex",
                           alignItems: "center",
@@ -828,7 +831,7 @@ export default function GlossaryManager() {
                           {w.color_postal}
                         </span>
                       </td>
-                      <td>
+                      <td data-label="Acciones">
                         <div style={{ display: "flex", gap: 4 }}>
                           <button
                             className="admin-topbar__icon-btn"
@@ -856,6 +859,7 @@ export default function GlossaryManager() {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
           )}
         </>

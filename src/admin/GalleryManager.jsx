@@ -973,6 +973,7 @@ export default function GalleryManager() {
             </div>
           ) : (
             <div className="admin-card" style={{ overflow: "hidden" }}>
+              <div style={{ overflowX: "auto" }}>
               <table className="admin-table">
                 <thead>
                   <tr>
@@ -987,11 +988,11 @@ export default function GalleryManager() {
                 <tbody>
                   {filteredItems.map((item) => (
                     <tr key={item.id}>
-                      <td style={{ fontWeight: 700 }}>{item.titulo}</td>
-                      <td>
+                      <td data-label="Título" style={{ fontWeight: 700 }}>{item.titulo}</td>
+                      <td data-label="Tipo Sitio">
                         <span className="admin-badge admin-badge--published">{item.tipo_sitio}</span>
                       </td>
-                      <td>
+                      <td data-label="Multimedia">
                         <span style={{
                           display: "inline-flex",
                           alignItems: "center",
@@ -1006,10 +1007,10 @@ export default function GalleryManager() {
                           {item.tipo_multimedia}
                         </span>
                       </td>
-                      <td style={{ fontSize: 13, color: "var(--on-surface-variant)", maxWidth: 250, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <td data-label="Descripción" style={{ fontSize: 13, color: "var(--on-surface-variant)", maxWidth: 250, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {item.descripcion_breve || item.descripcion_narrativa?.slice(0, 80) || "—"}
                       </td>
-                      <td style={{ fontSize: 12 }}>
+                      <td data-label="Imagen/Video" style={{ fontSize: 12 }}>
                         {item.imagen_principal && (
                           <img
                             src={item.imagen_principal}
@@ -1021,7 +1022,7 @@ export default function GalleryManager() {
                         {item.video_url && <span style={{ marginLeft: 4 }}>🎬</span>}
                         {!item.imagen_principal && !item.video_url && <span style={{ color: "var(--outline)" }}>—</span>}
                       </td>
-                      <td>
+                      <td data-label="Acciones">
                         <div style={{ display: "flex", gap: 4 }}>
                           <button
                             className="admin-topbar__icon-btn"
@@ -1049,6 +1050,7 @@ export default function GalleryManager() {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
           )}
         </>

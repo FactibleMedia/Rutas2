@@ -11,7 +11,9 @@ import GalleryManager from "./GalleryManager";
 import logoAdmin from "../assets/mcp/logo_admin.png";
 import "./AdminPanel.css";
 
-const SIDEBAR_STORAGE_KEY = "rutas_admin_sidebar_collapsed";
+// Storage key por módulo: cada módulo recuerda su propio estado colapsado
+const getSidebarKey = (moduleId) => `rutas_admin_sidebar_collapsed_${moduleId}`;
+const DEFAULT_MODULE = "dashboard";
 const NAV_ITEMS = [
   { id: "dashboard", label: "Dashboard", icon: "dashboard", path: "/admin/panel" },
   { id: "glosario", label: "Glosario Vallenato", icon: "menu_book", path: "/admin/panel/glosario" },
@@ -144,30 +146,38 @@ export default function AdminPanel() {
   const profile = useMemo(() => getAdminProfile() || { name: "Admin Principal", email: "admin@valledupar.gov.co", initials: "AD" }, []);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
-  // Sidebar collapsed state - persistido en localStorage
+  const activeId = useMemo(() => {
+    const path = location.pathname;
+    const found = NAV_ITEMS.find((item) => item.path === path);
+    return found?.id || DEFAULT_MODULE;
+  }, [location.pathname]);
+
+  // Sidebar collapsed state - persistido en localStorage por módulo
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     try {
-      return localStorage.getItem(SIDEBAR_STORAGE_KEY) === "true";
+      return localStorage.getItem(getSidebarKey(activeId)) === "true";
     } catch {
       return false;
     }
   });
 
+  // Cuando cambia el módulo activo, cargar su estado colapsado
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(getSidebarKey(activeId)) === "true";
+      setIsSidebarCollapsed(stored);
+    } catch {}
+  }, [activeId]);
+
   const toggleSidebarCollapse = useCallback(() => {
     setIsSidebarCollapsed((prev) => {
       const next = !prev;
       try {
-        localStorage.setItem(SIDEBAR_STORAGE_KEY, String(next));
+        localStorage.setItem(getSidebarKey(activeId), String(next));
       } catch {}
       return next;
     });
-  }, []);
-
-  const activeId = useMemo(() => {
-    const path = location.pathname;
-    const found = NAV_ITEMS.find((item) => item.path === path);
-    return found?.id || "dashboard";
-  }, [location.pathname]);
+  }, [activeId]);
 
   const handleNavigate = useCallback((path) => {
     navigate(path);

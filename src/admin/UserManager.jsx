@@ -205,7 +205,7 @@ export default function UserManager() {
                 <tbody>
                   {filteredUsers.map((user) => (
                     <tr key={user.id} style={{ transition: "background 0.2s" }}>
-                      <td>
+                      <td data-label="Usuario">
                         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                           <div style={{ width: 40, height: 40, borderRadius: "50%", border: "1px solid var(--outline-variant)", background: "var(--tertiary-container)", color: "var(--on-tertiary-container)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 16, overflow: "hidden", flexShrink: 0 }}>
                             {user.avatar_url ? (
@@ -220,7 +220,7 @@ export default function UserManager() {
                           </div>
                         </div>
                       </td>
-                      <td>
+                      <td data-label="Rol Asignado">
                         <select
                           value={user.rol}
                           onChange={(e) => handleRoleChange(user.id, e.target.value)}
@@ -232,10 +232,10 @@ export default function UserManager() {
                           ))}
                         </select>
                       </td>
-                      <td style={{ fontSize: 14, color: "var(--on-surface-variant)" }}>
+                      <td data-label="Último Acceso" style={{ fontSize: 14, color: "var(--on-surface-variant)" }}>
                         {formatLastAccess(user.ultimo_acceso)}
                       </td>
-                      <td style={{ textAlign: "right" }}>
+                      <td data-label="Acciones" style={{ textAlign: "right" }}>
                         <button className="admin-topbar__icon-btn" type="button" style={{ borderRadius: "var(--radius-full)" }} disabled={updating === user.id}>
                           <span className="material-symbols-outlined">{updating === user.id ? "sync" : "more_vert"}</span>
                         </button>
