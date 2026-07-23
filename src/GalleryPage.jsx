@@ -40,21 +40,29 @@ const photoData = [
 ];
 
 /* =========================================================
-   Helper: Extract YouTube embed URL
+   Helper: Extract embed URL (YouTube & Google Drive)
    ========================================================= */
 
-function getYouTubeEmbedUrl(url) {
+function getEmbedUrl(url) {
   if (!url) return null;
   try {
     const u = new URL(url);
+
+    // YouTube
     if (u.hostname.includes("youtube.com") && u.searchParams.get("v")) {
       return `https://www.youtube.com/embed/${u.searchParams.get("v")}?autoplay=1&rel=0`;
     }
     if (u.hostname === "youtu.be") {
       return `https://www.youtube.com/embed/${u.pathname.slice(1)}?autoplay=1&rel=0`;
     }
+
+    // Google Drive
+    if (u.hostname.includes("drive.google.com")) {
+      const fileId = u.pathname.match(/\/file\/d\/([-\w]+)/)?.[1] || u.searchParams.get("id");
+      if (fileId) return `https://drive.google.com/file/d/${fileId}/preview`;
+    }
   } catch {}
-  return url;
+  return null;
 }
 
 /* =========================================================
@@ -445,11 +453,10 @@ function MultimediaGallery() {
                 isPlaying ? " gallery-multimedia__modal-video--playing" : ""
               }`}
             >
-              {selectedItem.videoUrl &&
-              (selectedItem.videoUrl.includes("youtube") || selectedItem.videoUrl.includes("youtu.be")) ? (
-                // YouTube embed
+              {selectedItem.videoUrl && getEmbedUrl(selectedItem.videoUrl) ? (
+                // YouTube / Google Drive embed
                 <iframe
-                  src={getYouTubeEmbedUrl(selectedItem.videoUrl)}
+                  src={getEmbedUrl(selectedItem.videoUrl)}
                   title={selectedItem.title}
                   className="gallery-multimedia__modal-video-el"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
