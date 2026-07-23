@@ -36,3 +36,46 @@ export function getSupabaseStatus() {
   }
   return { ready: true, message: "Supabase configurado correctamente." };
 }
+
+/**
+ * Escucha cambios de conectividad y refresca la sesión automáticamente
+ * cuando se restablece la conexión.
+ * Útil para recuperarse de errores ERR_INTERNET_DISCONNECTED
+ */
+export function setupReconnectionHandler() {
+  if (typeof window === "undefined") return;
+
+  let wasOffline = false;
+
+  const handleOnline = async () => {
+    if (wasOffline) {
+      console.log("[Supabase] Conexión restablecida. Refrescando sesión...");
+      try {
+        const { error } = await supabase.auth.refreshSession();
+        if (error) {
+          console.warn("[Supabase] Error al refrescar sesión tras reconexión:", error.message);
+        }
+      } catch {
+        // Silencioso - el próximo intento de fetch refrescará automáticamente
+      }
+      wasOffline = false;
+    }
+  };
+
+  const handleOffline = () => {
+    wasOffline = true;
+  };
+
+  window.addEventListener("online", handleOnline);
+  window.addEventListener("offline", handleOffline);
+
+  return () => {
+    window.removeEventListener("online", handleOnline);
+    window.removeEventListener("offline", handleOffline);
+  };
+}
+
+// Auto-ejecutar al importar
+if (typeof window !== "undefined") {
+  setupReconnectionHandler();
+}

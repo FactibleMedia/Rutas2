@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "../supabaseClient";
+import { isNetworkError, getUserFriendlyError } from "./adminHelpers";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
@@ -158,9 +159,13 @@ export default function GalleryManager() {
   const markerRef = useRef(null);
   const [mapError, setMapError] = useState("");
 
+  // Estados de error de red
+  const [networkError, setNetworkError] = useState("");
+
   // Fetch items
   const fetchItems = useCallback(async () => {
     setLoading(true);
+    setNetworkError("");
     try {
       let query = supabase
         .from("galeria_multimedia")
@@ -176,6 +181,11 @@ export default function GalleryManager() {
       setItems(data || []);
     } catch (err) {
       console.warn("Error fetching gallery:", err);
+      if (isNetworkError(err)) {
+        setNetworkError("No hay conexión a internet. Los datos se cargarán automáticamente cuando se restablezca la conexión.");
+      } else {
+        setMessage({ type: "error", text: getUserFriendlyError(err) });
+      }
       setItems([]);
     } finally {
       setLoading(false);
@@ -198,6 +208,9 @@ export default function GalleryManager() {
       setUbicaciones(data || []);
     } catch (err) {
       console.warn("Error fetching ubicaciones:", err);
+      if (!isNetworkError(err)) {
+        setMessage({ type: "error", text: getUserFriendlyError(err) });
+      }
       setUbicaciones([]);
     } finally {
       setLoadingUbicaciones(false);
@@ -361,7 +374,10 @@ export default function GalleryManager() {
       setMessage({ type: "success", text: `"${item.titulo}" eliminado.` });
       fetchItems();
     } catch (err) {
-      setMessage({ type: "error", text: `Error: ${err.message}` });
+      setMessage({ type: "error", text: isNetworkError(err)
+        ? "Operación cancelada: no hay conexión a internet. Intenta de nuevo cuando tengas conexión."
+        : getUserFriendlyError(err)
+      });
     } finally {
       setDeleting(null);
     }
@@ -436,7 +452,10 @@ export default function GalleryManager() {
       setShowForm(false);
       fetchItems();
     } catch (err) {
-      setMessage({ type: "error", text: `Error: ${err.message}` });
+      setMessage({ type: "error", text: isNetworkError(err)
+        ? "No se pudo guardar: no hay conexión a internet. Intenta de nuevo cuando tengas conexión."
+        : getUserFriendlyError(err)
+      });
     } finally {
       setSaving(false);
     }
@@ -465,6 +484,37 @@ export default function GalleryManager() {
           )}
         </div>
       </div>
+
+      {/* Banner de error de red */}
+      {networkError && (
+        <div
+          style={{
+            padding: "14px 18px",
+            borderRadius: "var(--radius-lg)",
+            marginBottom: 24,
+            fontSize: 14,
+            fontWeight: 500,
+            background: "rgba(232, 152, 27, 0.1)",
+            color: "#8a6a00",
+            border: "1px solid rgba(232, 152, 27, 0.25)",
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+          }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 20, flexShrink: 0 }}>wifi_off</span>
+          <span style={{ flex: 1 }}>{networkError}</span>
+          <button
+            type="button"
+            onClick={() => { setNetworkError(""); fetchItems(); }}
+            className="admin-btn admin-btn--secondary"
+            style={{ padding: "6px 14px", fontSize: 12, minHeight: 0, whiteSpace: "nowrap", flexShrink: 0 }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>refresh</span>
+            Reintentar
+          </button>
+        </div>
+      )}
 
       {message.text && (
         <div

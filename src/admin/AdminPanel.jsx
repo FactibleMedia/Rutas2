@@ -9,7 +9,6 @@ import ContentEditor from "./ContentEditor";
 import GlossaryManager from "./GlossaryManager";
 import GalleryManager from "./GalleryManager";
 import logoWhiteNav from "../assets/mcp/logo_white_nav.png";
-import logoAlt from "../assets/mcp/logo_alt.png";
 import "./AdminPanel.css";
 
 const NAV_ITEMS = [
@@ -95,8 +94,6 @@ function TopBar({ profile, onToggleMobile, isMobileOpen }) {
         </button>
 
         <div className="admin-topbar__brand">
-          <img src={logoAlt} alt="Rutas de Valledupar" className="admin-topbar__logo" />
-          <div className="admin-topbar__brand-divider" />
           <span className="admin-topbar__brand-label">Panel de Administración</span>
         </div>
       </div>
@@ -183,13 +180,41 @@ export default function AdminPanel() {
 
         <div className="admin-content">
           <Routes>
-            <Route index element={<Dashboard profile={profile} />} />
-            <Route path="rutas" element={<RouteManager />} />
-            <Route path="usuarios" element={<UserManager />} />
-            <Route path="glosario" element={<GlossaryManager />} />
-            <Route path="contenido" element={<ContentEditor />} />
-            <Route path="galeria" element={<GalleryManager />} />
-            <Route path="configuracion" element={<ConfigPage />} />
+            <Route index element={
+              <div className="admin-route-wrapper" key={location.key}>
+                <Dashboard profile={profile} />
+              </div>
+            } />
+            <Route path="rutas" element={
+              <div className="admin-route-wrapper" key={location.key}>
+                <RouteManager />
+              </div>
+            } />
+            <Route path="usuarios" element={
+              <div className="admin-route-wrapper" key={location.key}>
+                <UserManager />
+              </div>
+            } />
+            <Route path="glosario" element={
+              <div className="admin-route-wrapper" key={location.key}>
+                <GlossaryManager />
+              </div>
+            } />
+            <Route path="contenido" element={
+              <div className="admin-route-wrapper" key={location.key}>
+                <ContentEditor />
+              </div>
+            } />
+            <Route path="galeria" element={
+              <div className="admin-route-wrapper" key={location.key}>
+                <GalleryManager />
+              </div>
+            } />
+            <Route path="configuracion" element={
+              <div className="admin-route-wrapper" key={location.key}>
+                <ConfigPage />
+              </div>
+            } />
             <Route path="*" element={<Navigate to="/admin/panel" replace />} />
           </Routes>
         </div>

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { clearAdminSession, getAdminProfile, hasAdminSession, setAdminSession } from "./adminAuth";
 import { supabase, isSupabaseReady, getSupabaseStatus } from "../supabaseClient";
-import logoAlt from "../assets/mcp/logo_alt.png";
+import logoWhiteHero from "../assets/mcp/logo_white_hero.png";
 import "./AdminPanel.css";
 
 function getInitials(name) {
@@ -78,31 +78,11 @@ export default function AdminLogin() {
 
   return (
     <div className="admin-login-wrapper">
-      {/* Left: Hero Image (visible on desktop) */}
-      <div className="admin-login-hero">
-        <div
-          className="admin-login-hero__image"
-          style={{
-            backgroundImage: "url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200&h=1600&fit=crop')",
-          }}
-        />
-        <div className="admin-login-hero__overlay" />
-        <div className="admin-login-hero__content">
-          <h2 className="admin-login-hero__quote">
-            Legado &amp; Patrimonio
-          </h2>
-          <p className="admin-login-hero__attribution">
-            Descubre las historias contadas a través de la música y los paisajes de nuestra región.
-          </p>
-        </div>
-      </div>
-
-      {/* Right: Login Form */}
       <div className="admin-login-form">
         <div className="admin-login-form__inner">
-          {/* Brand */}
+          {/* Brand - Logo central */}
           <div className="admin-login-form__brand">
-            <img src={logoAlt} alt="Rutas de Valledupar" className="admin-login-form__logo" />
+            <img src={logoWhiteHero} alt="Rutas de Valledupar" className="admin-login-form__logo" />
             <p className="admin-login-form__brand-subtitle">
               Panel Administrativo
             </p>

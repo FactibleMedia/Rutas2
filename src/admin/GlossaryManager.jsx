@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../supabaseClient";
+import { isNetworkError, getUserFriendlyError } from "./adminHelpers";
 
 const CATEGORIES = [
   "Objeto", "Transporte", "Material", "Bebida", "Alimento",
@@ -82,9 +83,13 @@ export default function GlossaryManager() {
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("glosario"); // "glosario" | "sugerencias"
 
+  // Estados de error de red
+  const [networkError, setNetworkError] = useState("");
+
   // Fetch words
   const fetchWords = useCallback(async () => {
     setLoading(true);
+    setNetworkError("");
     try {
       let query = supabase
         .from("glosario_palabras")
@@ -100,6 +105,11 @@ export default function GlossaryManager() {
       setWords(data || []);
     } catch (err) {
       console.warn("Error fetching glossary:", err);
+      if (isNetworkError(err)) {
+        setNetworkError("No hay conexión a internet. Los datos se cargarán cuando se restablezca la conexión.");
+      } else {
+        setMessage({ type: "error", text: getUserFriendlyError(err) });
+      }
       setWords([]);
     } finally {
       setLoading(false);
@@ -109,6 +119,7 @@ export default function GlossaryManager() {
   // Fetch pending suggestions
   const fetchSuggestions = useCallback(async () => {
     setSuggestionsLoading(true);
+    setNetworkError("");
     try {
       const { data, error } = await supabase
         .from("glosario_sugerencias")
@@ -119,6 +130,11 @@ export default function GlossaryManager() {
       setSuggestions(data || []);
     } catch (err) {
       console.warn("Error fetching suggestions:", err);
+      if (isNetworkError(err)) {
+        setNetworkError("No hay conexión a internet. Los datos se cargarán cuando se restablezca la conexión.");
+      } else {
+        setMessage({ type: "error", text: getUserFriendlyError(err) });
+      }
       setSuggestions([]);
     } finally {
       setSuggestionsLoading(false);
@@ -216,7 +232,7 @@ export default function GlossaryManager() {
       fetchWords();
       fetchSuggestions();
     } catch (err) {
-      setMessage({ type: "error", text: `Error: ${err.message}` });
+      setMessage({ type: "error", text: getUserFriendlyError(err) });
     }
   };
 
@@ -241,7 +257,7 @@ export default function GlossaryManager() {
       setMessage({ type: "success", text: `"${suggestion.palabra}" rechazada.` });
       fetchSuggestions();
     } catch (err) {
-      setMessage({ type: "error", text: `Error: ${err.message}` });
+      setMessage({ type: "error", text: getUserFriendlyError(err) });
     }
   };
 
@@ -257,7 +273,10 @@ export default function GlossaryManager() {
       setMessage({ type: "success", text: `"${word.palabra}" eliminada.` });
       fetchWords();
     } catch (err) {
-      setMessage({ type: "error", text: `Error: ${err.message}` });
+      setMessage({ type: "error", text: isNetworkError(err)
+        ? "Operación cancelada: no hay conexión a internet. Intenta de nuevo cuando tengas conexión."
+        : getUserFriendlyError(err)
+      });
     } finally {
       setDeleting(null);
     }
@@ -303,7 +322,10 @@ export default function GlossaryManager() {
       setShowForm(false);
       fetchWords();
     } catch (err) {
-      setMessage({ type: "error", text: `Error: ${err.message}` });
+      setMessage({ type: "error", text: isNetworkError(err)
+        ? "No se pudo guardar: no hay conexión a internet. Intenta de nuevo cuando tengas conexión."
+        : getUserFriendlyError(err)
+      });
     } finally {
       setSaving(false);
     }
@@ -394,6 +416,37 @@ export default function GlossaryManager() {
           </button>
         </div>
       </div>
+
+      {/* Banner de error de red */}
+      {networkError && (
+        <div
+          style={{
+            padding: "14px 18px",
+            borderRadius: "var(--radius-lg)",
+            marginBottom: 24,
+            fontSize: 14,
+            fontWeight: 500,
+            background: "rgba(232, 152, 27, 0.1)",
+            color: "#8a6a00",
+            border: "1px solid rgba(232, 152, 27, 0.25)",
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+          }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 20, flexShrink: 0 }}>wifi_off</span>
+          <span style={{ flex: 1 }}>{networkError}</span>
+          <button
+            type="button"
+            onClick={() => { setNetworkError(""); fetchWords(); }}
+            className="admin-btn admin-btn--secondary"
+            style={{ padding: "6px 14px", fontSize: 12, minHeight: 0, whiteSpace: "nowrap", flexShrink: 0 }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>refresh</span>
+            Reintentar
+          </button>
+        </div>
+      )}
 
       {message.text && (
         <div

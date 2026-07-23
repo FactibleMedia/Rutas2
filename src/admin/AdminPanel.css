@@ -1043,15 +1043,24 @@
 }
 
 /* =====================================================
-   Login Page
+   Login Page - Diseño simplificado con solo logo
    ===================================================== */
 
 .admin-login-wrapper {
   min-height: 100vh;
   display: flex;
+  align-items: center;
+  justify-content: center;
   font-family: var(--font-body);
-  background-color: var(--surface);
+  background: linear-gradient(
+    135deg,
+    #2d4225 0%,
+    #3a4f31 30%,
+    #45603a 60%,
+    #3a4f31 100%
+  );
   position: relative;
+  overflow: hidden;
 }
 
 .admin-login-wrapper::before {
@@ -1059,89 +1068,70 @@
   position: fixed;
   inset: 0;
   background-image:
-    radial-gradient(ellipse at 10% 20%, rgba(157, 61, 28, 0.04) 0%, transparent 50%),
-    radial-gradient(ellipse at 90% 80%, rgba(58, 79, 49, 0.04) 0%, transparent 50%);
+    radial-gradient(ellipse at 20% 30%, rgba(255, 255, 255, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(254, 190, 84, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* Decorative floating shapes */
+.admin-login-wrapper::after {
+  content: "";
+  position: fixed;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: rgba(254, 190, 84, 0.03);
+  top: -200px;
+  right: -200px;
   pointer-events: none;
 }
 
 .admin-login-hero {
-  width: 50%;
-  position: relative;
-  overflow: hidden;
-}
-
-.admin-login-hero__image {
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: center;
-}
-
-.admin-login-hero__overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(254, 249, 234, 0.9) 0%, rgba(254, 249, 234, 0.1) 50%, transparent 100%);
-}
-
-.admin-login-hero__content {
-  position: absolute;
-  bottom: 48px;
-  left: 48px;
-  max-width: 420px;
-}
-
-.admin-login-hero__quote {
-  font-family: var(--font-display);
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--on-surface);
-  margin: 0 0 8px;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-}
-
-.admin-login-hero__attribution {
-  font-size: 16px;
-  line-height: 1.6;
-  color: var(--on-surface-variant);
-  margin: 0;
-  font-weight: 400;
+  display: none;
 }
 
 .admin-login-form {
-  width: 50%;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px 20px;
-  overflow: auto;
   position: relative;
   z-index: 1;
+  animation: admin-fade-in 0.6s ease-out;
 }
 
 .admin-login-form__inner {
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
 }
 
 .admin-login-form__brand {
   text-align: center;
-  margin-bottom: 36px;
+  margin-bottom: 40px;
 }
 
 .admin-login-form__logo {
-  height: 56px;
+  height: 72px;
   width: auto;
   object-fit: contain;
-  margin-bottom: 8px;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
+  transition: transform 0.3s ease;
+}
+
+.admin-login-form__logo:hover {
+  transform: scale(1.03);
 }
 
 .admin-login-form__brand-subtitle {
-  font-size: 15px;
-  font-weight: 400;
-  color: var(--on-surface-variant);
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 252, 230, 0.65);
   margin: 0;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-family: var(--font-body);
 }
 
 /* =====================================================
@@ -1212,13 +1202,12 @@
     display: none;
   }
 
-  .admin-login-hero {
-    display: none !important;
+  .admin-login-form {
+    padding: 16px;
   }
 
-  .admin-login-form {
-    width: 100% !important;
-    padding: 16px;
+  .admin-login-form__logo {
+    height: 56px;
   }
 }
 
@@ -1231,9 +1220,52 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-.admin-content > * {
-  animation: admin-fade-in 0.35s ease-out;
+@keyframes admin-route-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+    filter: blur(4px);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-2px);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
 }
+
+.admin-route-wrapper {
+  animation: admin-route-enter 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+/* Sidebar link active indicator pulse */
+@keyframes sidebar-indicator-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.admin-sidebar__link--active::before {
+  animation: sidebar-indicator-pulse 2s ease-in-out infinite;
+}
+
+/* Metric cards staggered entrance */
+.admin-metrics {
+  animation: admin-fade-in 0.4s ease-out;
+}
+
+.admin-metric {
+  animation: admin-fade-in 0.3s ease-out forwards;
+  opacity: 0;
+}
+
+.admin-metric:nth-child(1) { animation-delay: 0.05s; }
+.admin-metric:nth-child(2) { animation-delay: 0.1s; }
+.admin-metric:nth-child(3) { animation-delay: 0.15s; }
 
 @keyframes spin {
   to { transform: rotate(360deg); }
