@@ -13,7 +13,7 @@ const MAP_BEARING = 0;
 const MOBILE_USER_AGENT_REGEX = /Android|iPhone|iPad|iPod/i;
 
 // Warm pastel sand background for the entire map
-const MAP_BACKGROUND = "#f5ead0";
+const MAP_BACKGROUND = "#f0e4cc";
 
 // Color palettes that change based on the selected route
 const ROUTE_PALETTES = {
