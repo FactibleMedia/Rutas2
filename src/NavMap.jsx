@@ -1,3 +1,4 @@
+import { useState } from "react";
 import "./NavMap.css";
 
 // Map maneuver modifier to icon direction
@@ -41,6 +42,8 @@ export default function NavMap({
   distance = 0,
   progress = 0,
   speed = 0,
+  speedLimit = 0,
+  worstCongestion = null,
   instruction = "Sigue recto",
   instructionIcon = "straight",
   instructionDistance = 0,
@@ -49,11 +52,13 @@ export default function NavMap({
   heading = 0,
   hasArrived = false,
   proximityAlert = null,
+  upcomingSteps = [],
+  isOffRoute = false,
   onVoiceToggle,
-  onTravelModeChange,
   onClose,
   onRecenter,
 }) {
+  const [showUpcomingSteps, setShowUpcomingSteps] = useState(true);
   const formatDuration = (seconds) => {
     if (!Number.isFinite(seconds) || seconds <= 0) return "--";
     const minutes = Math.max(1, Math.round(seconds / 60));
@@ -79,6 +84,22 @@ export default function NavMap({
 
   const speedKmh = Math.round(speed);
   const headingDeg = Number.isFinite(heading) ? heading : 0;
+  const maxSpeed = speedLimit > 0 ? speedLimit : 0;
+  const hasTraffic = worstCongestion && worstCongestion !== 'unknown';
+  
+  // Traffic badge label and color
+  const trafficLabels = {
+    unknown: 'Sin datos',
+    low: 'Tráfico ligero',
+    moderate: 'Tráfico moderado',
+    heavy: 'Tráfico pesado',
+    severe: 'Tráfico severo',
+  };
+  const speedRatio = maxSpeed > 0 ? speedKmh / maxSpeed : 0;
+  // Determine speedo class based on speed vs limit
+  let speedoState = 'safe';
+  if (speedRatio >= 1.05) speedoState = 'over';
+  else if (speedRatio >= 0.9) speedoState = 'warning';
 
   return (
     <>
@@ -97,11 +118,20 @@ export default function NavMap({
         </div>
       </div>
 
-      {/* Floating Speedometer */}
-      <div className="navmap-speedo">
+      {/* Floating Speedometer + Speed Limit */}
+      <div className={`navmap-speedo navmap-speedo--${speedoState}`}>
         <span className="navmap-speedo-value">{speedKmh}</span>
         <span className="navmap-speedo-unit">km/h</span>
       </div>
+      {maxSpeed > 0 && (
+        <div className={`navmap-speed-limit navmap-speed-limit--${speedoState}`}>
+          <svg className="navmap-speed-limit-icon" width="10" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 6v6l4 2" />
+          </svg>
+          <span className="navmap-speed-limit-value">{maxSpeed}</span>
+        </div>
+      )}
 
       {/* Floating Actions */}
       <div className="navmap-actions">
@@ -136,6 +166,21 @@ export default function NavMap({
         </button>
       </div>
 
+      {/* Off-route indicator */}
+      {isOffRoute && !hasArrived && (
+        <div className="navmap-offroute">
+          <div className="navmap-offroute-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+          </div>
+          <span>Recalculando ruta...</span>
+        </div>
+      )}
+
       {/* Proximity alert banner (between instruction and compass) */}
       {proximityAlert && !hasArrived && (
         <div className="navmap-proximity-alert">
@@ -154,9 +199,57 @@ export default function NavMap({
         <div className="navmap-compass" style={{ transform: `rotate(${360 - headingDeg}deg)` }}>
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
             strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2L8 10l4-2 4 2-4-8z" fill="#d36400" stroke="#d36400" />
+            <path d="M12 2L8 10l4-2 4 2-4-8z" fill="#32CD32" stroke="#32CD32" />
             <path d="M12 22l4-8-4 2-4-2 4 8z" fill="#888" stroke="#888" />
           </svg>
+        </div>
+      )}
+
+      {/* Traffic congestion badge (top-right, below compass) */}
+      {hasTraffic && !hasArrived && (
+        <div className={`navmap-traffic navmap-traffic--${worstCongestion}`}>
+          <span className="navmap-traffic-dot" />
+          <span className="navmap-traffic-label">{trafficLabels[worstCongestion] || 'Tráfico'}</span>
+        </div>
+      )}
+
+      {/* Collapsible upcoming steps — below the main instruction card */}
+      {upcomingSteps.length > 0 && !hasArrived && (
+        <div className={`navmap-upcoming ${showUpcomingSteps ? '' : 'navmap-upcoming--collapsed'}${proximityAlert ? ' navmap-upcoming--with-alert' : ''}`}>
+          <button
+            type="button"
+            className="navmap-upcoming-toggle"
+            onClick={() => setShowUpcomingSteps((v) => !v)}
+            aria-label={showUpcomingSteps ? 'Ocultar siguientes indicaciones' : 'Mostrar siguientes indicaciones'}
+          >
+            <span className="navmap-upcoming-toggle-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                style={{ transform: showUpcomingSteps ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.2s' }}>
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </span>
+            <span className="navmap-upcoming-header">
+              Siguientes ({upcomingSteps.length})
+            </span>
+          </button>
+          {showUpcomingSteps && (
+            <div className="navmap-upcoming-body">
+              {upcomingSteps.map((step, idx) => (
+                <div key={idx} className="navmap-upcoming-step">
+                  <span className="navmap-upcoming-step-icon">
+                    <DirectionIcon modifier={step.maneuver} />
+                  </span>
+                  <span className="navmap-upcoming-step-text">{step.instruction}</span>
+                  {step.distance > 0 && (
+                    <span className="navmap-upcoming-step-dist">
+                      {step.distance < 1000 ? `${Math.round(step.distance)} m` : `${(step.distance / 1000).toFixed(1)} km`}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

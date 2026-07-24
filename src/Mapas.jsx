@@ -139,12 +139,68 @@ export default function Mapas() {
   });
   const lastInstructionRef = useRef('');
   const speechSynthRef = useRef(null);
+  const voiceInitializedRef = useRef(false);
   const hasArrivedRef = useRef(false);
   const arrivalTimerRef = useRef(null);
   const deviceHeadingRef = useRef(0);
   const alertedStepsRef = useRef(new Set());
   const [proximityAlert, setProximityAlert] = useState(null);
   const routeSwitchTimerRef = useRef(null);
+  const rerouteThrottleRef = useRef(0); // timestamp of last re-route
+  const routePlanRef = useRef(null); // ref to latest plan for GPS callback closure
+  const [upcomingSteps, setUpcomingSteps] = useState([]);
+  const [routeAlternatives, setRouteAlternatives] = useState([]); // alternative routes for current travel mode
+  const [selectedAltIndex, setSelectedAltIndex] = useState(0); // which alternative is active
+  const altRouteSourceRef = useRef(null); // source for alternative route lines
+  const fetchRoutePlanRef = useRef(null); // ref to fetchRoutePlan to avoid TDZ issues
+  
+  // Robust speech synthesis helper that handles mobile quirks (iOS Safari, etc.)
+  const speakInstruction = useCallback((text, { priority = false, rate = 0.9 } = {}) => {
+    if (!isVoiceEnabled) return;
+    // On iOS Safari, speech synthesis only works after a user gesture
+    // and needs to be primed with a silent utterance first
+    try {
+      if (!window.speechSynthesis) {
+        console.warn('SpeechSynthesis no disponible en este dispositivo');
+        return;
+      }
+      // Cancel any ongoing speech for non-priority messages, or always cancel for priority
+      if (priority) {
+        window.speechSynthesis.cancel();
+      }
+      // iOS quirk: speech synthesis pauses after ~15s if not called again;
+      // create a fresh utterance each time
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'es-ES';
+      utterance.rate = rate;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+      // Select Spanish voice if available
+      utterance.onstart = () => {
+        voiceInitializedRef.current = true;
+      };
+      utterance.onerror = (e) => {
+        console.warn('Speech error:', e.error);
+      };
+      window.speechSynthesis.speak(utterance);
+      lastInstructionRef.current = text;
+    } catch (e) {
+      console.warn('SpeechSynthesis error:', e);
+    }
+  }, [isVoiceEnabled]);
+  
+  // Initialize speech synthesis — required on iOS to unlock speech API
+  const initializeVoice = useCallback(() => {
+    if (typeof window === 'undefined' || !window.speechSynthesis || voiceInitializedRef.current) return;
+    try {
+      // iOS requires a silent utterance to 'prime' the speech engine
+      const silent = new SpeechSynthesisUtterance('');
+      silent.volume = 0;
+      window.speechSynthesis.speak(silent);
+      window.speechSynthesis.cancel();
+      voiceInitializedRef.current = true;
+    } catch { /* ignore */ }
+  }, []);
   const handleImgError = (id) => {
     setImgErrors((prev) => ({ ...prev, [id]: true }));
   };
@@ -165,6 +221,53 @@ export default function Mapas() {
       Math.sin(dLat / 2) ** 2 +
       Math.cos(toRad(coords1[1])) * Math.cos(toRad(coords2[1])) * Math.sin(dLon / 2) ** 2;
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  };
+  
+  // Congestion colors for route traffic visualization
+  const CONGESTION_COLORS = {
+    unknown: '#888888',
+    low: '#32CD32',
+    moderate: '#FFD700',
+    heavy: '#FF8C00',
+    severe: '#D32F2F',
+  };
+  
+  // Build a line-gradient paint expression from congestion segments
+  const buildCongestionGradient = (coords, congestion) => {
+    if (!congestion?.length || !coords?.length || coords.length < 2) return null;
+    const totalSegments = congestion.length; // = coords.length - 1
+    if (totalSegments < 1) return null;
+    
+    const stops = [];
+    stops.push(0, CONGESTION_COLORS[congestion[0]] || CONGESTION_COLORS.unknown);
+    
+    for (let i = 1; i < totalSegments; i++) {
+      const progress = i / totalSegments;
+      const prevColor = CONGESTION_COLORS[congestion[i - 1]] || CONGESTION_COLORS.unknown;
+      const currColor = CONGESTION_COLORS[congestion[i]] || CONGESTION_COLORS.unknown;
+      // Sharp transition: end previous color at this progress, start next color at same progress
+      stops.push(progress, prevColor);
+      stops.push(progress, currColor);
+    }
+    
+    // Final segment to end
+    stops.push(1, CONGESTION_COLORS[congestion[totalSegments - 1]] || CONGESTION_COLORS.unknown);
+    
+    return ['interpolate', ['linear'], ['line-progress'], ...stops];
+  };
+  
+  // Compute bearing between two [lng, lat] points (degrees from north)
+  const computeBearing = (from, to) => {
+    if (!from || !to) return undefined;
+    const toRad = (deg) => (deg * Math.PI) / 180;
+    const toDeg = (rad) => (rad * 180) / Math.PI;
+    const [lng1, lat1] = from;
+    const [lng2, lat2] = to;
+    const dLng = toRad(lng2 - lng1);
+    const y = Math.sin(dLng) * Math.cos(toRad(lat2));
+    const x = Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) - Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLng);
+    const brng = toDeg(Math.atan2(y, x));
+    return (brng + 360) % 360;
   };
 
   // Apply or re-apply route-based colors to the map
@@ -613,6 +716,10 @@ export default function Mapas() {
     if (arrivalTimerRef.current) { clearTimeout(arrivalTimerRef.current); arrivalTimerRef.current = null; }
     alertedStepsRef.current = new Set();
     setProximityAlert(null);
+    // Reset map pitch back to 2D view
+    if (mapRef.current) {
+      try { mapRef.current.easeTo({ pitch: 0, bearing: 0, duration: 600, essential: true }); } catch {}
+    }
     // Clear voice reference so next navigation speaks first instruction again
     lastInstructionRef.current = '';
     if (window.speechSynthesis) window.speechSynthesis.cancel();
@@ -622,12 +729,94 @@ export default function Mapas() {
     try { sessionStorage.removeItem('navmap_active'); } catch { /* ignore */ }
   }, []);
 
+  // Check if user is off route and trigger re-route if needed
+  const checkOffRouteAndReroute = useCallback(async (userLngLat, plan, destination) => {
+    if (!plan?.coordinates?.length || !destination) return;
+    
+    const coords = plan.coordinates;
+    // Find minimum distance from user to any point on route
+    let minDist = Infinity;
+    for (const coord of coords) {
+      const d = haversineDistance(userLngLat, coord);
+      if (d < minDist) minDist = d;
+    }
+    
+    // If user is > 50m from route, and we haven't re-routed in last 15s, re-route
+    const now = Date.now();
+    if (minDist > 50 && now - rerouteThrottleRef.current > 15000) {
+      rerouteThrottleRef.current = now;
+      console.log('Off route by', Math.round(minDist), 'm — re-routing');
+      setRouteMessage('Recalculando ruta...');
+      
+      try {
+        const fetchFn = fetchRoutePlanRef.current;
+        if (!fetchFn) return;
+        const plans = await fetchFn(travelMode, userLngLat, destination);
+        const newPlan = plans?.[0]; // fetchRoutePlan now returns an array of alternatives
+        if (newPlan?.coordinates?.length) {
+          // Update the route plan for this mode
+          setRoutePlans((prev) => ({ ...prev, [travelMode]: newPlan }));
+          // Update alternatives (skip the selected one)
+          setRouteAlternatives(plans.slice(1));
+          setSelectedAltIndex(0);
+          // Keep user marker on map during re-route (avoid flicker)
+          drawRouteAnimation(newPlan.coordinates, true, newPlan.congestion);
+          drawAlternativeRoutes(plans.slice(1), newPlan.coordinates);
+          // Reset the current plan ref for the GPS handler closure
+          routePlanRef.current = newPlan;
+          // Reset alerted steps for the new route
+          alertedStepsRef.current = new Set();
+          setRouteMessage('Ruta recalculada. Continuando navegación.');
+          setTimeout(() => {
+            setRouteMessage('');
+          }, 3000);
+        }
+      } catch (e) {
+        console.warn('Re-route failed:', e);
+        setRouteMessage('No se pudo recalcular. Continuando con ruta actual.');
+        setTimeout(() => {
+          setRouteMessage('');
+        }, 3000);
+      }
+    }
+  }, [travelMode]);
+
+  // Select a specific route alternative (0 = primary, 1+ = alternatives)
+  const selectRouteAlternative = useCallback((index) => {
+    const modeKey = travelMode === 'transit' ? 'car' : travelMode;
+    setSelectedAltIndex(index);
+    
+    let selectedPlan;
+    if (index === 0) {
+      selectedPlan = routePlans[travelMode];
+    } else {
+      const altIdx = index - 1;
+      selectedPlan = routeAlternatives[altIdx];
+    }
+    
+    if (selectedPlan?.coordinates) {
+      // Update the route plan for this mode to the selected one
+      setRoutePlans((prev) => ({ ...prev, [travelMode]: selectedPlan }));
+      routePlanRef.current = selectedPlan;
+      drawRouteAnimation(selectedPlan.coordinates, true, selectedPlan.congestion); // keep user marker
+      // Redraw alternatives excluding the newly selected one
+      const otherAlts = routeAlternatives.filter((_, i) => i !== index - 1);
+      drawAlternativeRoutes(otherAlts, selectedPlan.coordinates);
+    }
+  }, [travelMode, routePlans, routeAlternatives]);
+
   const startRealNavigation = useCallback(() => {
     if (!routePlan || !mapRef.current) return;
+    
+    // Initialize voice synthesis for mobile (iOS requirement)
+    initializeVoice();
     
     const plan = routePlan;
     const coords = plan.coordinates;
     if (!coords?.length) return;
+
+    // Store current plan in ref so GPS callback always has latest plan
+    routePlanRef.current = plan;
 
     // Add destination marker
     addDestinationMarker(activePlace);
@@ -635,8 +824,10 @@ export default function Mapas() {
     // Start watching position with high accuracy
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
-        const { latitude, longitude, speed: gpsSpeed, accuracy } = position.coords;
+        const { latitude, longitude, speed: gpsSpeed, accuracy, heading: gpsHeading } = position.coords;
         const userLngLat = [longitude, latitude];
+        const currentPlan = routePlanRef.current;
+        const currentCoords = currentPlan?.coordinates || coords;
 
         // Update user marker on map
         if (userMarkerRef.current) {
@@ -667,10 +858,10 @@ export default function Mapas() {
         setRealSpeed(currentSpeed);
 
         // Find closest point on route to calculate real progress
-        const totalPoints = coords.length;
+        const totalPoints = currentCoords.length;
         let minDistSq = Infinity;
         let closestIdx = 0;
-        coords.forEach((coord, idx) => {
+        currentCoords.forEach((coord, idx) => {
           const dx = coord[0] - longitude;
           const dy = coord[1] - latitude;
           const distSq = dx * dx + dy * dy;
@@ -682,33 +873,50 @@ export default function Mapas() {
         const newProgress = Math.min(100, Math.round((closestIdx / Math.max(1, totalPoints - 1)) * 100));
         setRealProgress(newProgress);
 
+        // Off-route detection: if closest point is > 50m away, check for re-route
+        const closestDistM = Math.sqrt(minDistSq) * 111320; // rough meters
+        if (closestDistM > 50 && activePlace?.coordinates && !hasArrivedRef.current) {
+          checkOffRouteAndReroute(userLngLat, currentPlan, activePlace.coordinates);
+        }
+
         // Find current instruction step based on closest point
-        if (plan.steps?.length && activePlace) {
-          const routeLen = plan.steps.length;
+        if (currentPlan?.steps?.length && activePlace) {
+          const routeLen = currentPlan.steps.length;
           const stepIdx = Math.min(routeLen - 1, Math.floor((newProgress / 100) * routeLen));
-          const step = plan.steps[stepIdx];
+          const step = currentPlan.steps[stepIdx];
           const newText = step.instruction || "Sigue recto";
           setRealInstruction({
             text: newText,
             icon: step.maneuver || "straight",
             distance: step.distance || 0,
           });
+          
+          // Update upcoming steps (next 3) for the turn-by-turn list
+          const upcoming = [];
+          for (let i = 1; i <= 3; i++) {
+            const sIdx = Math.min(routeLen - 1, stepIdx + i);
+            const s = currentPlan.steps[sIdx];
+            if (s && sIdx !== stepIdx) {
+              upcoming.push({
+                instruction: s.instruction || '',
+                maneuver: s.maneuver || 'straight',
+                distance: s.distance || 0,
+              });
+            }
+          }
+          setUpcomingSteps(upcoming);
+          
           // Speak instruction via SpeechSynthesis when it changes
-          if (isVoiceEnabled && newText !== lastInstructionRef.current && window.speechSynthesis) {
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(newText);
-            utterance.lang = 'es-ES';
-            utterance.rate = 0.9;
-            utterance.pitch = 1.0;
-            window.speechSynthesis.speak(utterance);
+          if (isVoiceEnabled && newText !== lastInstructionRef.current) {
+            speakInstruction(newText, { priority: true, rate: 0.9 });
             lastInstructionRef.current = newText;
           }
         }
 
         // Proximity alert: detect distance to next step (< 100m)
-        if (plan.steps?.length && activePlace?.coordinates && !hasArrivedRef.current) {
-          const nextStepIdx = Math.min(plan.steps.length - 1, Math.floor((newProgress / 100) * plan.steps.length) + 1);
-          const nextStep = plan.steps[nextStepIdx];
+        if (currentPlan?.steps?.length && activePlace?.coordinates && !hasArrivedRef.current) {
+          const nextStepIdx = Math.min(currentPlan.steps.length - 1, Math.floor((newProgress / 100) * currentPlan.steps.length) + 1);
+          const nextStep = currentPlan.steps[nextStepIdx];
           if (nextStep && nextStep.location && !alertedStepsRef.current.has(nextStepIdx)) {
             const distToNext = haversineDistance(userLngLat, [nextStep.location[0], nextStep.location[1]]);
             if (distToNext < 100) {
@@ -716,13 +924,7 @@ export default function Mapas() {
               const alertText = nextStep.instruction || 'Giro próximo';
               setProximityAlert({ text: alertText, distance: Math.round(distToNext), icon: nextStep.maneuver || 'straight', stepIdx: nextStepIdx });
               // Speak the alert with emphasis
-              if (isVoiceEnabled && window.speechSynthesis) {
-                window.speechSynthesis.cancel();
-                const utter = new SpeechSynthesisUtterance(`Precaución, ${alertText}`);
-                utter.lang = 'es-ES';
-                utter.rate = 0.85;
-                window.speechSynthesis.speak(utter);
-              }
+              speakInstruction(`Precaución, ${alertText}`, { priority: true, rate: 0.85 });
               // Clear alert after 6 seconds
               setTimeout(() => setProximityAlert(null), 6000);
             }
@@ -742,13 +944,7 @@ export default function Mapas() {
             setRouteStatus('success');
             setRouteMessage(`¡Llegaste a ${activePlace.name}!`);
             // Speak arrival
-            if (isVoiceEnabled && window.speechSynthesis) {
-              window.speechSynthesis.cancel();
-              const utter = new SpeechSynthesisUtterance(`Has llegado a ${activePlace.name}`);
-              utter.lang = 'es-ES';
-              utter.rate = 0.85;
-              window.speechSynthesis.speak(utter);
-            }
+            speakInstruction(`Has llegado a ${activePlace.name}`, { priority: true, rate: 0.85 });
             // Auto-stop navigation after 4 seconds
             arrivalTimerRef.current = setTimeout(() => {
               stopRealNavigation();
@@ -757,12 +953,16 @@ export default function Mapas() {
           }
         }
 
-        // Recenter map every 3 seconds if we have a recent fix
+        // 3D Waze-style follow: pitch 45°, bearing aligned to travel direction
         if (accuracy < 100 && mapRef.current && !hasArrivedRef.current) {
+          const currentZoom = mapRef.current.getZoom();
+          const travelDirection = (gpsHeading !== null && gpsHeading >= 0) ? gpsHeading : computeBearing(lastPositionRef.current, [longitude, latitude]);
           mapRef.current.easeTo({
             center: userLngLat,
-            zoom: 15.6,
-            duration: 500,
+            zoom: Math.max(currentZoom, 15.2),
+            pitch: Math.min(55, 25 + currentSpeed * 0.3), // pitch increases with speed
+            bearing: travelDirection ?? undefined,
+            duration: 600,
             essential: true,
           });
         }
@@ -807,7 +1007,7 @@ export default function Mapas() {
         savedAt: Date.now(),
       }));
     } catch { /* quota exceeded or private mode */ }
-  }, [routePlan, activePlace]);
+  }, [routePlan, activePlace, checkOffRouteAndReroute, initializeVoice, speakInstruction]);
 
   const startNavigationPlayback = (plan) => {
     if (!mapRef.current || !plan?.coordinates?.length) return;
@@ -837,12 +1037,16 @@ export default function Mapas() {
       }
 
       if (mapRef.current) {
+        // Calculate bearing for this leg of the route for 3D preview
+        const currentIdx = routeIndex;
+        const nextIdx = Math.min(coordinates.length - 1, currentIdx + 3);
+        const previewBearing = computeBearing(coordinates[currentIdx], coordinates[nextIdx]) || undefined;
         mapRef.current.easeTo({
           center: currentPoint,
-          zoom: 15.6,
-          pitch: 0,
-          bearing: 0,
-          duration: 350,
+          zoom: 15.8,
+          pitch: 45,
+          bearing: previewBearing,
+          duration: 400,
           essential: true,
         });
       }
@@ -880,34 +1084,89 @@ export default function Mapas() {
     };
   };
 
-  const fetchRoutePlan = async (mode, origin, destination) => {
+  // Stable reference for fetchRoutePlan — returns array of route alternatives
+  const fetchRoutePlan = useCallback(async (mode, origin, destination) => {
     const profile = mode === "walking" ? "walking" : "driving";
+    // Request up to 3 alternatives with speed + congestion annotations from Mapbox Directions API
     const response = await fetch(
-      `https://api.mapbox.com/directions/v5/mapbox/${profile}/${origin[0]},${origin[1]};${destination[0]},${destination[1]}?geometries=geojson&overview=full&steps=true&language=es&access_token=${MAPBOX_TOKEN}`
+      `https://api.mapbox.com/directions/v5/mapbox/${profile}/${origin[0]},${origin[1]};${destination[0]},${destination[1]}?geometries=geojson&overview=full&steps=true&language=es&alternatives=true&annotations=maxspeed,congestion&access_token=${MAPBOX_TOKEN}`
     );
     const data = await response.json();
     if (!data.routes || data.routes.length === 0) throw new Error(`No route for ${mode}`);
-    const route = data.routes[0];
-    // Extract turn-by-turn steps from the first leg
-    const steps = route.legs?.[0]?.steps?.map((s) => ({
-      instruction: s.maneuver?.instruction || s.maneuver?.type || "Sigue recto",
-      maneuver: s.maneuver?.modifier || s.maneuver?.type || "straight",
-      distance: s.distance || 0,
-      duration: s.duration || 0,
-      location: s.maneuver?.location || null,
-    })) || [];
-    return {
-      mode,
-      coordinates: route.geometry.coordinates,
-      duration: route.duration,
-      distance: route.distance,
-      steps,
-      note: mode === "walking" ? "Ruta caminando" : "Ruta en carro",
-    };
-  };
+    
+    // Map each route to our plan format
+    const plans = data.routes.map((route, idx) => {
+      const steps = route.legs?.[0]?.steps?.map((s) => ({
+        instruction: s.maneuver?.instruction || s.maneuver?.type || "Sigue recto",
+        maneuver: s.maneuver?.modifier || s.maneuver?.type || "straight",
+        distance: s.distance || 0,
+        duration: s.duration || 0,
+        location: s.maneuver?.location || null,
+      })) || [];
+      
+      // Extract speed limit from route annotations (if available)
+      let speedLimit = 0;
+      try {
+        const speeds = route.legs?.[0]?.annotation?.maxspeed;
+        if (speeds?.length > 0) {
+          // Find the most common speed limit along the route
+          const validSpeeds = speeds
+            .map(s => s.speed)
+            .filter(s => s && s > 0 && s < 200);
+          if (validSpeeds.length > 0) {
+            // Use the most common (mode) speed limit for the overall route
+            const freq = {};
+            let maxFreq = 0;
+            let modeSpeed = 30;
+            validSpeeds.forEach(v => {
+              freq[v] = (freq[v] || 0) + 1;
+              if (freq[v] > maxFreq) { maxFreq = freq[v]; modeSpeed = v; }
+            });
+            speedLimit = Math.round(modeSpeed);
+          }
+        }
+      } catch { /* speed limit data not available */ }
+      
+      // Extract congestion per segment from route annotations
+      let congestionSegments = [];
+      try {
+        const rawCongestion = route.legs?.[0]?.annotation?.congestion;
+        if (rawCongestion?.length > 0) {
+          congestionSegments = rawCongestion;
+        }
+      } catch { /* congestion data not available */ }
+      
+      // Determine worst congestion level for display badge
+      const congestionLevels = ['unknown', 'low', 'moderate', 'heavy', 'severe'];
+      let worstCongestion = 'unknown';
+      if (congestionSegments.length > 0) {
+        for (const c of congestionSegments) {
+          const idx = congestionLevels.indexOf(c);
+          if (idx > congestionLevels.indexOf(worstCongestion)) worstCongestion = c;
+        }
+      }
+      
+      return {
+        mode,
+        coordinates: route.geometry.coordinates,
+        duration: route.duration,
+        distance: route.distance,
+        steps,
+        speedLimit,
+        congestion: congestionSegments,
+        worstCongestion,
+        note: mode === "walking" ? "Ruta caminando" : "Ruta en carro",
+        alternativeIndex: idx,
+        description: idx === 0 ? 'Recomendada' : idx === 1 ? 'Alternativa (menos tránsito)' : 'Alternativa (más corta)',
+      };
+    });
+    return plans;
+  }, []);
+  // Sync ref with latest fetchRoutePlan (avoids TDZ since checkOffRouteAndReroute is defined earlier)
+  fetchRoutePlanRef.current = fetchRoutePlan;
 
   const drawRouteForPlan = (plan) => {
-    if (plan?.coordinates) drawRouteAnimation(plan.coordinates);
+    if (plan?.coordinates) drawRouteAnimation(plan.coordinates, false, plan.congestion);
   };
 
   const loadNavigationPlans = async (origin, destination) => {
@@ -916,28 +1175,45 @@ export default function Mapas() {
     stopNavigationPlayback();
 
     try {
-      const [walkingPlan, carPlan] = await Promise.all([
+      const [walkingPlans, carPlans] = await Promise.all([
         fetchRoutePlan("walking", origin, destination),
         fetchRoutePlan("car", origin, destination),
       ]);
 
-      const transitPlan = {
+      // Take first route as primary for each mode, store alternatives separately
+      const transitPrimary = {
         mode: "transit",
-        coordinates: carPlan.coordinates,
-        duration: Math.round(carPlan.duration * 1.25),
-        distance: carPlan.distance,
+        coordinates: carPlans[0].coordinates,
+        duration: Math.round(carPlans[0].duration * 1.25),
+        distance: carPlans[0].distance,
+        steps: carPlans[0].steps,
+        speedLimit: carPlans[0].speedLimit,
         note: "Estimado para transporte publico",
       };
 
-      const nextPlans = { walking: walkingPlan, car: carPlan, transit: transitPlan };
+      const nextPlans = {
+        walking: walkingPlans[0],
+        car: carPlans[0],
+        transit: transitPrimary,
+      };
+      
+      // Store alternatives for current travel mode
+      const modeKey = travelMode === 'transit' ? 'car' : travelMode;
+      const altPlans = modeKey === 'walking' ? walkingPlans.slice(1) : carPlans.slice(1);
+      
       setRoutePlans(nextPlans);
+      setRouteAlternatives(altPlans);
+      setSelectedAltIndex(0);
       setTravelMode((prev) => (nextPlans[prev] ? prev : "walking"));
       setRouteStatus("success");
       setRouteMessage("Selecciona un modo y luego inicia navegación.");
       setIsNavigationOpen(true);
       setView("navigation");
-      const defaultPlan = nextPlans[travelMode] || walkingPlan;
+      
+      const defaultPlan = nextPlans[travelMode] || walkingPlans[0];
       drawRouteForPlan(defaultPlan);
+      // Draw alternative routes in muted colors
+      drawAlternativeRoutes(altPlans, defaultPlan.coordinates);
 
       if (mapRef.current) {
         mapRef.current.fitBounds(new mapboxgl.LngLatBounds(origin, destination), {
@@ -956,40 +1232,144 @@ export default function Mapas() {
     }
   };
 
-  const clearRouteLayer = () => {
+  const clearRouteLayer = (keepUserMarker = false) => {
     if (!mapRef.current) return;
     if (routeAnimationRef.current) { cancelAnimationFrame(routeAnimationRef.current); routeAnimationRef.current = null; }
-    if (userMarkerRef.current) { userMarkerRef.current.remove(); userMarkerRef.current = null; }
+    if (!keepUserMarker && userMarkerRef.current) { userMarkerRef.current.remove(); userMarkerRef.current = null; }
     if (mapRef.current.getLayer("capa-ruta")) mapRef.current.removeLayer("capa-ruta");
     if (mapRef.current.getLayer("capa-ruta-base")) mapRef.current.removeLayer("capa-ruta-base");
+    // Clean up congestion layers
+    ['low', 'moderate', 'heavy', 'severe', 'unknown'].forEach((level) => {
+      if (mapRef.current.getLayer(`capa-ruta-${level}`)) mapRef.current.removeLayer(`capa-ruta-${level}`);
+    });
     if (mapRef.current.getSource("ruta-activa")) mapRef.current.removeSource("ruta-activa");
     routeSourceRef.current = null;
+    clearAlternativeRoutes();
+  };
+  
+  // Draw alternative route lines in muted colors (non-selected options)
+  const clearAlternativeRoutes = () => {
+    if (!mapRef.current) return;
+    ['alt-0', 'alt-1'].forEach((id) => {
+      if (mapRef.current.getLayer(`capa-alt-${id}`)) mapRef.current.removeLayer(`capa-alt-${id}`);
+      if (mapRef.current.getSource(`ruta-alt-${id}`)) mapRef.current.removeSource(`ruta-alt-${id}`);
+    });
+    altRouteSourceRef.current = null;
+  };
+  
+  const drawAlternativeRoutes = (altPlans, activeCoords) => {
+    if (!mapRef.current || !altPlans?.length) return;
+    clearAlternativeRoutes();
+    // Draw each alternative in a muted gray-blue color with dashes
+    altPlans.forEach((plan, idx) => {
+      if (!plan?.coordinates?.length) return;
+      // Skip if coordinates match the active route exactly
+      if (JSON.stringify(plan.coordinates) === JSON.stringify(activeCoords)) return;
+      
+      const sourceId = `ruta-alt-${idx}`;
+      const layerId = `capa-alt-${idx}`;
+      
+      mapRef.current.addSource(sourceId, {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          properties: {},
+          geometry: { type: 'LineString', coordinates: plan.coordinates },
+        },
+      });
+      
+      // Use congestion gradient for alternatives too if available
+      const hasAltCongestion = plan.congestion?.length > 0 && plan.congestion.length === plan.coordinates.length - 1;
+      const altGradient = hasAltCongestion ? buildCongestionGradient(plan.coordinates, plan.congestion) : null;
+      
+      const paintProps = altGradient
+        ? {
+            'line-gradient': altGradient,
+            'line-width': 3,
+            'line-opacity': 0.65,
+            'line-dasharray': [3, 3],
+          }
+        : {
+            'line-color': idx === 0 ? '#7890B0' : '#8BA87A',
+            'line-width': 3,
+            'line-opacity': 0.6,
+            'line-dasharray': [3, 3],
+          };
+      
+      const sourceConfig = hasAltCongestion
+        ? { type: 'geojson', data: { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: plan.coordinates } }, lineMetrics: true }
+        : { type: 'geojson', data: { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: plan.coordinates } } };
+      
+      mapRef.current.addSource(sourceId, sourceConfig);
+      
+      mapRef.current.addLayer({
+        id: layerId,
+        type: 'line',
+        source: sourceId,
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: paintProps,
+      });
+    });
   };
 
-  const drawRouteAnimation = (routeCoordinates) => {
+  const drawRouteAnimation = (routeCoordinates, keepUserMarker = false, congestion = null) => {
     if (!mapRef.current) return;
-    clearRouteLayer();
+    clearRouteLayer(keepUserMarker);
+
+    const hasCongestion = congestion?.length > 0 && congestion.length === routeCoordinates.length - 1;
 
     const geojson = { type: "Feature", properties: {}, geometry: { type: "LineString", coordinates: [] } };
 
-    mapRef.current.addSource("ruta-activa", { type: "geojson", data: geojson });
+    mapRef.current.addSource("ruta-activa", {
+      type: "geojson",
+      data: geojson,
+      lineMetrics: hasCongestion, // required for line-gradient
+    });
     routeSourceRef.current = geojson;
 
-    mapRef.current.addLayer({
-      id: "capa-ruta-base",
-      type: "line",
-      source: "ruta-activa",
-      layout: { "line-join": "round", "line-cap": "round" },
-      paint: { "line-color": "#ffffff", "line-width": 10, "line-opacity": 0.18 },
-    });
-
-    mapRef.current.addLayer({
-      id: "capa-ruta",
-      type: "line",
-      source: "ruta-activa",
-      layout: { "line-join": "round", "line-cap": "round" },
-      paint: { "line-color": "#f19a20", "line-width": 6, "line-opacity": 0.96, "line-dasharray": [0.5, 2] },
-    });
+    if (hasCongestion) {
+      // Use congestion-colored gradient on the main route line
+      const gradientPaint = buildCongestionGradient(routeCoordinates, congestion);
+      mapRef.current.addLayer({
+        id: "capa-ruta-base",
+        type: "line",
+        source: "ruta-activa",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          'line-gradient': gradientPaint,
+          'line-width': 14,
+          'line-opacity': 0.35,
+          'line-blur': 4,
+        },
+      });
+      mapRef.current.addLayer({
+        id: "capa-ruta",
+        type: "line",
+        source: "ruta-activa",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          'line-gradient': gradientPaint,
+          'line-width': 5,
+          'line-opacity': 0.98,
+        },
+      });
+    } else {
+      // Fallback: solid lime green
+      mapRef.current.addLayer({
+        id: "capa-ruta-base",
+        type: "line",
+        source: "ruta-activa",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: { "line-color": "#32CD32", "line-width": 14, "line-opacity": 0.25, "line-blur": 3 },
+      });
+      mapRef.current.addLayer({
+        id: "capa-ruta",
+        type: "line",
+        source: "ruta-activa",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: { "line-color": "#32CD32", "line-width": 5, "line-opacity": 0.98 },
+      });
+    }
 
     let step = 0;
     const framesPerStep = Math.max(1, Math.floor(routeCoordinates.length / 120));
@@ -1029,15 +1409,15 @@ export default function Mapas() {
     el.style.cssText = `
       width: 44px; height: 44px;
       border-radius: 50%;
-      border: 3px solid #f19a20;
+      border: 3px solid #32CD32;
       background: url('${place.image}') center/cover no-repeat;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 0 0 4px rgba(50,205,50,0.25);
       cursor: pointer;
       display: block;
     `;
     // Fallback icon if no image
     if (!place.image) {
-      el.style.background = "#f19a20";
+      el.style.background = "#32CD32";
       el.style.display = "flex";
       el.style.alignItems = "center";
       el.style.justifyContent = "center";
@@ -1280,6 +1660,8 @@ export default function Mapas() {
                 distance={currentNavigationPlan?.distance || 0}
                 progress={hasArrivedRef.current ? 100 : realProgress}
                 speed={currentNavigationSpeed}
+                speedLimit={currentNavigationPlan?.speedLimit || 0}
+                worstCongestion={currentNavigationPlan?.worstCongestion || null}
                 instruction={hasArrivedRef.current ? `¡Llegaste a ${activePlace.name}!` : realInstruction.text}
                 instructionIcon={hasArrivedRef.current ? 'arrive' : realInstruction.icon}
                 instructionDistance={realInstruction.distance}
@@ -1288,6 +1670,8 @@ export default function Mapas() {
                 heading={deviceHeadingRef.current}
                 hasArrived={hasArrivedRef.current}
                 proximityAlert={proximityAlert}
+                upcomingSteps={upcomingSteps}
+                isOffRoute={routeStatus === 'rerouting'}
                 onVoiceToggle={() => {
                   const next = !isVoiceEnabled;
                   setIsVoiceEnabled(next);
@@ -1354,13 +1738,55 @@ export default function Mapas() {
                             </button>
                           ))}
                         </div>
+                        {/* Alternative route selector */}
+                        {routeAlternatives.length > 0 && (
+                          <div className="mapas-nav-alt-routes">
+                            <span className="mapas-nav-alt-label">Rutas disponibles</span>
+                            <div className="mapas-nav-alt-list">
+                              <button
+                                type="button"
+                                className={`mapas-nav-alt-item${selectedAltIndex === 0 ? ' active' : ''}`}
+                                onClick={() => selectRouteAlternative(0)}
+                              >
+                                <span className="mapas-nav-alt-badge mapas-nav-alt-badge--green" />
+                                <span className="mapas-nav-alt-info">
+                                  <strong>Recomendada</strong>
+                                  <small>{formatDuration(routePlan.duration)} &middot; {formatDistance(routePlan.distance)}</small>
+                                </span>
+                              </button>
+                              {routeAlternatives.map((alt, idx) => (
+                                <button
+                                  key={idx}
+                                  type="button"
+                                  className={`mapas-nav-alt-item${selectedAltIndex === idx + 1 ? ' active' : ''}`}
+                                  onClick={() => selectRouteAlternative(idx + 1)}
+                                >
+                                  <span className={`mapas-nav-alt-badge mapas-nav-alt-badge--${idx === 0 ? 'blue' : 'sage'}`} />
+                                  <span className="mapas-nav-alt-info">
+                                    <strong>{alt.description || `Alternativa ${idx + 1}`}</strong>
+                                    <small>{formatDuration(alt.duration)} &middot; {formatDistance(alt.distance)}</small>
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                         <button
                           type="button"
                           className="mapas-nav-panel__gps"
-                          onClick={startRealNavigation}
+                          onClick={() => {
+                            // Apply 3D mode when starting navigation
+                            if (mapRef.current) {
+                              mapRef.current.easeTo({ pitch: 50, duration: 800, essential: true });
+                            }
+                            startRealNavigation();
+                          }}
                           disabled={!routePlan}
                         >
-                          🛰 Iniciar navegaci&oacute;n GPS
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polygon points="12,2 8,10 12,8 16,10" />
+                          </svg>
+                          Iniciar navegaci&oacute;n 3D
                         </button>
                         <div className="mapas-nav-panel__summary">
                           {routePlan && (
