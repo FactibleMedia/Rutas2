@@ -453,6 +453,19 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  max-height: calc(100vh - 180px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.mapas-side-panel::-webkit-scrollbar {
+  width: 4px;
+}
+
+.mapas-side-panel::-webkit-scrollbar-thumb {
+  background: rgba(75, 88, 66, 0.25);
+  border-radius: 4px;
 }
 
 .mapas-main-card-header {
@@ -506,11 +519,15 @@
   padding: 12px;
   display: grid;
   gap: 10px;
+  max-height: min(50vh, 400px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .mapas-places-list {
   display: grid;
   gap: 6px;
+  max-height: none;
 }
 
 .mapas-place-item {
@@ -2206,8 +2223,74 @@
   }
 
   /* -------------------- BOTTOM LAYER (makes room for the drawer) -------------------- */
-  .mapas-ui-bottom {
-    padding-bottom: calc(60vh + 20px);
+  .mapas-ui-bottom {     padding-bottom: calc(60vh + 20px);
+
+  /* -------- BOTTOM DRAWER DRAG HANDLE -------- */
+  .mapas-drawer-handle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 0 4px;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: rgba(246, 240, 228, 0.97);
+    border-radius: 20px 20px 0 0;
+    transition: background 0.2s ease;
+  }
+
+  .mapas-drawer-handle:active {
+    cursor: grabbing;
+  }
+
+  .mapas-drawer-handle__bar {
+    width: 40px;
+    height: 5px;
+    border-radius: 999px;
+    background: rgba(75, 88, 66, 0.3);
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+
+  .mapas-drawer-handle:hover .mapas-drawer-handle__bar {
+    background: rgba(75, 88, 66, 0.5);
+    transform: scaleX(1.15);
+  }
+
+  .mapas-drawer-handle__text {
+    font-size: 10px;
+    color: rgba(75, 88, 66, 0.5);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-weight: 700;
+    transition: color 0.2s ease;
+  }
+
+  .mapas-drawer-handle:hover .mapas-drawer-handle__text {
+    color: rgba(75, 88, 66, 0.75);
+  }
+
+  /* Expanded bottom drawer - larger max-height */
+  .mapas-ui-middle--expanded {
+    max-height: 78vh !important;
+  }
+
+  .mapas-ui-middle--expanded .mapas-side-panel {
+    max-height: 74vh;
+  }
+
+  /* Transition for smooth expand/collapse */
+  .mapas-ui-middle--mobile {
+    transition: max-height 350ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+
+  .mapas-ui-middle--mobile .mapas-side-panel {
+    transition: max-height 350ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
     gap: 8px;
   }
 

@@ -110,6 +110,7 @@ export default function Mapas() {
   const [routeStatus, setRouteStatus] = useState("idle");
   const [routeMessage, setRouteMessage] = useState("");
   const [view, setView] = useState("list"); // "list" | "compact" | "expanded" | "navigation"
+  const [panelMode, setPanelMode] = useState("routes"); // "routes" | "place" | "navigation"
   const [isRouteTrackingOpen, setIsRouteTrackingOpen] = useState(false);
   const [navigationElapsedSeconds, setNavigationElapsedSeconds] = useState(0);
   const [navigationPreviewProgress, setNavigationPreviewProgress] = useState(0);
@@ -144,6 +145,8 @@ export default function Mapas() {
   const deviceHeadingRef = useRef(0);
   const alertedStepsRef = useRef(new Set());
   const [proximityAlert, setProximityAlert] = useState(null);
+  const [mobileDrawerExpanded, setMobileDrawerExpanded] = useState(false);
+  const drawerDragRef = useRef(null);
   const handleImgError = (id) => {
     setImgErrors((prev) => ({ ...prev, [id]: true }));
   };
@@ -460,6 +463,18 @@ export default function Mapas() {
     }
   };
 
+  const goBackToRoutes = () => {
+    setPanelMode("routes");
+    setRoutePlans({});
+    setIsNavigationOpen(false);
+    clearRouteLayer();
+    stopRealNavigation();
+    if (destMarkerRef.current) {
+      destMarkerRef.current.remove();
+      destMarkerRef.current = null;
+    }
+  };
+
   const handleSelectPlace = (place) => {
     setSelectedPlaceId(place.id);
     setActivePlace(place);
@@ -473,6 +488,7 @@ export default function Mapas() {
     setRouteOrigin(null);
     setRouteStatus("idle");
     setRouteMessage("");
+    setPanelMode("place");
     setView("list");
     stopNavigationPlayback();
     clearRouteLayer();
@@ -522,6 +538,43 @@ export default function Mapas() {
       startLeft: placePopupPosition.x,
       startTop: placePopupPosition.y,
     };
+  };
+
+  // Drag handle for mobile bottom drawer expand/collapse
+  const handleDrawerPointerDown = (event) => {
+    if (!isMobileDevice) return;
+    event.preventDefault();
+    const startY = event.clientY || event.touches?.[0]?.clientY || 0;
+    drawerDragRef.current = { startY, expanded: mobileDrawerExpanded };
+
+    const handleMove = (moveEvent) => {
+      if (!drawerDragRef.current) return;
+      const currentY = moveEvent.clientY || moveEvent.touches?.[0]?.clientY || 0;
+      const diffY = drawerDragRef.current.startY - currentY;
+      // Dragged up more than 80px → expand, dragged down more than 80px → collapse
+      if (diffY > 80 && !drawerDragRef.current.expanded) {
+        setMobileDrawerExpanded(true);
+        drawerDragRef.current.expanded = true;
+      } else if (diffY < -80 && drawerDragRef.current.expanded) {
+        setMobileDrawerExpanded(false);
+        drawerDragRef.current.expanded = false;
+      }
+    };
+
+    const handleUp = () => {
+      drawerDragRef.current = null;
+      window.removeEventListener('pointermove', handleMove);
+      window.removeEventListener('pointerup', handleUp);
+    };
+
+    window.addEventListener('pointermove', handleMove, { passive: true });
+    window.addEventListener('pointerup', handleUp, { passive: true });
+  };
+
+  const toggleMobileDrawer = () => {
+    if (isMobileDevice) {
+      setMobileDrawerExpanded((prev) => !prev);
+    }
   };
 
   const formatDuration = (seconds) => {
@@ -1055,6 +1108,7 @@ export default function Mapas() {
     setRouteStatus("locating");
     setRouteMessage("Buscando tu ubicación...");
     setIsNavigationOpen(true);
+    setPanelMode("navigation");
     setView("navigation");
 
     const { position, errorMessage } = await requestLocationPermission({ silentSuccess: true });
@@ -1301,7 +1355,27 @@ export default function Mapas() {
             )}
 
             {/* Side Panel: List / Navigation — hidden on mobile during navigation */}
-            <div id="galeria" className={`mapas-ui-middle${isNavigating ? " mapas-ui-middle--nav-hidden" : ""}`}>
+            <div
+              id="galeria"
+              className={`mapas-ui-middle${isNavigating ? " mapas-ui-middle--nav-hidden" : ""}${isMobileDevice ? ` mapas-ui-middle--mobile${mobileDrawerExpanded ? ' mapas-ui-middle--expanded' : ''}` : ''}`}
+            >
+              {/* Drag handle for mobile bottom drawer */}
+              {isMobileDevice && (
+                <div
+                  className="mapas-drawer-handle"
+                  onPointerDown={handleDrawerPointerDown}
+                  onClick={toggleMobileDrawer}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={mobileDrawerExpanded ? 'Colapsar panel' : 'Expandir panel'}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleMobileDrawer(); } }}
+                >
+                  <div className="mapas-drawer-handle__bar" />
+                  <span className="mapas-drawer-handle__text">
+                    {mobileDrawerExpanded ? '▼ Colapsar' : '▲ Deslizar para más'}
+                  </span>
+                </div>
+              )}
               <aside className={`mapas-side-panel${isNavigating ? " mapas-side-panel--nav-hidden" : ""}`} aria-label="Panel de rutas">
 
                 {/* Route cards for switching routes — ALL visible, active one highlighted */}
