@@ -286,6 +286,130 @@
   line-height: 1.3;
 }
 
+/* Restore Navigation Banner */
+.mapas-restore-banner {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 25;
+  pointer-events: auto;
+  background: rgba(255, 248, 243, 0.97);
+  border-radius: 14px;
+  border: 1px solid rgba(241, 154, 32, 0.3);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 280px;
+  max-width: 420px;
+  backdrop-filter: blur(8px);
+  animation: mapasRestoreSlideDown 300ms ease;
+}
+
+@keyframes mapasRestoreSlideDown {
+  from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.mapas-restore-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.mapas-restore-banner-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.mapas-restore-banner-content strong {
+  display: block;
+  font-size: 13px;
+  color: #243126;
+  line-height: 1.2;
+}
+
+.mapas-restore-banner-content small {
+  display: block;
+  font-size: 11px;
+  color: #5f6758;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 160px;
+}
+
+.mapas-restore-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.mapas-restore-banner-btn {
+  border: none;
+  border-radius: 8px;
+  background: #f19a20;
+  color: #fff;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 7px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: background 0.15s ease;
+}
+
+.mapas-restore-banner-btn:hover {
+  background: #d4891c;
+}
+
+.mapas-restore-banner-dismiss {
+  border: none;
+  background: rgba(75, 88, 66, 0.1);
+  color: #4b5842;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: background 0.15s ease;
+}
+
+.mapas-restore-banner-dismiss:hover {
+  background: rgba(75, 88, 66, 0.2);
+}
+
+.mapas-restore-banner-remember {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #5f6758;
+  cursor: pointer;
+  padding: 6px 0 0;
+  margin-top: 4px;
+  border-top: 1px solid rgba(75, 88, 66, 0.1);
+  user-select: none;
+}
+
+.mapas-restore-banner-remember input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: #f19a20;
+  cursor: pointer;
+}
+
 .mapas-search-icon {
   width: 16px;
   height: 16px;
@@ -1004,118 +1128,6 @@
   gap: 8px;
 }
 
-.mapas-compact-detail {
-  margin-top: 10px;
-  padding: 12px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(75, 88, 66, 0.15);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.mapas-compact-detail-top {
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-}
-
-.mapas-compact-detail-thumb {
-  width: 48px;
-  height: 48px;
-  border-radius: 10px;
-  overflow: hidden;
-  flex-shrink: 0;
-  background: var(--mapas-mid);
-  border: 1px solid rgba(75, 88, 66, 0.12);
-}
-
-.mapas-compact-detail-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.mapas-compact-detail-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.mapas-compact-detail-info strong {
-  display: block;
-  font-size: 14px;
-  color: #243126;
-  line-height: 1.2;
-  margin-top: 2px;
-}
-
-.mapas-compact-detail-info small {
-  font-size: 12px;
-  color: #5f6758;
-  display: block;
-  line-height: 1.3;
-}
-
-.mapas-compact-detail-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: rgba(223, 151, 48, 0.15);
-  color: #df9730;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.mapas-compact-detail-close {
-  width: 24px;
-  height: 24px;
-  border: none;
-  border-radius: 50%;
-  background: rgba(75, 88, 66, 0.1);
-  color: #4b5842;
-  cursor: pointer;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.mapas-compact-detail-close:hover {
-  background: rgba(75, 88, 66, 0.2);
-}
-
-.mapas-compact-detail-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: #33402d;
-}
-
-.mapas-compact-detail-row .material-symbols-outlined {
-  font-size: 16px;
-  color: var(--mapas-orange);
-}
-
-.mapas-compact-detail-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.mapas-route-btn--compact {
-  width: 100%;
-  justify-content: center;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 14px;
-  font-size: 13px;
-}
-
 .mapas-nav-dest {
   padding: 12px;
   background: linear-gradient(135deg, rgba(75, 88, 66, 0.12), rgba(45, 37, 67, 0.08));
@@ -1149,6 +1161,13 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.mapas-route-card--active {
+  border-color: #f19a20;
+  background: rgba(241, 154, 32, 0.08);
 }
 
 .mapas-route-card-title {
@@ -1159,54 +1178,6 @@
 
 .mapas-route-card-count {
   margin: 2px 0 0;
-  color: #6f746d;
-  font-size: 12px;
-}
-
-.mapas-chip {
-  width: 12px;
-  height: 12px;
-  border-radius: 999px;
-  display: inline-block;
-}
-
-.mapas-chip--patrimonial {
-  background: #2463eb;
-}
-
-.mapas-chip--gastronomica {
-  background: #f19a20;
-}
-
-.mapas-chip--mitos {
-  background: #5b2fb3;
-}
-
-.mapas-legend {
-  width: min(84vw, 220px);
-  padding: 12px;
-  color: #38432f;
-}
-
-.mapas-legend-title {
-  margin: 0 0 8px;
-  font-family: "Bebas Neue", sans-serif;
-  letter-spacing: 0.06em;
-  font-size: 22px;
-}
-
-.mapas-legend-item {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin-bottom: 4px;
-  font-size: 14px;
-}
-
-.mapas-legend-footnote {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px dashed rgba(56, 67, 47, 0.28);
   color: #6f746d;
   font-size: 12px;
 }
@@ -1915,6 +1886,118 @@
   font-size: 0.88rem;
 }
 
+/* Destination marker (thumbnail) during navigation */
+.mapas-dest-marker {
+  display: block;
+}
+
+/* Mini floating navigation mode selector (responsive) */
+.mapas-nav-mini {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  width: min(92vw, 360px);
+  pointer-events: auto;
+  background: rgba(255, 250, 242, 0.96);
+  border-radius: 16px;
+  border: 1px solid rgba(75, 88, 66, 0.18);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+  padding: 10px 12px;
+}
+
+.mapas-nav-mini-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.mapas-nav-mini-header strong {
+  font-size: 13px;
+  color: #243126;
+  line-height: 1.2;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mapas-nav-mini-close {
+  border: none;
+  background: rgba(75, 88, 66, 0.1);
+  color: #4b5842;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mapas-nav-mini-modes {
+  display: flex;
+  gap: 6px;
+}
+
+.mapas-nav-mini-mode {
+  flex: 1;
+  border: 1px solid #d8cbb8;
+  background: #faf8f2;
+  border-radius: 999px;
+  padding: 6px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: #2f3729;
+  transition: all 0.15s ease;
+  min-height: 36px;
+}
+
+.mapas-nav-mini-mode.active {
+  border-color: #f19a20;
+  background: rgba(241, 154, 32, 0.1);
+  font-weight: 700;
+}
+
+.mapas-nav-mini-mode:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mapas-nav-mini-dur {
+  color: #66715e;
+  font-size: 10px;
+}
+
+.mapas-nav-mini-msg {
+  margin-top: 6px;
+  font-size: 10px;
+  line-height: 1.3;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: rgba(75, 88, 66, 0.06);
+  color: #66715e;
+}
+
+.mapas-nav-mini-msg[data-status="error"] {
+  color: #b91c1c;
+  background: rgba(153, 27, 27, 0.08);
+}
+
+.mapas-nav-mini-msg[data-status="success"] {
+  color: #1d4ed8;
+  background: rgba(36, 99, 235, 0.08);
+}
+
 .mapas-user-marker--tracking {
   width: 24px;
   height: 24px;
@@ -2056,7 +2139,7 @@
     left: 12px !important;
     right: 12px !important;
     top: auto !important;
-    bottom: calc(45vh + 20px) !important;
+    bottom: calc(60vh + 20px) !important;
     width: auto !important;
     border-radius: 14px !important;
     z-index: 45 !important;
@@ -2073,14 +2156,14 @@
     z-index: 20;
     justify-content: center;
     padding: 0;
-    max-height: 45vh;
+    max-height: 60vh;
     overflow: hidden;
   }
 
   .mapas-side-panel {
     width: 100%;
     max-width: 100%;
-    max-height: 45vh;
+    max-height: 60vh;
     border-radius: 20px 20px 0 0;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
@@ -2117,23 +2200,14 @@
     min-height: 44px;
   }
 
-  .mapas-compact-detail {
-    padding: 8px;
-  }
-
-  .mapas-compact-detail-thumb {
-    width: 40px;
-    height: 40px;
-  }
-
-  .mapas-empty-state {
+.mapas-empty-state {
     padding: 12px;
     text-align: center;
   }
 
   /* -------------------- BOTTOM LAYER (makes room for the drawer) -------------------- */
   .mapas-ui-bottom {
-    padding-bottom: calc(45vh + 16px);
+    padding-bottom: calc(60vh + 20px);
     gap: 8px;
   }
 
@@ -2186,39 +2260,20 @@
     font-size: 14px;
   }
 
-  /* -------------------- LEGEND (compact grid) -------------------- */
-  .mapas-legend {
-    width: 100%;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 4px 12px;
-    padding: 8px 10px;
+  /* Hide side panel during navigation on mobile */
+  .mapas-ui-middle--nav-hidden {
+    display: none !important;
   }
 
-  .mapas-legend-title {
-    width: 100%;
-    font-size: 16px;
-    margin: 0 0 2px;
+  .mapas-side-panel--nav-hidden {
+    display: none !important;
   }
 
-  .mapas-legend-item {
-    margin-bottom: 0;
-    font-size: 12px;
-    gap: 5px;
-  }
 
-  .mapas-chip {
-    width: 10px;
-    height: 10px;
-  }
 
-  .mapas-legend-footnote {
-    width: 100%;
-    margin-top: 2px;
-    padding-top: 2px;
-    font-size: 11px;
-  }
+
+
+
 
   /* -------------------- MARKERS - slightly bigger touch targets -------------------- */
   .mapas-custom-marker__dot {

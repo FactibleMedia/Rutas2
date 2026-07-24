@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import mapboxgl from "mapbox-gl";
 import TopBar from "./TopBar";
+import NavMap from "./NavMap";
 import { getRouteCounts, useMapLocations } from "./mapLocationsStore";
 import "mapbox-gl/dist/mapbox-gl.css";
 import "./Mapas.css";
@@ -86,6 +87,10 @@ export default function Mapas() {
   const routeAnimationRef = useRef(null);
   const navigationAnimationRef = useRef(null);
   const navigationTimerRef = useRef(null);
+  const navigationWatchIdRef = useRef(null);
+  const lastPositionRef = useRef(null);
+  const lastPositionTimeRef = useRef(null);
+  const lastSpeedRef = useRef(0);
   const popupDragRef = useRef(null);
 
   const [searchText, setSearchText] = useState("");
@@ -108,13 +113,57 @@ export default function Mapas() {
   const [isRouteTrackingOpen, setIsRouteTrackingOpen] = useState(false);
   const [navigationElapsedSeconds, setNavigationElapsedSeconds] = useState(0);
   const [navigationPreviewProgress, setNavigationPreviewProgress] = useState(0);
+  const [isNavigating, setIsNavigating] = useState(false);
+  const [realSpeed, setRealSpeed] = useState(0);
+  const [realProgress, setRealProgress] = useState(0);
+  const [realInstruction, setRealInstruction] = useState({ text: "Sigue recto", icon: "straight", distance: 0 });
   const [locationPermissionState, setLocationPermissionState] = useState("idle");
   const [locationPermissionMessage, setLocationPermissionMessage] = useState("");
   const [loadError, setLoadError] = useState("");
   const [videoPlayingId, setVideoPlayingId] = useState(null); // index of video being played in hero
   const [imgErrors, setImgErrors] = useState({}); // track image load errors
+  const [isVoiceEnabled, setIsVoiceEnabled] = useState(() => {
+    try { const saved = localStorage.getItem('navmap_voice'); return saved === null ? true : saved === 'true'; }
+    catch { return true; }
+  });
+  const [dontAskRestore, setDontAskRestore] = useState(() => {
+    try { return localStorage.getItem('navmap_dont_ask') === 'true'; }
+    catch { return false; }
+  });
+  const [savedNav, setSavedNav] = useState(() => {
+    try {
+      if (dontAskRestore) return null;
+      const raw = sessionStorage.getItem('navmap_active');
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  });
+  const lastInstructionRef = useRef('');
+  const speechSynthRef = useRef(null);
+  const hasArrivedRef = useRef(false);
+  const arrivalTimerRef = useRef(null);
+  const deviceHeadingRef = useRef(0);
+  const alertedStepsRef = useRef(new Set());
+  const [proximityAlert, setProximityAlert] = useState(null);
   const handleImgError = (id) => {
     setImgErrors((prev) => ({ ...prev, [id]: true }));
+  };
+
+  // Device orientation / compass handler — updates heading ref for NavMap compass indicator
+  const handleDeviceOrientation = useCallback((event) => {
+    const heading = event.webkitCompassHeading || event.alpha || 0;
+    deviceHeadingRef.current = heading;
+  }, []);
+
+  // Haversine distance in meters
+  const haversineDistance = (coords1, coords2) => {
+    const R = 6371000;
+    const toRad = (deg) => (deg * Math.PI) / 180;
+    const dLat = toRad(coords2[1] - coords1[1]);
+    const dLon = toRad(coords2[0] - coords1[0]);
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(toRad(coords1[1])) * Math.cos(toRad(coords2[1])) * Math.sin(dLon / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   };
 
   // Apply or re-apply route-based colors to the map
@@ -173,18 +222,21 @@ export default function Mapas() {
     return getDriveFileId(url) !== null;
   };
 
+  // Search across ALL routes, not just the active one
   const filteredPlaces = useMemo(() => {
-    const routeFilter = selectedRouteId;
     const normalizedQuery = normalizeText(searchText.trim());
 
-    return locations.filter((place) => {
-      const routeMatches = place.routeId === routeFilter;
-      const searchMatches =
-        normalizedQuery.length === 0 ||
-        normalizeText(place.name).includes(normalizedQuery) ||
-        normalizeText(place.subtitle).includes(normalizedQuery);
+    if (normalizedQuery.length === 0) {
+      // No search: show only places from the selected route
+      return locations.filter((place) => place.routeId === selectedRouteId);
+    }
 
-      return routeMatches && searchMatches;
+    // Searching: show ALL matching places across all routes
+    return locations.filter((place) => {
+      return (
+        normalizeText(place.name).includes(normalizedQuery) ||
+        normalizeText(place.subtitle).includes(normalizedQuery)
+      );
     });
   }, [locations, searchText, selectedRouteId]);
 
@@ -246,6 +298,7 @@ export default function Mapas() {
       markersRef.current.forEach(({ marker }) => marker.remove());
       markersRef.current = [];
       stopNavigationPlayback();
+      stopRealNavigation();
       if (mapRef.current) mapRef.current.remove();
       mapRef.current = null;
       setIsMapReady(false);
@@ -290,7 +343,7 @@ export default function Mapas() {
         setPlacePopupPosition({ x: 24, y: 96 });
         setRoutePlans({});
         setRouteOrigin(null);
-        setView("compact");
+        setView("list");
         stopNavigationPlayback();
         clearRouteLayer();
         setImgErrors({});
@@ -324,18 +377,26 @@ export default function Mapas() {
     if (current && current.id !== activePlace?.id) setActivePlace(current);
   }, [locations, selectedPlaceId, activePlace?.id]);
 
-  // Filter markers by search and route
+  // Filter markers by search (all routes when searching) or navigation mode
   useEffect(() => {
     const normalizedQuery = normalizeText(searchText.trim());
+    const isNavMode = isNavigating;
     markersRef.current.forEach(({ place, markerElement }) => {
-      const routeMatches = place.routeId === selectedRouteId;
-      const searchMatches =
-        normalizedQuery.length === 0 ||
-        normalizeText(place.name).includes(normalizedQuery) ||
-        normalizeText(place.subtitle).includes(normalizedQuery);
-      markerElement.style.display = routeMatches && searchMatches ? "block" : "none";
+      if (isNavMode) {
+        // Navigation mode on mobile: hide ALL normal markers, only destination + user visible
+        markerElement.style.display = "none";
+      } else if (normalizedQuery.length > 0) {
+        // Search mode: show ALL matching markers across all routes
+        const searchMatches =
+          normalizeText(place.name).includes(normalizedQuery) ||
+          normalizeText(place.subtitle).includes(normalizedQuery);
+        markerElement.style.display = searchMatches ? "block" : "none";
+      } else {
+        // Normal mode: only show markers from the selected route
+        markerElement.style.display = place.routeId === selectedRouteId ? "block" : "none";
+      }
     });
-  }, [searchText, selectedRouteId]);
+  }, [searchText, selectedRouteId, view, isMobileDevice]);
 
   // Mobile location prompt
   useEffect(() => {
@@ -402,6 +463,8 @@ export default function Mapas() {
   const handleSelectPlace = (place) => {
     setSelectedPlaceId(place.id);
     setActivePlace(place);
+    setSelectedRouteId(place.routeId); // Switch to the place's route
+    setSavedNav(null);
     setIsPlacePopupOpen(true);
     setIsPlacePopupCollapsed(false);
     setPlacePopupPosition({ x: 24, y: 96 });
@@ -410,7 +473,7 @@ export default function Mapas() {
     setRouteOrigin(null);
     setRouteStatus("idle");
     setRouteMessage("");
-    setView("compact");
+    setView("list");
     stopNavigationPlayback();
     clearRouteLayer();
     setVideoPlayingId(null);
@@ -433,6 +496,12 @@ export default function Mapas() {
     setRoutePlans({});
     clearRouteLayer();
     setVideoPlayingId(null);
+    stopRealNavigation();
+    // Remove destination marker
+    if (destMarkerRef.current) {
+      destMarkerRef.current.remove();
+      destMarkerRef.current = null;
+    }
   };
 
   const collapsePlacePopup = () => {
@@ -478,15 +547,23 @@ export default function Mapas() {
     });
   };
 
-  const currentNavigationPlan = routePlans[travelMode];
-  const currentNavigationRemainingSeconds = Number.isFinite(currentNavigationPlan?.duration)
-    ? Math.max(0, Math.round(currentNavigationPlan.duration - navigationElapsedSeconds))
-    : Number.NaN;
+  // Derive the current route plan for the selected travel mode — must be before any reference
+  const routePlan = routePlans[travelMode];
+
+  const currentNavigationPlan = routePlan;
+  const currentNavigationRemainingSeconds = (() => {
+    if (!Number.isFinite(currentNavigationPlan?.duration)) return Number.NaN;
+    if (isNavigating) {
+      // Use real GPS progress for remaining time
+      return Math.max(0, Math.round(currentNavigationPlan.duration * (1 - realProgress / 100)));
+    }
+    return Math.max(0, Math.round(currentNavigationPlan.duration - navigationElapsedSeconds));
+  })();
 
   const currentNavigationProgress = Math.max(0, Math.min(100, navigationPreviewProgress));
   const currentNavigationPhase = currentNavigationProgress < 18 ? "Salida" : currentNavigationProgress < 55 ? "Ruta" : currentNavigationProgress < 85 ? "Enfoque" : "Arribo";
   const currentNavigationSpeed =
-    travelMode === "walking" ? 5 + Math.round((currentNavigationProgress % 4) / 2) : travelMode === "car" ? 34 + Math.round((currentNavigationProgress % 7) / 2) : 21 + Math.round((currentNavigationProgress % 5) / 2);
+    isNavigating ? realSpeed : (travelMode === "walking" ? 5 + Math.round((currentNavigationProgress % 4) / 2) : travelMode === "car" ? 34 + Math.round((currentNavigationProgress % 7) / 2) : 21 + Math.round((currentNavigationProgress % 5) / 2));
   const currentNavigationManeuver =
     currentNavigationProgress < 18
       ? "Salimos del punto actual"
@@ -509,6 +586,216 @@ export default function Mapas() {
     if (navigationTimerRef.current) { clearInterval(navigationTimerRef.current); navigationTimerRef.current = null; }
     if (navigationAnimationRef.current) { cancelAnimationFrame(navigationAnimationRef.current); navigationAnimationRef.current = null; }
   };
+
+  // Real GPS navigation tracking
+  const stopRealNavigation = useCallback(() => {
+    if (navigationWatchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(navigationWatchIdRef.current);
+      navigationWatchIdRef.current = null;
+    }
+    lastPositionRef.current = null;
+    lastPositionTimeRef.current = null;
+    setIsNavigating(false);
+    setSavedNav(null);
+    hasArrivedRef.current = false;
+    if (arrivalTimerRef.current) { clearTimeout(arrivalTimerRef.current); arrivalTimerRef.current = null; }
+    alertedStepsRef.current = new Set();
+    setProximityAlert(null);
+    // Clear voice reference so next navigation speaks first instruction again
+    lastInstructionRef.current = '';
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    // Stop device orientation listener
+    window.removeEventListener('deviceorientation', handleDeviceOrientation);
+    // Clear persisted navigation (sessionStorage)
+    try { sessionStorage.removeItem('navmap_active'); } catch { /* ignore */ }
+  }, []);
+
+  const startRealNavigation = useCallback(() => {
+    if (!routePlan || !mapRef.current) return;
+    
+    const plan = routePlan;
+    const coords = plan.coordinates;
+    if (!coords?.length) return;
+
+    // Add destination marker
+    addDestinationMarker(activePlace);
+
+    // Start watching position with high accuracy
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        const { latitude, longitude, speed: gpsSpeed, accuracy } = position.coords;
+        const userLngLat = [longitude, latitude];
+
+        // Update user marker on map
+        if (userMarkerRef.current) {
+          userMarkerRef.current.setLngLat(userLngLat);
+        } else if (mapRef.current) {
+          const el = document.createElement("div");
+          el.className = "mapas-user-marker mapas-user-marker--tracking";
+          userMarkerRef.current = new mapboxgl.Marker(el).setLngLat(userLngLat).addTo(mapRef.current);
+        }
+
+        // Calculate real speed: prefer GPS speed (m/s → km/h), fallback to distance/time
+        let currentSpeed = 0;
+        if (gpsSpeed !== null && gpsSpeed !== undefined && gpsSpeed >= 0) {
+          currentSpeed = Math.round(gpsSpeed * 3.6); // m/s → km/h
+        } else if (lastPositionRef.current && lastPositionTimeRef.current) {
+          const dx = longitude - lastPositionRef.current[0];
+          const dy = latitude - lastPositionRef.current[1];
+          const distKm = Math.sqrt(dx * dx + dy * dy) * 111320; // rough km
+          const timeSec = (Date.now() - lastPositionTimeRef.current) / 1000;
+          if (timeSec > 0) {
+            currentSpeed = Math.round((distKm / timeSec) * 3.6);
+          }
+        }
+        // Outlier filter: use ref-based last stable speed (avoids stale closure)
+        if (currentSpeed > 250) currentSpeed = lastSpeedRef.current || 0;
+        currentSpeed = Math.max(0, Math.min(250, currentSpeed));
+        lastSpeedRef.current = currentSpeed;
+        setRealSpeed(currentSpeed);
+
+        // Find closest point on route to calculate real progress
+        const totalPoints = coords.length;
+        let minDistSq = Infinity;
+        let closestIdx = 0;
+        coords.forEach((coord, idx) => {
+          const dx = coord[0] - longitude;
+          const dy = coord[1] - latitude;
+          const distSq = dx * dx + dy * dy;
+          if (distSq < minDistSq) {
+            minDistSq = distSq;
+            closestIdx = idx;
+          }
+        });
+        const newProgress = Math.min(100, Math.round((closestIdx / Math.max(1, totalPoints - 1)) * 100));
+        setRealProgress(newProgress);
+
+        // Find current instruction step based on closest point
+        if (plan.steps?.length && activePlace) {
+          const routeLen = plan.steps.length;
+          const stepIdx = Math.min(routeLen - 1, Math.floor((newProgress / 100) * routeLen));
+          const step = plan.steps[stepIdx];
+          const newText = step.instruction || "Sigue recto";
+          setRealInstruction({
+            text: newText,
+            icon: step.maneuver || "straight",
+            distance: step.distance || 0,
+          });
+          // Speak instruction via SpeechSynthesis when it changes
+          if (isVoiceEnabled && newText !== lastInstructionRef.current && window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(newText);
+            utterance.lang = 'es-ES';
+            utterance.rate = 0.9;
+            utterance.pitch = 1.0;
+            window.speechSynthesis.speak(utterance);
+            lastInstructionRef.current = newText;
+          }
+        }
+
+        // Proximity alert: detect distance to next step (< 100m)
+        if (plan.steps?.length && activePlace?.coordinates && !hasArrivedRef.current) {
+          const nextStepIdx = Math.min(plan.steps.length - 1, Math.floor((newProgress / 100) * plan.steps.length) + 1);
+          const nextStep = plan.steps[nextStepIdx];
+          if (nextStep && nextStep.location && !alertedStepsRef.current.has(nextStepIdx)) {
+            const distToNext = haversineDistance(userLngLat, [nextStep.location[0], nextStep.location[1]]);
+            if (distToNext < 100) {
+              alertedStepsRef.current.add(nextStepIdx);
+              const alertText = nextStep.instruction || 'Giro próximo';
+              setProximityAlert({ text: alertText, distance: Math.round(distToNext), icon: nextStep.maneuver || 'straight', stepIdx: nextStepIdx });
+              // Speak the alert with emphasis
+              if (isVoiceEnabled && window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+                const utter = new SpeechSynthesisUtterance(`Precaución, ${alertText}`);
+                utter.lang = 'es-ES';
+                utter.rate = 0.85;
+                window.speechSynthesis.speak(utter);
+              }
+              // Clear alert after 6 seconds
+              setTimeout(() => setProximityAlert(null), 6000);
+            }
+          }
+        }
+
+        // Save last position for speed fallback calculation
+        lastPositionRef.current = [longitude, latitude];
+        lastPositionTimeRef.current = Date.now();
+
+        // Arrival detection: check distance to destination
+        if (activePlace?.coordinates && !hasArrivedRef.current) {
+          const distToDest = haversineDistance(userLngLat, activePlace.coordinates);
+          if (distToDest < 50) {
+            hasArrivedRef.current = true;
+            setRealProgress(100);
+            setRouteStatus('success');
+            setRouteMessage(`¡Llegaste a ${activePlace.name}!`);
+            // Speak arrival
+            if (isVoiceEnabled && window.speechSynthesis) {
+              window.speechSynthesis.cancel();
+              const utter = new SpeechSynthesisUtterance(`Has llegado a ${activePlace.name}`);
+              utter.lang = 'es-ES';
+              utter.rate = 0.85;
+              window.speechSynthesis.speak(utter);
+            }
+            // Auto-stop navigation after 4 seconds
+            arrivalTimerRef.current = setTimeout(() => {
+              stopRealNavigation();
+              goBackToList();
+            }, 4000);
+          }
+        }
+
+        // Recenter map every 3 seconds if we have a recent fix
+        if (accuracy < 100 && mapRef.current && !hasArrivedRef.current) {
+          mapRef.current.easeTo({
+            center: userLngLat,
+            zoom: 15.6,
+            duration: 500,
+            essential: true,
+          });
+        }
+      },
+      (error) => {
+        console.warn("GPS error:", error.message);
+        setRouteStatus("error");
+        setRouteMessage("Error de GPS: " + error.message);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 2000,
+      }
+    );
+
+    // Start device orientation listener for compass
+    hasArrivedRef.current = false;
+    try {
+      // iOS 13+ requires permission request
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission().then((state) => {
+          if (state === 'granted') window.addEventListener('deviceorientation', handleDeviceOrientation);
+        }).catch(() => {});
+      } else {
+        window.addEventListener('deviceorientation', handleDeviceOrientation);
+      }
+    } catch { /* deviceorientation not supported */ }
+
+    navigationWatchIdRef.current = watchId;
+    setIsNavigating(true);
+    setRouteStatus("success");
+    setRouteMessage("Navegación GPS activa");
+
+    // Persist navigation state to sessionStorage (clears on tab close)
+    try {
+      sessionStorage.setItem('navmap_active', JSON.stringify({
+        destinationName: activePlace?.name,
+        destinationCoords: activePlace?.coordinates,
+        travelMode,
+        destinationImage: activePlace?.image,
+        savedAt: Date.now(),
+      }));
+    } catch { /* quota exceeded or private mode */ }
+  }, [routePlan, activePlace]);
 
   const startNavigationPlayback = (plan) => {
     if (!mapRef.current || !plan?.coordinates?.length) return;
@@ -566,19 +853,43 @@ export default function Mapas() {
     }, 1000);
   };
 
+  // Get the first real instruction from the route or fallback
+  const getCurrentInstruction = (plan, progress) => {
+    if (!plan?.steps?.length) {
+      return { text: "Sigue recto", icon: "straight", distance: plan?.distance || 0 };
+    }
+    const routeLen = plan.steps.length;
+    const stepIdx = Math.min(routeLen - 1, Math.floor((progress / 100) * routeLen));
+    const step = plan.steps[stepIdx];
+    return {
+      text: step.instruction || "Sigue recto",
+      icon: step.maneuver || "straight",
+      distance: step.distance || 0,
+    };
+  };
+
   const fetchRoutePlan = async (mode, origin, destination) => {
     const profile = mode === "walking" ? "walking" : "driving";
     const response = await fetch(
-      `https://api.mapbox.com/directions/v5/mapbox/${profile}/${origin[0]},${origin[1]};${destination[0]},${destination[1]}?geometries=geojson&overview=full&access_token=${MAPBOX_TOKEN}`
+      `https://api.mapbox.com/directions/v5/mapbox/${profile}/${origin[0]},${origin[1]};${destination[0]},${destination[1]}?geometries=geojson&overview=full&steps=true&language=es&access_token=${MAPBOX_TOKEN}`
     );
     const data = await response.json();
     if (!data.routes || data.routes.length === 0) throw new Error(`No route for ${mode}`);
     const route = data.routes[0];
+    // Extract turn-by-turn steps from the first leg
+    const steps = route.legs?.[0]?.steps?.map((s) => ({
+      instruction: s.maneuver?.instruction || s.maneuver?.type || "Sigue recto",
+      maneuver: s.maneuver?.modifier || s.maneuver?.type || "straight",
+      distance: s.distance || 0,
+      duration: s.duration || 0,
+      location: s.maneuver?.location || null,
+    })) || [];
     return {
       mode,
       coordinates: route.geometry.coordinates,
       duration: route.duration,
       distance: route.distance,
+      steps,
       note: mode === "walking" ? "Ruta caminando" : "Ruta en carro",
     };
   };
@@ -689,8 +1000,58 @@ export default function Mapas() {
     routeAnimationRef.current = requestAnimationFrame(animate);
   };
 
+  // Ref to store the destination marker (thumbnail) on the map
+  const destMarkerRef = useRef(null);
+
+  const addDestinationMarker = (place) => {
+    if (!mapRef.current) return;
+    // Remove existing destination marker
+    if (destMarkerRef.current) {
+      destMarkerRef.current.remove();
+      destMarkerRef.current = null;
+    }
+    // Create a marker with the site's image as a circular thumbnail
+    const el = document.createElement("button");
+    el.type = "button";
+    el.className = "mapas-dest-marker";
+    el.style.cssText = `
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      border: 3px solid #f19a20;
+      background: url('${place.image}') center/cover no-repeat;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      cursor: pointer;
+      display: block;
+    `;
+    // Fallback icon if no image
+    if (!place.image) {
+      el.style.background = "#f19a20";
+      el.style.display = "flex";
+      el.style.alignItems = "center";
+      el.style.justifyContent = "center";
+      el.style.color = "#fff";
+      el.style.fontWeight = "700";
+      el.style.fontSize = "18px";
+      el.textContent = "📍";
+    }
+    destMarkerRef.current = new mapboxgl.Marker(el)
+      .setLngLat(place.coordinates)
+      .addTo(mapRef.current);
+  };
+
   const handleTraceRoute = async () => {
     if (!activePlace || !mapRef.current) return;
+    
+    // Stop any existing GPS navigation first
+    stopRealNavigation();
+    
+    // Close the floating popup (site info) on mobile
+    setIsPlacePopupOpen(false);
+    setIsPlacePopupCollapsed(false);
+    
+    // Add destination thumbnail marker
+    addDestinationMarker(activePlace);
+    
     setRouteStatus("locating");
     setRouteMessage("Buscando tu ubicación...");
     setIsNavigationOpen(true);
@@ -750,6 +1111,71 @@ export default function Mapas() {
           <div ref={mapContainerRef} id="mapas" className="mapas-container" />
 
           <div className="mapas-ui-layer">
+            {/* Restore navigation banner */}
+            {savedNav && !isNavigating && (
+              <div className="mapas-restore-banner">
+                <div className="mapas-restore-banner-content">
+                  <span className="mapas-restore-banner-icon">🧭</span>
+                  <div>
+                    <strong>Navegación guardada</strong>
+                    <small>{savedNav.destinationName}</small>
+                  </div>
+                </div>
+                <div className="mapas-restore-banner-actions">
+                  <button
+                    type="button"
+                    className="mapas-restore-banner-btn"
+                    onClick={() => {
+                      const target = locations.find(
+                        (l) => l.name === savedNav.destinationName
+                      ) || locations.find(
+                        (l) => l.coordinates?.[0] === savedNav.destinationCoords?.[0] && l.coordinates?.[1] === savedNav.destinationCoords?.[1]
+                      );
+                      if (target) {
+                        handleSelectPlace(target);
+                        setTimeout(() => handleTraceRoute(), 600);
+                      } else if (savedNav.destinationCoords && mapRef.current) {
+                        mapRef.current.flyTo({ center: savedNav.destinationCoords, zoom: 15, duration: 1000 });
+                      }
+                      setSavedNav(null);
+                      try { sessionStorage.removeItem('navmap_active'); } catch {}
+                    }}
+                  >
+                    Continuar
+                  </button>
+                  <button
+                    type="button"
+                    className="mapas-restore-banner-dismiss"
+                    onClick={() => {
+                      setSavedNav(null);
+                      try { sessionStorage.removeItem('navmap_active'); } catch {}
+                    }}
+                    aria-label="Descartar"
+                  >×</button>
+                </div>
+                <label className="mapas-restore-banner-remember">
+                  <input
+                    type="checkbox"
+                    checked={dontAskRestore}
+                    onChange={(e) => {
+                      const next = e.target.checked;
+                      setDontAskRestore(next);
+                      try {
+                        if (next) {
+                          localStorage.setItem('navmap_dont_ask', 'true');
+                          sessionStorage.removeItem('navmap_active');
+                          setSavedNav(null);
+                        } else {
+                          localStorage.removeItem('navmap_dont_ask');
+                        }
+                      } catch {}
+                    }}
+                  />
+                  No preguntar de nuevo
+                </label>
+              </div>
+            )}
+
             {/* Top: Search */}
             <div className="mapas-ui-top">
               <div className="mapas-ui-top-stack">
@@ -759,7 +1185,7 @@ export default function Mapas() {
                     type="text"
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
-                    placeholder="Buscar sitios en la ruta activa..."
+                    placeholder="Buscar en todas las rutas..."
                     aria-label="Buscar"
                   />
                 </div>
@@ -834,11 +1260,76 @@ export default function Mapas() {
               </button>
             )}
 
-            {/* Side Panel: List / Navigation */}
-            <div id="galeria" className="mapas-ui-middle">
-              <aside className="mapas-side-panel" aria-label="Panel de rutas">
+            {/* Waze-style navigation overlay — shows on all devices when GPS navigation is active */}
+            {isNavigating && activePlace && routePlan && (
+              <NavMap
+                destinationName={activePlace.name}
+                duration={currentNavigationPlan?.duration || 0}
+                distance={currentNavigationPlan?.distance || 0}
+                progress={hasArrivedRef.current ? 100 : realProgress}
+                speed={currentNavigationSpeed}
+                instruction={hasArrivedRef.current ? `¡Llegaste a ${activePlace.name}!` : realInstruction.text}
+                instructionIcon={hasArrivedRef.current ? 'arrive' : realInstruction.icon}
+                instructionDistance={realInstruction.distance}
+                travelMode={travelMode}
+                isVoiceEnabled={isVoiceEnabled}
+                heading={deviceHeadingRef.current}
+                hasArrived={hasArrivedRef.current}
+                proximityAlert={proximityAlert}
+                onVoiceToggle={() => {
+                  const next = !isVoiceEnabled;
+                  setIsVoiceEnabled(next);
+                  try { localStorage.setItem('navmap_voice', next ? 'true' : 'false'); } catch {}
+                  if (!next && window.speechSynthesis) window.speechSynthesis.cancel();
+                }}
+                onClose={() => { stopRealNavigation(); goBackToList(); }}
+                onRecenter={() => {
+                  if (mapRef.current) {
+                    if (userMarkerRef.current) {
+                      const lngLat = userMarkerRef.current.getLngLat();
+                      if (lngLat) {
+                        mapRef.current.flyTo({ center: [lngLat.lng, lngLat.lat], zoom: 15.6, duration: 800 });
+                        return;
+                      }
+                    }
+                    if (routeOrigin) {
+                      mapRef.current.flyTo({ center: routeOrigin, zoom: 15.6, duration: 800 });
+                    }
+                  }
+                }}
+              />
+            )}
 
-                {/* Route selector + places list (always visible, with compact detail) */}
+            {/* Side Panel: List / Navigation — hidden on mobile during navigation */}
+            <div id="galeria" className={`mapas-ui-middle${isNavigating ? " mapas-ui-middle--nav-hidden" : ""}`}>
+              <aside className={`mapas-side-panel${isNavigating ? " mapas-side-panel--nav-hidden" : ""}`} aria-label="Panel de rutas">
+
+                {/* Route cards for switching routes — ALL visible, active one highlighted */}
+                <div className="mapas-route-cards">
+                  {routeStats.map((route) => (
+                    <button
+                      type="button"
+                      key={route.id}
+                      className={`mapas-route-card mapas-ui-card${route.id === selectedRouteId ? " mapas-route-card--active" : ""}`}
+                      onClick={() => {
+                        if (route.id !== selectedRouteId) {
+                          setSelectedRouteId(route.id);
+                          setIsRouteExpanded(true);
+                          setView("list");
+                          setIsNavigationOpen(false);
+                          clearRouteLayer();
+                        }
+                      }}
+                    >
+                      <div>
+                        <p className="mapas-route-card-title">{route.name}</p>
+                        <p className="mapas-route-card-count">{route.count} sitios</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Route selector + places list */}
                 <article className="mapas-main-card mapas-ui-card">
                   <button
                     type="button"
@@ -875,48 +1366,6 @@ export default function Mapas() {
                           <p className="mapas-empty-state">No hay lugares que coincidan con la búsqueda.</p>
                         )}
                       </div>
-
-                      {/* Compact place details */}
-                      {view === "compact" && activePlace && (
-                        <div className="mapas-compact-detail">
-                          <div className="mapas-compact-detail-top">
-                            <div className="mapas-compact-detail-thumb">
-                              {imgErrors[activePlace.id] ? (
-                                <div className="mapas-img-placeholder">SIN ILUSTRACIÓN</div>
-                              ) : (
-                                <img
-                                  src={activePlace.image}
-                                  alt={activePlace.name}
-                                  onError={() => handleImgError(activePlace.id)}
-                                  style={{ objectPosition: activePlace.imagePosition || "center" }}
-                                />
-                              )}
-                            </div>
-                            <div className="mapas-compact-detail-info">
-                              <span className="mapas-compact-detail-badge">{activePlace.categoryLabel}</span>
-                              <strong>{activePlace.name}</strong>
-                              {activePlace.subtitle && <small>{activePlace.subtitle}</small>}
-                            </div>
-                            <button type="button" className="mapas-compact-detail-close" onClick={goBackToList}>×</button>
-                          </div>
-                          {activePlace.address && (
-                            <div className="mapas-compact-detail-row">
-                              <span className="material-symbols-outlined">location_on</span>
-                              <span>{activePlace.address}</span>
-                            </div>
-                          )}
-                          <div className="mapas-compact-detail-actions">
-                            <button
-                              type="button"
-                              className="mapas-route-btn mapas-route-btn--compact"
-                              onClick={() => { setView("expanded"); }}
-                            >
-                              <span className="material-symbols-outlined" style={{ fontSize: 16 }}>open_in_full</span>
-                              Ver detalles
-                            </button>
-                          </div>
-                        </div>
-                      )}
                     </div>
                   )}
                 </article>
@@ -1052,6 +1501,46 @@ export default function Mapas() {
                         {isRouteLoading ? "Calculando..." : "Cómo llegar"}
                       </button>
 
+                      {/* Iniciar navegación GPS button */}
+                      {currentNavigationPlan && !isRouteLoading && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (isNavigating) {
+                              stopRealNavigation();
+                            } else {
+                              startRealNavigation();
+                            }
+                          }}
+                          style={{
+                            width: "100%",
+                            border: "none",
+                            borderRadius: 8,
+                            background: isNavigating ? "#b91c1c" : "#2463eb",
+                            color: "#fff",
+                            fontWeight: 700,
+                            fontSize: 12,
+                            letterSpacing: "0.06em",
+                            textTransform: "uppercase",
+                            padding: "8px 12px",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: 6,
+                            boxShadow: isNavigating ? "none" : "0 4px 10px rgba(36,99,235,0.25)",
+                            marginTop: 4,
+                          }}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="2" />
+                            <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
+                          </svg>
+                          {isNavigating ? "Detener navegación" : "Iniciar navegación GPS"}
+                        </button>
+                      )}
+
                       {/* Route status/error message */}
                       {routeMessage && !isRouteLoading && (
                         <div style={{
@@ -1066,51 +1555,11 @@ export default function Mapas() {
                     </div>
                   </div>
                 )}
-
-                {/* Route cards for switching routes (always visible) */}
-                <div className="mapas-route-cards">
-                  {routeStats.filter((r) => r.id !== selectedRouteId).map((route) => (
-                    <button
-                      type="button"
-                      key={route.id}
-                      className="mapas-route-card mapas-ui-card"
-                      onClick={() => {
-                        setSelectedRouteId(route.id);
-                        setIsRouteExpanded(true);
-                        setView("list");
-                        setIsNavigationOpen(false);
-                        clearRouteLayer();
-                      }}
-                    >
-                      <div>
-                        <p className="mapas-route-card-title">{route.name}</p>
-                        <p className="mapas-route-card-count">{route.count} sitios</p>
-                      </div>
-                      <span className={`mapas-chip mapas-chip--${route.chipClass}`} />
-                    </button>
-                  ))}
-                </div>
               </aside>
             </div>
 
-            {/* Bottom: Legend + Links */}
+            {/* Bottom: Spacer for responsive */}
             <div id="glosario" className="mapas-ui-bottom">
-              <section className="mapas-legend mapas-ui-card" aria-label="Leyenda de rutas">
-                <p className="mapas-legend-title">Rutas</p>
-                <div className="mapas-legend-item">
-                  <span className="mapas-chip mapas-chip--patrimonial" />
-                  <span>Patrimonial</span>
-                </div>
-                <div className="mapas-legend-item">
-                  <span className="mapas-chip mapas-chip--gastronomica" />
-                  <span>Gastronómica</span>
-                </div>
-                <div className="mapas-legend-item">
-                  <span className="mapas-chip mapas-chip--mitos" />
-                  <span>Mitos y leyendas</span>
-                </div>
-              </section>
-
             </div>
           </div>
 

@@ -1,0 +1,333 @@
+/* ============================================================
+   NavMap — Waze-style navigation overlay for mobile
+   ============================================================ */
+
+/* Top Instruction Card */
+.navmap-instruction {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 30;
+  background: rgba(255, 248, 243, 0.96);
+  border-radius: 16px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(78, 69, 65, 0.1);
+  pointer-events: auto;
+  backdrop-filter: blur(8px);
+}
+
+.navmap-instruction-icon {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  background: #241915;
+  color: #92807a;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.navmap-instruction-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.navmap-instruction-action {
+  font-family: "Plus Jakarta Sans", "Outfit", Arial, sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: #000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.navmap-instruction-detail {
+  font-size: 14px;
+  color: #4e4541;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.navmap-instruction-detail strong {
+  font-weight: 700;
+  color: #1f1b15;
+}
+
+/* ============================================================ */
+
+/* Floating Speedometer (Left) */
+.navmap-speedo {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 30;
+  width: 64px;
+  height: 64px;
+  background: rgba(255, 248, 243, 0.96);
+  border-radius: 50%;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  border: 3px solid rgba(36, 25, 21, 0.12);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+}
+
+.navmap-speedo-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: #000;
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.navmap-speedo-unit {
+  font-size: 9px;
+  font-weight: 700;
+  color: #4e4541;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  margin-top: 1px;
+}
+
+/* ============================================================ */
+
+/* Floating Action Buttons (Right) */
+.navmap-actions {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.navmap-action-btn {
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 248, 243, 0.96);
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  pointer-events: auto;
+  color: #1f1b15;
+  font-size: 20px;
+  transition: transform 0.15s ease, background 0.15s ease;
+  backdrop-filter: blur(8px);
+}
+
+.navmap-action-btn:active {
+  transform: scale(0.92);
+  background: rgba(255, 248, 243, 0.98);
+}
+
+.navmap-action-btn--muted {
+  background: rgba(186, 26, 26, 0.12);
+  color: #ba1a1a;
+}
+
+.navmap-action-btn--muted:hover {
+  background: rgba(186, 26, 26, 0.18);
+}
+
+/* ============================================================ */
+
+/* Bottom Sheet */
+.navmap-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  pointer-events: none;
+}
+
+.navmap-bottom-handle {
+  display: flex;
+  justify-content: center;
+  padding-bottom: 8px;
+  pointer-events: none;
+}
+
+.navmap-bottom-handle-bar {
+  width: 40px;
+  height: 4px;
+  background: rgba(78, 69, 65, 0.25);
+  border-radius: 4px;
+}
+
+.navmap-bottom-sheet {
+  background: rgba(246, 236, 227, 0.97);
+  border-radius: 24px 24px 0 0;
+  padding: 16px 20px 28px;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+  pointer-events: auto;
+  backdrop-filter: blur(12px);
+}
+
+.navmap-bottom-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.navmap-bottom-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.navmap-bottom-time {
+  font-family: "Plus Jakarta Sans", "Outfit", Arial, sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  color: #000;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.navmap-bottom-detail {
+  font-size: 14px;
+  color: #4e4541;
+  margin-top: 4px;
+  line-height: 1.3;
+}
+
+.navmap-bottom-close {
+  width: 48px;
+  height: 48px;
+  border: none;
+  background: #ba1a1a;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(186, 26, 26, 0.25);
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.navmap-bottom-close:active {
+  transform: scale(0.92);
+}
+
+/* Progress Bar */
+.navmap-progress {
+  width: 100%;
+  height: 6px;
+  background: rgba(78, 69, 65, 0.12);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.navmap-progress-fill {
+  height: 100%;
+  background: #d36400;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+/* ============================================================ */
+
+/* Compass indicator (top-right) */
+.navmap-compass {
+  position: absolute;
+  top: 76px;
+  right: 12px;
+  z-index: 30;
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 248, 243, 0.92);
+  border-radius: 50%;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+  transition: transform 0.3s ease;
+  border: 1px solid rgba(78, 69, 65, 0.1);
+}
+
+/* ============================================================ */
+
+/* Arrival overlay */
+.navmap-arrival {
+  position: absolute;
+  inset: 0;
+  z-index: 35;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(36, 25, 21, 0.65);
+  backdrop-filter: blur(8px);
+  pointer-events: auto;
+  animation: navmapArrivalFadeIn 400ms ease;
+}
+
+@keyframes navmapArrivalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.navmap-arrival-icon {
+  font-size: 64px;
+  line-height: 1;
+  margin-bottom: 12px;
+  animation: navmapArrivalBounce 600ms ease infinite alternate;
+}
+
+@keyframes navmapArrivalBounce {
+  from { transform: scale(1); }
+  to { transform: scale(1.15); }
+}
+
+.navmap-arrival-title {
+  font-family: "Plus Jakarta Sans", "Outfit", Arial, sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.1;
+  text-align: center;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.navmap-arrival-sub {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 6px;
+  text-align: center;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}

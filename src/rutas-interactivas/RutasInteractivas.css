@@ -806,20 +806,6 @@
   object-fit: cover;
 }
 
-.rimap-modal-img-badge {
-  position: absolute;
-  bottom: 12px;
-  left: 12px;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(4px);
-  color: #fff;
-  font-family: "Bebas Neue", sans-serif;
-  font-size: 13px;
-  letter-spacing: 0.08em;
-  padding: 6px 14px;
-  border-radius: 100px;
-}
-
 .rimap-modal-body {
   padding: 28px;
 }

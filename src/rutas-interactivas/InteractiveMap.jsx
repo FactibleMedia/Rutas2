@@ -354,18 +354,15 @@ export default function InteractiveMap({
       {selectedPoint && (
         <div className="rimap-modal-overlay" onClick={handleCloseModal}>
           <div className="rimap-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="rimap-modal-close" onClick={handleCloseModal} aria-label="Cerrar">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 6L6 18" /><path d="M6 6l12 12" />
-              </svg>
-            </button>
             <div className="rimap-modal-img">
+              <button className="rimap-modal-close" onClick={handleCloseModal} aria-label="Cerrar">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 6L6 18" /><path d="M6 6l12 12" />
+                </svg>
+              </button>
               <img src={selectedPoint.imagen_url || selectedPoint.img}
                 alt={selectedPoint.titulo || selectedPoint.title} />
-              <div className="rimap-modal-img-badge">
-                Punto {pointsData.indexOf(selectedPoint) + 1}
-              </div>
             </div>
             <div className="rimap-modal-body">
               <h3 className="rimap-modal-title">{selectedPoint.titulo || selectedPoint.title}</h3>
