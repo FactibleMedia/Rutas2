@@ -95,7 +95,7 @@ export default function Mapas() {
 
   const [searchText, setSearchText] = useState("");
   const [selectedRouteId, setSelectedRouteId] = useState("patrimonial");
-  const [isRouteExpanded, setIsRouteExpanded] = useState(true);
+  const [isRouteExpanded, setIsRouteExpanded] = useState(false);
   const [selectedPlaceId, setSelectedPlaceId] = useState(locations[0]?.id || "");
   const [activePlace, setActivePlace] = useState(locations[0] ?? null);
   const [isPlacePopupOpen, setIsPlacePopupOpen] = useState(false);
@@ -110,7 +110,6 @@ export default function Mapas() {
   const [routeStatus, setRouteStatus] = useState("idle");
   const [routeMessage, setRouteMessage] = useState("");
   const [view, setView] = useState("list"); // "list" | "compact" | "expanded" | "navigation"
-  const [panelMode, setPanelMode] = useState("routes"); // "routes" | "place" | "navigation"
   const [isRouteTrackingOpen, setIsRouteTrackingOpen] = useState(false);
   const [navigationElapsedSeconds, setNavigationElapsedSeconds] = useState(0);
   const [navigationPreviewProgress, setNavigationPreviewProgress] = useState(0);
@@ -145,8 +144,7 @@ export default function Mapas() {
   const deviceHeadingRef = useRef(0);
   const alertedStepsRef = useRef(new Set());
   const [proximityAlert, setProximityAlert] = useState(null);
-  const [mobileDrawerExpanded, setMobileDrawerExpanded] = useState(false);
-  const drawerDragRef = useRef(null);
+  const routeSwitchTimerRef = useRef(null);
   const handleImgError = (id) => {
     setImgErrors((prev) => ({ ...prev, [id]: true }));
   };
@@ -339,7 +337,6 @@ export default function Mapas() {
         setSelectedRouteId(place.routeId);
         setSelectedPlaceId(place.id);
         setActivePlace(place);
-        setIsRouteExpanded(true);
         setIsNavigationOpen(false);
         setIsPlacePopupOpen(true);
         setIsPlacePopupCollapsed(false);
@@ -464,7 +461,6 @@ export default function Mapas() {
   };
 
   const goBackToRoutes = () => {
-    setPanelMode("routes");
     setRoutePlans({});
     setIsNavigationOpen(false);
     clearRouteLayer();
@@ -488,7 +484,6 @@ export default function Mapas() {
     setRouteOrigin(null);
     setRouteStatus("idle");
     setRouteMessage("");
-    setPanelMode("place");
     setView("list");
     stopNavigationPlayback();
     clearRouteLayer();
@@ -540,42 +535,6 @@ export default function Mapas() {
     };
   };
 
-  // Drag handle for mobile bottom drawer expand/collapse
-  const handleDrawerPointerDown = (event) => {
-    if (!isMobileDevice) return;
-    event.preventDefault();
-    const startY = event.clientY || event.touches?.[0]?.clientY || 0;
-    drawerDragRef.current = { startY, expanded: mobileDrawerExpanded };
-
-    const handleMove = (moveEvent) => {
-      if (!drawerDragRef.current) return;
-      const currentY = moveEvent.clientY || moveEvent.touches?.[0]?.clientY || 0;
-      const diffY = drawerDragRef.current.startY - currentY;
-      // Dragged up more than 80px → expand, dragged down more than 80px → collapse
-      if (diffY > 80 && !drawerDragRef.current.expanded) {
-        setMobileDrawerExpanded(true);
-        drawerDragRef.current.expanded = true;
-      } else if (diffY < -80 && drawerDragRef.current.expanded) {
-        setMobileDrawerExpanded(false);
-        drawerDragRef.current.expanded = false;
-      }
-    };
-
-    const handleUp = () => {
-      drawerDragRef.current = null;
-      window.removeEventListener('pointermove', handleMove);
-      window.removeEventListener('pointerup', handleUp);
-    };
-
-    window.addEventListener('pointermove', handleMove, { passive: true });
-    window.addEventListener('pointerup', handleUp, { passive: true });
-  };
-
-  const toggleMobileDrawer = () => {
-    if (isMobileDevice) {
-      setMobileDrawerExpanded((prev) => !prev);
-    }
-  };
 
   const formatDuration = (seconds) => {
     if (!Number.isFinite(seconds)) return "--";
@@ -1108,7 +1067,6 @@ export default function Mapas() {
     setRouteStatus("locating");
     setRouteMessage("Buscando tu ubicación...");
     setIsNavigationOpen(true);
-    setPanelMode("navigation");
     setView("navigation");
 
     const { position, errorMessage } = await requestLocationPermission({ silentSuccess: true });
@@ -1354,285 +1312,162 @@ export default function Mapas() {
               />
             )}
 
-            {/* Side Panel: List / Navigation — hidden on mobile during navigation */}
-            <div
-              id="galeria"
-              className={`mapas-ui-middle${isNavigating ? " mapas-ui-middle--nav-hidden" : ""}${isMobileDevice ? ` mapas-ui-middle--mobile${mobileDrawerExpanded ? ' mapas-ui-middle--expanded' : ''}` : ''}`}
-            >
-              {/* Drag handle for mobile bottom drawer */}
-              {isMobileDevice && (
-                <div
-                  className="mapas-drawer-handle"
-                  onPointerDown={handleDrawerPointerDown}
-                  onClick={toggleMobileDrawer}
-                  role="button"
-                  tabIndex={0}
-                  aria-label={mobileDrawerExpanded ? 'Colapsar panel' : 'Expandir panel'}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleMobileDrawer(); } }}
-                >
-                  <div className="mapas-drawer-handle__bar" />
-                  <span className="mapas-drawer-handle__text">
-                    {mobileDrawerExpanded ? '▼ Colapsar' : '▲ Deslizar para más'}
-                  </span>
-                </div>
-              )}
-              <aside className={`mapas-side-panel${isNavigating ? " mapas-side-panel--nav-hidden" : ""}`} aria-label="Panel de rutas">
-
-                {/* Route cards for switching routes — ALL visible, active one highlighted */}
-                <div className="mapas-route-cards">
-                  {routeStats.map((route) => (
+            {/* Navigation panel above bottom bar — appears when tracing a route */}
+            {isNavigationOpen && !isNavigating && activePlace && (
+              <div className="mapas-nav-panel visible">
+                <div className="mapas-nav-panel__inner">
+                  <div className="mapas-nav-panel__header">
+                    <div className="mapas-nav-panel__dest">
+                      <span className="mapas-nav-panel__label">Cómo llegar a</span>
+                      <strong className="mapas-nav-panel__name">{activePlace.name}</strong>
+                    </div>
                     <button
                       type="button"
-                      key={route.id}
-                      className={`mapas-route-card mapas-ui-card${route.id === selectedRouteId ? " mapas-route-card--active" : ""}`}
-                      onClick={() => {
-                        if (route.id !== selectedRouteId) {
-                          setSelectedRouteId(route.id);
-                          setIsRouteExpanded(true);
-                          setView("list");
-                          setIsNavigationOpen(false);
-                          clearRouteLayer();
-                        }
-                      }}
-                    >
-                      <div>
-                        <p className="mapas-route-card-title">{route.name}</p>
-                        <p className="mapas-route-card-count">{route.count} sitios</p>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-
-                {/* Route selector + places list */}
-                <article className="mapas-main-card mapas-ui-card">
-                  <button
-                    type="button"
-                    className="mapas-main-card-header"
-                    onClick={() => setIsRouteExpanded((v) => !v)}
-                  >
-                    <div>
-                      <p className="mapas-main-card-title">
-                        {routeStats.find((r) => r.id === selectedRouteId)?.name ?? "Ruta Patrimonial"}
-                      </p>
-                      <p className="mapas-main-card-count">
-                        {routeStats.find((r) => r.id === selectedRouteId)?.count ?? 0} sitios
-                      </p>
-                    </div>
-                    <span className={`mapas-chevron${isRouteExpanded ? " expanded" : ""}`}>v</span>
-                  </button>
-
-                  {isRouteExpanded && (
-                    <div className="mapas-main-card-body">
-                      <div className="mapas-places-list">
-                        {filteredPlaces.length > 0 ? (
-                          filteredPlaces.map((place) => (
-                            <button
-                              type="button"
-                              key={place.id}
-                              className={`mapas-place-item${selectedPlaceId === place.id ? " active" : ""}`}
-                              onClick={() => handleSelectPlace(place)}
-                            >
-                              <span className="mapas-place-dot" />
-                              <span>{place.name}</span>
-                            </button>
-                          ))
-                        ) : (
-                          <p className="mapas-empty-state">No hay lugares que coincidan con la búsqueda.</p>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </article>
-
-                {/* VIEW: NAVIGATION - compact like route cards */}
-                {view === "navigation" && activePlace && (
-                  <div className="mapas-ui-card" style={{
-                    marginTop: 2,
-                    padding: 0,
-                    overflow: "hidden",
-                  }}>
-                    {/* Compact header row */}
-                    <div style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      background: "#eaddcb",
-                      padding: "6px 10px",
-                    }}>
-                      <span style={{
-                        fontFamily: "'Bebas Neue', sans-serif",
-                        fontSize: 13,
-                        letterSpacing: "0.04em",
-                        color: "var(--mapas-green)",
-                      }}>Cómo llegar</span>
-                      <button
-                        type="button"
-                        onClick={goBackToList}
-                        style={{
-                          border: "none",
-                          background: "var(--mapas-green)",
-                          color: "#fff",
-                          borderRadius: "50%",
-                          width: 20,
-                          height: 20,
-                          fontSize: 11,
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          lineHeight: 1,
-                        }}
-                      >×</button>
-                    </div>
-
-                    <div style={{ padding: "8px 10px" }}>
-                      {/* One-liner: destination + route info */}
-                      <div style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: 6,
-                        marginBottom: 6,
-                      }}>
-                        <strong style={{ fontSize: 12, color: "#243126", lineHeight: 1.2, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {activePlace.name}
-                        </strong>
-                        {currentNavigationPlan && (
-                          <span style={{ fontSize: 11, color: "#66715e", whiteSpace: "nowrap" }}>
-                            {formatDuration(currentNavigationRemainingSeconds)}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Mode pills row */}
-                      {isRouteLoading ? (
-                        <div style={{ fontSize: 11, color: "#91570a", background: "rgba(241,154,32,0.1)", padding: "4px 8px", borderRadius: 6, marginBottom: 6 }}>
-                          Calculando ruta...
-                        </div>
-                      ) : (
-                        <div style={{ display: "flex", gap: 4, marginBottom: 6, flexWrap: "wrap" }}>
+                      className="mapas-nav-panel__close"
+                      onClick={goBackToRoutes}
+                      aria-label="Cerrar navegaci&oacute;n"
+                    >&times;</button>
+                  </div>
+                  <div className="mapas-nav-panel__body">
+                    {isRouteLoading ? (
+                      <div className="mapas-nav-panel__loading">Calculando ruta...</div>
+                    ) : (
+                      <>
+                        <div className="mapas-nav-panel__modes">
                           {[
-                            { key: "walking", label: "🚶", dur: formatDuration(routePlans["walking"]?.duration) },
-                            { key: "car", label: "🚗", dur: formatDuration(routePlans["car"]?.duration) },
-                            { key: "transit", label: "🚌", dur: formatDuration(routePlans["transit"]?.duration) },
-                          ].map((mode) => {
-                            const hasPlan = !!routePlans[mode.key];
-                            return (
-                              <button
-                                key={mode.key}
-                                type="button"
-                                onClick={() => setTravelMode(mode.key)}
-                                disabled={!hasPlan}
-                                style={{
-                                  border: travelMode === mode.key ? "1px solid var(--mapas-orange)" : "1px solid #d8cbb8",
-                                  background: travelMode === mode.key ? "rgba(241,154,32,0.08)" : "#faf8f2",
-                                  borderRadius: 999,
-                                  padding: "2px 8px",
-                                  fontSize: 11,
-                                  cursor: hasPlan ? "pointer" : "not-allowed",
-                                  opacity: hasPlan ? 1 : 0.5,
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  gap: 3,
-                                  color: "#2f3729",
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                <span>{mode.label}</span>
-                                {hasPlan && <span style={{ color: "#66715e", fontSize: 10 }}>{mode.dur}</span>}
-                              </button>
-                            );
-                          })}
+                            { key: "walking", label: "🚶", dur: formatDuration(routePlans["walking"]?.duration), dist: formatDistance(routePlans["walking"]?.distance) },
+                            { key: "car", label: "🚗", dur: formatDuration(routePlans["car"]?.duration), dist: formatDistance(routePlans["car"]?.distance) },
+                            { key: "transit", label: "🚌", dur: formatDuration(routePlans["transit"]?.duration), dist: formatDistance(routePlans["transit"]?.distance) },
+                          ].map((modeOpt) => (
+                            <button
+                              key={modeOpt.key}
+                              type="button"
+                              className={`mapas-nav-panel__mode${travelMode === modeOpt.key ? " active" : ""}`}
+                              onClick={() => setTravelMode(modeOpt.key)}
+                              disabled={!routePlans[modeOpt.key]}
+                            >
+                              <span className="mapas-nav-panel__mode-icon">{modeOpt.label}</span>
+                              <div className="mapas-nav-panel__mode-info">
+                                <strong>{modeOpt.dur}</strong>
+                                <small>{modeOpt.dist}</small>
+                              </div>
+                            </button>
+                          ))}
                         </div>
-                      )}
-
-                      {/* Cómo llegar button - compact */}
-                      <button
-                        type="button"
-                        onClick={handleTraceRoute}
-                        disabled={isRouteLoading}
-                        style={{
-                          width: "100%",
-                          border: "none",
-                          borderRadius: 8,
-                          background: "var(--mapas-orange)",
-                          color: "#fff",
-                          fontWeight: 700,
-                          fontSize: 12,
-                          letterSpacing: "0.06em",
-                          textTransform: "uppercase",
-                          padding: "8px 12px",
-                          cursor: isRouteLoading ? "wait" : "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          gap: 6,
-                          boxShadow: "0 4px 10px rgba(194,89,39,0.25)",
-                          opacity: isRouteLoading ? 0.8 : 1,
-                        }}
-                      >
-                        <span className="material-symbols-outlined" style={{ fontSize: 14 }}>directions</span>
-                        {isRouteLoading ? "Calculando..." : "Cómo llegar"}
-                      </button>
-
-                      {/* Iniciar navegación GPS button */}
-                      {currentNavigationPlan && !isRouteLoading && (
                         <button
                           type="button"
-                          onClick={() => {
-                            if (isNavigating) {
-                              stopRealNavigation();
-                            } else {
-                              startRealNavigation();
-                            }
-                          }}
-                          style={{
-                            width: "100%",
-                            border: "none",
-                            borderRadius: 8,
-                            background: isNavigating ? "#b91c1c" : "#2463eb",
-                            color: "#fff",
-                            fontWeight: 700,
-                            fontSize: 12,
-                            letterSpacing: "0.06em",
-                            textTransform: "uppercase",
-                            padding: "8px 12px",
-                            cursor: "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            gap: 6,
-                            boxShadow: isNavigating ? "none" : "0 4px 10px rgba(36,99,235,0.25)",
-                            marginTop: 4,
-                          }}
+                          className="mapas-nav-panel__gps"
+                          onClick={startRealNavigation}
+                          disabled={!routePlan}
                         >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="12" cy="12" r="2" />
-                            <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
-                          </svg>
-                          {isNavigating ? "Detener navegación" : "Iniciar navegación GPS"}
+                          🛰 Iniciar navegaci&oacute;n GPS
                         </button>
-                      )}
-
-                      {/* Route status/error message */}
-                      {routeMessage && !isRouteLoading && (
-                        <div style={{
-                          fontSize: 10,
-                          lineHeight: 1.3,
-                          paddingTop: 4,
-                          color: routeStatus === "error" ? "#b91c1c" : routeStatus === "success" ? "#1d4ed8" : "#66715e",
-                        }}>
-                          {routeMessage}
+                        <div className="mapas-nav-panel__summary">
+                          {routePlan && (
+                            <>
+                              <div className="mapas-nav-panel__stat">
+                                <small>Distancia</small>
+                                <strong>{formatDistance(routePlan.distance)}</strong>
+                              </div>
+                              <div className="mapas-nav-panel__stat">
+                                <small>Duraci&oacute;n</small>
+                                <strong>{formatDuration(routePlan.duration)}</strong>
+                              </div>
+                              <div className="mapas-nav-panel__stat">
+                                <small>Llegada</small>
+                                <strong>{formatEta(routePlan.duration)}</strong>
+                              </div>
+                            </>
+                          )}
                         </div>
-                      )}
-                    </div>
+                        {routeMessage && (
+                          <div className={`mapas-nav-panel__msg ${routeStatus}`}>
+                            {routeMessage}
+                          </div>
+                        )}
+                      </>
+                    )}
                   </div>
-                )}
-              </aside>
-            </div>
+                </div>
+              </div>
+            )}
 
-            {/* Bottom: Spacer for responsive */}
+            {/* Animated sites panel above bottom bar — appears when a route is active */}
+            {!isNavigating && (
+              <div className={`mapas-route-places${isRouteExpanded ? " visible" : ""}`}>
+                <div className="mapas-route-places__inner">
+                  <div className="mapas-route-places__header">
+                    <span className="mapas-route-places__name">
+                      {routeStats.find((r) => r.id === selectedRouteId)?.name ?? "Ruta"}
+                    </span>
+                    <span className="mapas-route-places__count">
+                      {filteredPlaces.length} sitios
+                    </span>
+                    <button
+                      type="button"
+                      className="mapas-route-places__close"
+                      onClick={() => setIsRouteExpanded(false)}
+                      aria-label="Cerrar lista"
+                    >&times;</button>
+                  </div>
+                  <div className="mapas-route-places__list">
+                    {filteredPlaces.length > 0 ? (
+                      filteredPlaces.map((place) => (
+                        <button
+                          type="button"
+                          key={place.id}
+                          className={`mapas-route-places__item${selectedPlaceId === place.id ? " active" : ""}`}
+                          onClick={() => handleSelectPlace(place)}
+                        >
+                          <span className="mapas-route-places__dot" />
+                          <span className="mapas-route-places__label">{place.name}</span>
+                        </button>
+                      ))
+                    ) : (
+                      <p className="mapas-route-places__empty">No hay lugares en esta ruta.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Route cards as floating bottom bar — ALL devices */}
+            {!isNavigating && (
+              <div className="mapas-bottom-routes">
+                {routeStats.map((route) => (
+                  <button
+                    type="button"
+                    key={route.id}
+                    className={`mapas-route-card${route.id === selectedRouteId ? " mapas-route-card--active" : ""}`}
+                    onClick={() => {
+                      if (route.id !== selectedRouteId) {
+                        // Clear any pending switch timer to avoid race conditions
+                        if (routeSwitchTimerRef.current) {
+                          clearTimeout(routeSwitchTimerRef.current);
+                        }
+                        // First collapse, then switch route with animation
+                        setIsRouteExpanded(false);
+                        setIsNavigationOpen(false);
+                        clearRouteLayer();
+                        const timerId = setTimeout(() => {
+                          setSelectedRouteId(route.id);
+                          setIsRouteExpanded(true);
+                          routeSwitchTimerRef.current = null;
+                        }, 180);
+                        routeSwitchTimerRef.current = timerId;
+                      } else {
+                        // Toggle the sites panel when clicking the same route
+                        setIsRouteExpanded((prev) => !prev);
+                      }
+                    }}
+                  >
+                    <p className="mapas-route-card-title">{route.name}</p>
+                    <p className="mapas-route-card-count">{route.count} sitios</p>
+                  </button>
+                ))}
+              </div>
+            )}
+
             <div id="glosario" className="mapas-ui-bottom">
             </div>
           </div>
