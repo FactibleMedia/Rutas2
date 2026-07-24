@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import mapboxgl from "mapbox-gl";
 import TopBar from "./TopBar";
 import { getRouteCounts, useMapLocations } from "./mapLocationsStore";
@@ -6,6 +7,27 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import "./Mapas.css";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+
+// Marker icons matching Rutas Interactivas style
+const MAPAS_MARKER_ICONS = {
+  patrimonial: "/assets/rutas/icon-patrimonial.png",
+  gastronomica: "/assets/rutas/icon-gastronomico.png",
+  mitos: "/assets/rutas/icon-mitico.png",
+  centro_historico: "/assets/rutas/icon-phistorico.png",
+  centros_culturales: "/assets/rutas/icon-pcentro.png",
+  zona_ambiental: "/assets/rutas/icon-pzona.png",
+  monumentos: "/assets/rutas/icon-pmonumentos.png",
+};
+
+function getMarkerIcon(place) {
+  if (place.subcategoria && MAPAS_MARKER_ICONS[place.subcategoria]) {
+    return MAPAS_MARKER_ICONS[place.subcategoria];
+  }
+  if (place.routeId && MAPAS_MARKER_ICONS[place.routeId]) {
+    return MAPAS_MARKER_ICONS[place.routeId];
+  }
+  return null;
+}
 const MAP_CENTER = [-73.2435, 10.4631];
 const MAP_ZOOM = 14.2;
 const MAP_PITCH = 0;
@@ -54,6 +76,7 @@ function normalizeText(value) {
 }
 
 export default function Mapas() {
+  const [searchParams] = useSearchParams();
   const locations = useMapLocations();
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
@@ -247,7 +270,13 @@ export default function Mapas() {
 
       // Inner dot with hover transitions (isolated from Mapbox positioning)
       const markerDot = document.createElement("span");
-      markerDot.className = "mapas-custom-marker__dot";
+      const markerIcon = getMarkerIcon(place);
+      markerDot.className = markerIcon ? "mapas-custom-marker__dot mapas-custom-marker__dot--icon" : "mapas-custom-marker__dot";
+      if (markerIcon) {
+        markerDot.style.backgroundImage = `url(${markerIcon})`;
+        markerDot.style.backgroundSize = "cover";
+        markerDot.style.backgroundPosition = "center";
+      }
       markerElement.appendChild(markerDot);
 
       const openPlace = () => {
@@ -691,6 +720,20 @@ export default function Mapas() {
     if (!routePlans[travelMode]) return;
     drawRouteForPlan(routePlans[travelMode]);
   }, [travelMode, routePlans]);
+
+  // Handle locationId from URL (coming from Rutas Interactivas)
+  useEffect(() => {
+    const locId = searchParams.get("locationId");
+    if (!locId || !locations.length || !isMapReady) return;
+    const target = locations.find((l) => l.id === locId);
+    if (target) {
+      // Small delay to let the map finish rendering
+      const timer = setTimeout(() => {
+        handleSelectPlace(target);
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams, locations, isMapReady]);
 
   // Apply route colors when selected route changes
   useEffect(() => {

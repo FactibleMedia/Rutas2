@@ -132,6 +132,7 @@ function normalizeLocation(location) {
     videos,
     imagePosition: location.imagePosition || "center",
     coordinates: [Number(coordinates[0]) || 0, Number(coordinates[1]) || 0],
+    subcategoria: location.subcategoria || "",
   };
 }
 
@@ -154,6 +155,7 @@ function toRow(location) {
     image_position: location.imagePosition || "center",
     longitude: Number(location.coordinates[0]) || 0,
     latitude: Number(location.coordinates[1]) || 0,
+    subcategoria: location.subcategoria || "",
   };
 }
 
@@ -175,6 +177,7 @@ function fromRow(row) {
     videos: row.videos || [],
     imagePosition: row.image_position || "center",
     coordinates: [Number(row.longitude), Number(row.latitude)],
+    subcategoria: row.subcategoria || "",
   });
 }
 

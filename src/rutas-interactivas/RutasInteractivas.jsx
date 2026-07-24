@@ -153,23 +153,14 @@ export default function RutasInteractivas() {
           <section className="rutas-interactivas__map-section">
             <div className="rutas-interactivas__map-top">
               <button
-                className="rutas-interactivas__back-btn"
+                className="rutas-interactivas__back-btn-lg"
                 onClick={() => setSelectedRoute(null)}
-                aria-label="Volver"
               >
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M19 12H5" />
-                  <polyline points="12 19 5 12 12 5" />
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 12H5" /><polyline points="12 19 5 12 12 5" />
                 </svg>
+                Volver a rutas
               </button>
               <h2 className="rutas-interactivas__map-title">{route.title}</h2>
             </div>
@@ -187,7 +178,37 @@ export default function RutasInteractivas() {
               isGeneral={selectedRoute === "general"}
               highlightedPoint={highlightedPoint}
               onHighlightPoint={setHighlightedPoint}
+              activeCategory={selectedRoute}
             />
+
+            {/* Download section */}
+            <section className="rutas-interactivas__download">
+              <h3 className="rutas-interactivas__download-title">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Descarga nuestros mapas y rutas
+              </h3>
+              <p className="rutas-interactivas__download-desc">
+                Lleva contigo los mapas de las rutas turísticas de Valledupar.
+              </p>
+              <div className="rutas-interactivas__download-grid">
+                {routeOptions.map((r) => (
+                  <a key={r.id} href={r.image} download={`${r.title}.png`}
+                    className="rutas-interactivas__download-btn"
+                    style={{ "--btn-accent": r.color }}>
+                    <span className="rutas-interactivas__download-icon">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+                      </svg>
+                    </span>
+                    <span className="rutas-interactivas__download-label">{r.title}</span>
+                  </a>
+                ))}
+              </div>
+            </section>
           </section>
         </main>
         <Footer />

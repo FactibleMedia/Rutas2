@@ -56,6 +56,33 @@ const POSITION_TRANSFORMS = {
 
 const POSITION_KEYS = ["top-left", "top", "top-right", "left", "center", "right", "bottom-left", "bottom", "bottom-right"];
 
+const SUBCATEGORIAS_PATRIMONIALES = [
+  { value: "", label: "General", icon: "/assets/rutas/icon-patrimonial.png" },
+  { value: "centro_historico", label: "Centro Histórico", icon: "/assets/rutas/icon-phistorico.png" },
+  { value: "centros_culturales", label: "Centros Culturales", icon: "/assets/rutas/icon-pcentro.png" },
+  { value: "zona_ambiental", label: "Zona Ambiental", icon: "/assets/rutas/icon-pzona.png" },
+  { value: "monumentos", label: "Monumentos", icon: "/assets/rutas/icon-pmonumentos.png" },
+];
+
+const SUBCATEGORIAS_MISTICA = [
+  { value: "", label: "General", icon: "/assets/rutas/icon-mitico.png" },
+  { value: "mitos", label: "Mitos", icon: "/assets/rutas/icon-mitos.png" },
+  { value: "leyendas", label: "Leyendas", icon: "/assets/rutas/icon-leyendas.png" },
+  { value: "devocion", label: "Devoción", icon: "/assets/rutas/icon-devocion.png" },
+];
+
+const SUBCATEGORIAS_GASTRONOMICA = [
+  { value: "", label: "General", icon: "/assets/rutas/icon-gastronomico.png" },
+  { value: "desayuno_almuerzo", label: "Desayuno y Almuerzo", icon: "/assets/rutas/icon-desayuno_almuerzo.png" },
+  { value: "postres_cena", label: "Postres y Cena", icon: "/assets/rutas/icon-postres_cena.png" },
+];
+
+const SUBCATEGORIAS_MAP = {
+  patrimonial: SUBCATEGORIAS_PATRIMONIALES,
+  gastronomica: SUBCATEGORIAS_GASTRONOMICA,
+  mitos: SUBCATEGORIAS_MISTICA,
+};
+
 const EMPTY_FORM = {
   id: "",
   routeId: "patrimonial",
@@ -68,6 +95,7 @@ const EMPTY_FORM = {
   costStatus: "Acceso Libre",
   latitude: "",
   longitude: "",
+  subcategoria: "",
 };
 
 export default function RouteForm({ location = null, onSave, onCancel }) {
@@ -95,6 +123,7 @@ export default function RouteForm({ location = null, onSave, onCancel }) {
   );
   const [images, setImages] = useState(location?.images || []);
   const [imagePosition, setImagePosition] = useState(location?.imagePosition || "center");
+  const [subcategoria, setSubcategoria] = useState(location?.subcategoria || "");
   const [videos, setVideos] = useState(location?.videos || []);
   const [videoUrl, setVideoUrl] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -295,6 +324,7 @@ export default function RouteForm({ location = null, onSave, onCancel }) {
         images,
         videos,
         imagePosition,
+        subcategoria,
         coordinates: [lng, lat],
       };
 
@@ -409,6 +439,42 @@ export default function RouteForm({ location = null, onSave, onCancel }) {
                   </button>
                 );
               })}
+            </div>
+          </div>
+
+          {/* Subcategoría (ícono del marcador) */}
+          <div className="admin-card" style={{ padding: 24 }}>
+            <h3 style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 600, margin: "0 0 16px", display: "flex", alignItems: "center", gap: 8 }}>
+              <span className="material-symbols-outlined" style={{ color: "var(--primary)" }}>layers</span>
+              Subcategoría (ícono del marcador)
+            </h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))", gap: 8 }}>
+              {(SUBCATEGORIAS_MAP[form.routeId] || SUBCATEGORIAS_PATRIMONIALES).map((sc) => (
+                <button
+                  key={sc.value}
+                  type="button"
+                  onClick={() => setSubcategoria(sc.value)}
+                  title={sc.label}
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "12px 8px",
+                    border: `2px solid ${subcategoria === sc.value ? "var(--primary)" : "transparent"}`,
+                    borderRadius: "var(--radius-md, 12px)",
+                    background: subcategoria === sc.value ? "var(--primary-container)" : "var(--surface-container-low)",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                    fontFamily: "var(--font-body)",
+                  }}
+                >
+                  <img src={sc.icon} alt={sc.label} style={{ width: 36, height: 36, objectFit: "contain" }} />
+                  <span style={{ fontSize: 11, fontWeight: 600, color: subcategoria === sc.value ? "var(--on-surface)" : "var(--on-surface-variant)", textAlign: "center", lineHeight: 1.2 }}>
+                    {sc.label}
+                  </span>
+                </button>
+              ))}
             </div>
           </div>
 

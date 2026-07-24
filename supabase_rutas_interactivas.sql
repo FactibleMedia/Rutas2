@@ -26,6 +26,8 @@ CREATE TABLE IF NOT EXISTS rutas_interactivas_puntos (
   titulo TEXT NOT NULL,
   descripcion TEXT DEFAULT '',
   imagen_url TEXT DEFAULT '',
+  -- Subcategoría para íconos distintivos (ej: centro_historico, monumento, etc)
+  subcategoria TEXT DEFAULT '',
   -- Coordenadas en porcentaje (0-100) relativas a la imagen del mapa
   x NUMERIC(5,1) NOT NULL CHECK (x >= 0 AND x <= 100),
   y NUMERIC(5,1) NOT NULL CHECK (y >= 0 AND y <= 100),

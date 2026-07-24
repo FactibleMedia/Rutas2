@@ -10,6 +10,48 @@ const CATEGORIES = [
   { slug: "mistica", nombre: "Ruta Mística", color: "#4A6B5D" },
 ];
 
+const SUBCATEGORIAS_PATRIMONIALES = [
+  { value: "", label: "General", icon: "/assets/rutas/icon-patrimonial.png" },
+  { value: "centro_historico", label: "Centro Histórico", icon: "/assets/rutas/icon-phistorico.png" },
+  { value: "centros_culturales", label: "Centros Culturales", icon: "/assets/rutas/icon-pcentro.png" },
+  { value: "zona_ambiental", label: "Zona Ambiental", icon: "/assets/rutas/icon-pzona.png" },
+  { value: "monumentos", label: "Monumentos", icon: "/assets/rutas/icon-pmonumentos.png" },
+];
+
+const SUBCATEGORIAS_MISTICA = [
+  { value: "", label: "General", icon: "/assets/rutas/icon-mitico.png" },
+  { value: "mitos", label: "Mitos", icon: "/assets/rutas/icon-mitos.png" },
+  { value: "leyendas", label: "Leyendas", icon: "/assets/rutas/icon-leyendas.png" },
+  { value: "devocion", label: "Devoción", icon: "/assets/rutas/icon-devocion.png" },
+];
+
+const SUBCATEGORIAS_GASTRONOMICA = [
+  { value: "", label: "General", icon: "/assets/rutas/icon-gastronomico.png" },
+  { value: "desayuno_almuerzo", label: "Desayuno y Almuerzo", icon: "/assets/rutas/icon-desayuno_almuerzo.png" },
+  { value: "postres_cena", label: "Postres y Cena", icon: "/assets/rutas/icon-postres_cena.png" },
+];
+
+const SUBCATEGORIAS_MAP = {
+  patrimoniales: SUBCATEGORIAS_PATRIMONIALES,
+  gastronomica: SUBCATEGORIAS_GASTRONOMICA,
+  mistica: SUBCATEGORIAS_MISTICA,
+};
+
+const MARKER_ICONS = {
+  patrimoniales: "/assets/rutas/icon-patrimonial.png",
+  gastronomica: "/assets/rutas/icon-gastronomico.png",
+  mistica: "/assets/rutas/icon-mitico.png",
+  centro_historico: "/assets/rutas/icon-phistorico.png",
+  centros_culturales: "/assets/rutas/icon-pcentro.png",
+  zona_ambiental: "/assets/rutas/icon-pzona.png",
+  monumentos: "/assets/rutas/icon-pmonumentos.png",
+  mitos: "/assets/rutas/icon-mitos.png",
+  leyendas: "/assets/rutas/icon-leyendas.png",
+  devocion: "/assets/rutas/icon-devocion.png",
+  desayuno_almuerzo: "/assets/rutas/icon-desayuno_almuerzo.png",
+  postres_cena: "/assets/rutas/icon-postres_cena.png",
+};
+
 const MAP_IMAGE = "/assets/mapa-general.png";
 const ZOOM_MIN = 1;
 const ZOOM_MAX = 4;
@@ -31,12 +73,14 @@ export default function RoutesInteractivasManager() {
   const [uploadingImg, setUploadingImg] = useState(null);
   const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(true);
+  const [mapaLocations, setMapaLocations] = useState([]);
   const [message, setMessage] = useState({ type: "", text: "" });
   const [activeTab, setActiveTab] = useState("puntos");
   const [zoom, setZoom] = useState(1);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const isPanningRef = useRef(false);
+  const wasDraggingRef = useRef(false); // Guard: prevents click->newPoint after a drag
 
   // ---- Data loading ----
   const loadData = useCallback(async () => {
@@ -58,6 +102,17 @@ export default function RoutesInteractivasManager() {
   }, [activeCategory]);
 
   useEffect(() => { loadData(); }, [loadData]);
+
+  // Load Mapas locations for the reference dropdown
+  useEffect(() => {
+    async function loadMapas() {
+      try {
+        const { data } = await supabase.from("ubicaciones_mapa").select("*").order("name");
+        if (data) setMapaLocations(data);
+      } catch { /* silent */ }
+    }
+    loadMapas();
+  }, []);
 
   const showMessage = (type, text) => {
     setMessage({ type, text });
@@ -143,7 +198,7 @@ export default function RoutesInteractivasManager() {
 
   // ---- Map click: add new point ----
   const handleMapClick = useCallback((e) => {
-    if (connectingMode || editingPoint || draggingPoint || isPanningRef.current) return;
+    if (connectingMode || editingPoint || draggingPoint || isPanningRef.current || wasDraggingRef.current) return;
     const { x, y } = clientToPercent(e.clientX, e.clientY);
     const newPoint = {
       id: `temp-${Date.now()}`,
@@ -151,9 +206,11 @@ export default function RoutesInteractivasManager() {
       titulo: `Punto ${points.length + 1}`,
       descripcion: "",
       imagen_url: "",
+      subcategoria: "",
       x, y,
       orden: points.length,
       activo: true,
+      mapa_referencia_id: "",
       _isNew: true,
     };
     setPoints((prev) => [...prev, newPoint]);
@@ -170,6 +227,8 @@ export default function RoutesInteractivasManager() {
     const startY = e.clientY;
     let moved = false;
 
+    // Set guard to prevent click → new point after drag
+    wasDraggingRef.current = true;
     // Close editor to allow free drag
     setEditingPoint(null);
     setDraggingPoint(pointId);
@@ -190,6 +249,8 @@ export default function RoutesInteractivasManager() {
       setDraggingPoint(null);
       window.removeEventListener("pointermove", handleMove);
       window.removeEventListener("pointerup", handleUp);
+      // Clear drag guard after a tick so click events don't create new points
+      setTimeout(() => { wasDraggingRef.current = false; }, 100);
       // If didn't move, treat as click → select the point
       if (!moved) {
         setSelectedPoint(pointId);
@@ -259,9 +320,11 @@ export default function RoutesInteractivasManager() {
           titulo: point.titulo,
           descripcion: point.descripcion || "",
           imagen_url: point.imagen_url || "",
+          subcategoria: point.subcategoria || "",
           x: point.x, y: point.y,
           orden: point.orden,
           activo: true,
+          mapa_referencia_id: point.mapa_referencia_id || "",
         };
         if (point._isNew) {
           const { error } = await supabase.from("rutas_interactivas_puntos").insert(payload);
@@ -308,10 +371,57 @@ export default function RoutesInteractivasManager() {
     setPoints((prev) => prev.map((p) => (p.id === pointId ? { ...p, [field]: value } : p)));
   };
 
+  // Center the map view on a specific point
+  const centerOnPoint = useCallback((point) => {
+    if (!point || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    if (!rect) return;
+    // Calculate zoom level to see the point clearly
+    const targetZoom = 2.5;
+    // Calculate pan offset to center the point
+    const centerX = 50;
+    const centerY = 50;
+    const visW = rect.width;
+    const visH = rect.height;
+    // Pan offset needed to bring point.x% to center of viewport at this zoom
+    // Formula: panX = zoom * visW * (50 - point.x) / 100
+    const panX = (centerX - point.x) / 100 * visW * targetZoom;
+    const panY = (centerY - point.y) / 100 * visH * targetZoom;
+    setZoom(targetZoom);
+    setPanOffset({ x: panX, y: panY });
+  }, []);
+
   const savePointDetails = () => {
     setEditingPoint(null);
     showMessage("success", "Detalles del punto actualizados.");
   };
+
+  // Keyboard nudge: arrow keys move selected point by 0.1% (or 1% with Shift)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!editingPoint) return;
+      const pt = points.find((p) => p.id === editingPoint);
+      if (!pt) return;
+      // Only handle arrow keys when no input/textarea is focused
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.tagName === "SELECT") return;
+      const step = e.shiftKey ? 1 : 0.1;
+      let dx = 0, dy = 0;
+      switch (e.key) {
+        case "ArrowUp": dy = -step; break;
+        case "ArrowDown": dy = step; break;
+        case "ArrowLeft": dx = -step; break;
+        case "ArrowRight": dx = step; break;
+        default: return;
+      }
+      e.preventDefault();
+      const newX = Math.max(0, Math.min(100, Math.round((pt.x + dx) * 10) / 10));
+      const newY = Math.max(0, Math.min(100, Math.round((pt.y + dy) * 10) / 10));
+      updatePointField(pt.id, "x", newX);
+      updatePointField(pt.id, "y", newY);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [editingPoint, points]);
 
   // ---- SVG path ----
   const generatePath = (pointIds) => {
@@ -483,8 +593,68 @@ export default function RoutesInteractivasManager() {
                           onChange={(e) => updatePointField(pt.id, "descripcion", e.target.value)}
                           placeholder="Descripción del lugar" rows={3} />
                       </div>
+
+                      {/* Subcategoría para cualquier categoría */}
                       <div className="ri-point-editor-field">
-                        <label>Imagen</label>
+                        <label>Subcategoría (ícono)</label>
+                        <div className="ri-subcat-grid">
+                          {(SUBCATEGORIAS_MAP[activeCategory] || SUBCATEGORIAS_PATRIMONIALES).map((sc) => (
+                            <button key={sc.value}
+                              type="button"
+                              className={`ri-subcat-btn${(pt.subcategoria || "") === sc.value ? " ri-subcat-btn--active" : ""}`}
+                              onClick={() => updatePointField(pt.id, "subcategoria", sc.value)}
+                              title={sc.label}>
+                              <img src={sc.icon} alt={sc.label} className="ri-subcat-icon" />
+                              <span className="ri-subcat-label">{sc.label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Link to Mapas */}
+                      <div className="ri-point-editor-field">
+                        <label>Referencia en Mapas</label>
+                        <select className="admin-form-select"
+                          value={pt.mapa_referencia_id || ""}
+                          onChange={(e) => {
+                            const newRefId = e.target.value;
+                            updatePointField(pt.id, "mapa_referencia_id", newRefId);
+                            // Auto-fill titulo, descripcion, imagen_url from Mapas location
+                            if (newRefId) {
+                              const refLocation = mapaLocations.find((loc) => loc.id === newRefId);
+                              if (refLocation) {
+                                updatePointField(pt.id, "titulo", refLocation.name || pt.titulo);
+                                updatePointField(pt.id, "descripcion", refLocation.description || refLocation.subtitle || pt.descripcion);
+                                if (refLocation.image) {
+                                  updatePointField(pt.id, "imagen_url", refLocation.image);
+                                }
+                                showMessage("success", `Contenido importado desde "${refLocation.name}"`);
+                              }
+                            }
+                          }}
+                          style={{ width: "100%" }}>
+                          <option value="">-- Sin referencia --</option>
+                          {mapaLocations
+                            .filter((loc) => {
+                              const slugMap = { patrimoniales: "patrimonial", gastronomica: "gastronomica", mistica: "mitos" };
+                              return loc.route_id === slugMap[activeCategory] || loc.route_id === "patrimonial";
+                            })
+                            .map((loc) => (
+                              <option key={loc.id} value={loc.id}>
+                                {loc.name} ({loc.route_id})
+                              </option>
+                            ))}
+                        </select>
+                        {pt.mapa_referencia_id && (
+                          <p style={{ fontSize: 11, color: "#4A6B5D", marginTop: 4, display: "flex", alignItems: "center", gap: 4 }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>check_circle</span>
+                            Vinculado a Mapas — se mostrará botón "Cómo llegar"
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="ri-point-editor-field">
+                        <label>Imagen del lugar</label>
                         <div className="ri-img-input-row">
                           <input className="admin-form-input" type="text" value={pt.imagen_url}
                             onChange={(e) => updatePointField(pt.id, "imagen_url", e.target.value)}
@@ -505,10 +675,26 @@ export default function RoutesInteractivasManager() {
                         )}
                       </div>
                       <div className="ri-point-editor-field">
-                        <label>Coordenadas</label>
+                        <label>Coordenadas exactas</label>
                         <div className="ri-coords-row">
-                          <span>X: {pt.x}%</span>
-                          <span>Y: {pt.y}%</span>
+                          <div className="ri-coord-input-wrap">
+                            <span className="ri-coord-label">X</span>
+                            <input type="number" className="ri-coord-input"
+                              value={pt.x}
+                              min="0" max="100" step="0.1"
+                              onChange={(e) => updatePointField(pt.id, "x", Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)))}
+                              onBlur={(e) => updatePointField(pt.id, "x", Math.max(0, Math.min(100, Math.round((parseFloat(e.target.value) || 0) * 10) / 10)))} />
+                            <span className="ri-coord-unit">%</span>
+                          </div>
+                          <div className="ri-coord-input-wrap">
+                            <span className="ri-coord-label">Y</span>
+                            <input type="number" className="ri-coord-input"
+                              value={pt.y}
+                              min="0" max="100" step="0.1"
+                              onChange={(e) => updatePointField(pt.id, "y", Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)))}
+                              onBlur={(e) => updatePointField(pt.id, "y", Math.max(0, Math.min(100, Math.round((parseFloat(e.target.value) || 0) * 10) / 10)))} />
+                            <span className="ri-coord-unit">%</span>
+                          </div>
                         </div>
                       </div>
                       <div className="ri-point-editor-actions">
@@ -537,7 +723,7 @@ export default function RoutesInteractivasManager() {
                     points.map((point, idx) => (
                       <div key={point.id}
                         className={`ri-point-item${selectedPoint === point.id ? " ri-point-item--active" : ""}`}
-                        onClick={() => { setSelectedPoint(point.id); setEditingPoint(point.id); }}>
+                        onClick={() => { setSelectedPoint(point.id); setEditingPoint(point.id); centerOnPoint(point); }}>
                         <span className="ri-point-num" style={{ background: selectedPoint === point.id ? activeColors?.color : undefined }}>
                           {idx + 1}
                         </span>
