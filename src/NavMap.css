@@ -1,5 +1,6 @@
 /* ============================================================
-   NavMap — Waze-style navigation overlay for mobile
+   NavMap — Waze-style navigation overlay for mobile & web
+   Lime green accent: #32CD32
    ============================================================ */
 
 /* Top Instruction Card */
@@ -26,7 +27,7 @@
   height: 48px;
   flex-shrink: 0;
   background: #241915;
-  color: #92807a;
+  color: #32CD32;
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -70,19 +71,18 @@
 
 /* ============================================================ */
 
-/* Floating Speedometer (Left) */
+/* Floating Speedometer (Left) — smaller on mobile, removed on very small screens */
 .navmap-speedo {
   position: absolute;
   left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
+  bottom: 100px;
   z-index: 30;
-  width: 64px;
-  height: 64px;
+  width: 56px;
+  height: 56px;
   background: rgba(255, 248, 243, 0.96);
   border-radius: 50%;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  border: 3px solid rgba(36, 25, 21, 0.12);
+  border: 3px solid rgba(50, 205, 50, 0.3);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -92,7 +92,7 @@
 }
 
 .navmap-speedo-value {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 800;
   color: #000;
   line-height: 1;
@@ -100,7 +100,7 @@
 }
 
 .navmap-speedo-unit {
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 700;
   color: #4e4541;
   text-transform: uppercase;
@@ -115,8 +115,7 @@
 .navmap-actions {
   position: absolute;
   right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
+  bottom: 100px;
   z-index: 30;
   display: flex;
   flex-direction: column;
@@ -125,8 +124,8 @@
 }
 
 .navmap-action-btn {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   background: rgba(255, 248, 243, 0.96);
   border: none;
   border-radius: 50%;
@@ -158,7 +157,214 @@
 
 /* ============================================================ */
 
-/* Bottom Sheet */
+/* Collapsible Upcoming Steps — positioned BELOW the instruction card */
+.navmap-upcoming {
+  position: absolute;
+  top: 82px;
+  left: 12px;
+  right: 64px;
+  z-index: 29;
+  background: rgba(255, 248, 243, 0.92);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(78, 69, 65, 0.08);
+  pointer-events: auto;
+  backdrop-filter: blur(8px);
+  animation: navmapSlideIn 300ms ease;
+  max-width: calc(100% - 76px);
+}
+
+/* Push upcoming steps down when proximity alert is visible */
+.navmap-upcoming--with-alert {
+  top: 120px;
+}
+
+.navmap-upcoming--collapsed {
+  width: fit-content;
+  min-width: 0;
+}
+
+@keyframes navmapSlideIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Toggle button — always visible */
+.navmap-upcoming-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 8px 10px;
+  cursor: pointer;
+  color: #4e4541;
+  border-radius: 12px;
+  transition: background 0.15s ease;
+}
+
+.navmap-upcoming-toggle:hover {
+  background: rgba(78, 69, 65, 0.05);
+}
+
+.navmap-upcoming-toggle-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #32CD32;
+}
+
+.navmap-upcoming-header {
+  font-size: 12px;
+  font-weight: 700;
+  color: #32CD32;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+/* Body — shown/hidden via state */
+.navmap-upcoming-body {
+  padding: 0 10px 8px;
+  border-top: 1px solid rgba(50, 205, 50, 0.12);
+  padding-top: 6px;
+}
+
+.navmap-upcoming-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+  font-size: 13px;
+  color: #4e4541;
+}
+
+.navmap-upcoming-step-icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #32CD32;
+}
+
+.navmap-upcoming-step-text {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.navmap-upcoming-step-dist {
+  font-size: 10px;
+  font-weight: 600;
+  color: #888;
+  flex-shrink: 0;
+}
+
+/* Off-route indicator — top center */
+.navmap-offroute {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 35;
+  background: rgba(255, 193, 7, 0.95);
+  border-radius: 20px;
+  padding: 4px 14px 4px 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 16px rgba(255, 193, 7, 0.3);
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+  animation: navmapProximitySlide 300ms ease;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.navmap-offroute-icon {
+  color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  animation: navmapPulse 1s ease infinite;
+}
+
+@keyframes navmapPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Speed Limit Indicator — positioned below speedometer */
+.navmap-speed-limit {
+  position: absolute;
+  left: 12px;
+  bottom: 172px;
+  z-index: 30;
+  background: rgba(255, 248, 243, 0.92);
+  border-radius: 8px;
+  padding: 3px 8px 3px 6px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(6px);
+  pointer-events: none;
+  border: 1px solid rgba(78, 69, 65, 0.08);
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.navmap-speed-limit--safe {
+  background: rgba(50, 205, 50, 0.15);
+  border-color: rgba(50, 205, 50, 0.3);
+}
+
+.navmap-speed-limit--warning {
+  background: rgba(255, 193, 7, 0.2);
+  border-color: rgba(255, 193, 7, 0.4);
+}
+
+.navmap-speed-limit--over {
+  background: rgba(220, 53, 69, 0.2);
+  border-color: rgba(220, 53, 69, 0.4);
+}
+
+.navmap-speed-limit-icon {
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.navmap-speed-limit--safe .navmap-speed-limit-icon { color: #2d8a2d; }
+.navmap-speed-limit--warning .navmap-speed-limit-icon { color: #cc8a00; }
+.navmap-speed-limit--over .navmap-speed-limit-icon { color: #c82333; }
+
+.navmap-speed-limit-value {
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.navmap-speed-limit--safe .navmap-speed-limit-value { color: #2d8a2d; }
+.navmap-speed-limit--warning .navmap-speed-limit-value { color: #cc8a00; }
+.navmap-speed-limit--over .navmap-speed-limit-value { color: #c82333; }
+
+/* Speedometer state colors (border) */
+.navmap-speedo--safe { border-color: rgba(50, 205, 50, 0.4); }
+.navmap-speedo--warning { border-color: rgba(255, 193, 7, 0.5); }
+.navmap-speedo--over { border-color: rgba(220, 53, 69, 0.6); }
+
+/* ============================================================ */
+
+/* Bottom Sheet — always visible at bottom */
 .navmap-bottom {
   position: absolute;
   bottom: 0;
@@ -171,12 +377,12 @@
 .navmap-bottom-handle {
   display: flex;
   justify-content: center;
-  padding-bottom: 8px;
+  padding-bottom: 6px;
   pointer-events: none;
 }
 
 .navmap-bottom-handle-bar {
-  width: 40px;
+  width: 36px;
   height: 4px;
   background: rgba(78, 69, 65, 0.25);
   border-radius: 4px;
@@ -184,8 +390,8 @@
 
 .navmap-bottom-sheet {
   background: rgba(246, 236, 227, 0.97);
-  border-radius: 24px 24px 0 0;
-  padding: 16px 20px 28px;
+  border-radius: 20px 20px 0 0;
+  padding: 12px 18px 24px;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
   pointer-events: auto;
   backdrop-filter: blur(12px);
@@ -195,7 +401,7 @@
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .navmap-bottom-info {
@@ -205,7 +411,7 @@
 
 .navmap-bottom-time {
   font-family: "Plus Jakarta Sans", "Outfit", Arial, sans-serif;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 800;
   color: #000;
   line-height: 1;
@@ -213,15 +419,15 @@
 }
 
 .navmap-bottom-detail {
-  font-size: 14px;
+  font-size: 13px;
   color: #4e4541;
-  margin-top: 4px;
+  margin-top: 3px;
   line-height: 1.3;
 }
 
 .navmap-bottom-close {
-  width: 48px;
-  height: 48px;
+  width: 42px;
+  height: 42px;
   border: none;
   background: #ba1a1a;
   color: #fff;
@@ -230,7 +436,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   box-shadow: 0 4px 12px rgba(186, 26, 26, 0.25);
   transition: transform 0.15s ease;
@@ -244,30 +450,30 @@
 /* Progress Bar */
 .navmap-progress {
   width: 100%;
-  height: 6px;
+  height: 5px;
   background: rgba(78, 69, 65, 0.12);
   border-radius: 999px;
   overflow: hidden;
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .navmap-progress-fill {
   height: 100%;
-  background: #d36400;
+  background: #32CD32;
   border-radius: 999px;
   transition: width 0.3s ease;
 }
 
 /* ============================================================ */
 
-/* Compass indicator (top-right) */
+/* Compass indicator (top-right) — below instruction card top edge */
 .navmap-compass {
   position: absolute;
-  top: 76px;
+  top: 82px;
   right: 12px;
   z-index: 30;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   background: rgba(255, 248, 243, 0.92);
   border-radius: 50%;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
@@ -282,19 +488,61 @@
 
 /* ============================================================ */
 
-/* Proximity alert banner */
-.navmap-proximity-alert {
+/* Traffic congestion badge (top-right below compass) */
+.navmap-traffic {
   position: absolute;
-  top: 72px;
-  left: 12px;
-  right: 84px;
-  z-index: 31;
-  background: rgba(211, 100, 0, 0.95);
-  border-radius: 12px;
-  padding: 10px 12px;
+  top: 128px;
+  right: 12px;
+  z-index: 30;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
+  background: rgba(255, 248, 243, 0.92);
+  border-radius: 20px;
+  padding: 4px 10px 4px 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.09);
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+  border: 1px solid rgba(78, 69, 65, 0.08);
+  animation: navmapSlideIn 300ms ease;
+}
+
+.navmap-traffic-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.navmap-traffic--low .navmap-traffic-dot { background: #32CD32; box-shadow: 0 0 6px rgba(50, 205, 50, 0.5); }
+.navmap-traffic--moderate .navmap-traffic-dot { background: #FFD700; box-shadow: 0 0 6px rgba(255, 215, 0, 0.5); }
+.navmap-traffic--heavy .navmap-traffic-dot { background: #FF8C00; box-shadow: 0 0 6px rgba(255, 140, 0, 0.5); }
+.navmap-traffic--severe .navmap-traffic-dot { background: #D32F2F; box-shadow: 0 0 6px rgba(211, 47, 47, 0.5); }
+
+.navmap-traffic-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #4e4541;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* ============================================================ */
+
+/* Proximity alert banner — between instruction and upcoming steps */
+.navmap-proximity-alert {
+  position: absolute;
+  top: 76px;
+  left: 12px;
+  right: 64px;
+  z-index: 31;
+  background: rgba(211, 100, 0, 0.95);
+  border-radius: 10px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   box-shadow: 0 4px 16px rgba(211, 100, 0, 0.3);
   pointer-events: none;
   backdrop-filter: blur(8px);
@@ -302,16 +550,16 @@
 }
 
 @keyframes navmapProximitySlide {
-  from { opacity: 0; transform: translateY(-8px); }
+  from { opacity: 0; transform: translateY(-6px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .navmap-proximity-alert-icon {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
   background: rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -326,7 +574,7 @@
 }
 
 .navmap-proximity-alert-text strong {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
   color: #fff;
   line-height: 1.2;
@@ -335,7 +583,7 @@
 }
 
 .navmap-proximity-alert-text span {
-  font-size: 12px;
+  font-size: 11px;
   color: rgba(255, 255, 255, 0.9);
   line-height: 1.3;
   margin-top: 1px;
@@ -364,9 +612,9 @@
 }
 
 .navmap-arrival-icon {
-  font-size: 64px;
+  font-size: 56px;
   line-height: 1;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   animation: navmapArrivalBounce 600ms ease infinite alternate;
 }
 
@@ -377,7 +625,7 @@
 
 .navmap-arrival-title {
   font-family: "Plus Jakarta Sans", "Outfit", Arial, sans-serif;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 800;
   color: #fff;
   line-height: 1.1;
@@ -386,9 +634,211 @@
 }
 
 .navmap-arrival-sub {
-  font-size: 16px;
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.85);
-  margin-top: 6px;
+  margin-top: 4px;
   text-align: center;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* ============================================================ */
+/* Mobile-specific adjustments (<= 640px) */
+/* ============================================================ */
+
+@media (max-width: 640px) {
+  .navmap-instruction {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    padding: 8px 10px;
+    border-radius: 12px;
+  }
+  .navmap-instruction-icon {
+    width: 36px;
+    height: 36px;
+  }
+  .navmap-instruction-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+  .navmap-instruction-action {
+    font-size: 15px;
+  }
+  .navmap-instruction-detail {
+    font-size: 11px;
+  }
+
+  /* Speedo and actions move to bottom area on mobile */
+  .navmap-speedo {
+    width: 44px;
+    height: 44px;
+    left: 8px;
+    bottom: 80px;
+    border-width: 2px;
+  }
+  .navmap-speedo-value {
+    font-size: 15px;
+  }
+  .navmap-speedo-unit {
+    font-size: 7px;
+  }
+
+  .navmap-speed-limit {
+    left: 8px;
+    bottom: 140px;
+    padding: 2px 6px 2px 5px;
+  }
+  .navmap-speed-limit-value {
+    font-size: 10px;
+  }
+  .navmap-speed-limit-icon {
+    width: 8px;
+    height: 12px;
+  }
+
+  .navmap-actions {
+    right: 8px;
+    bottom: 80px;
+    gap: 6px;
+  }
+  .navmap-action-btn {
+    width: 38px;
+    height: 38px;
+  }
+  .navmap-action-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Compass — top right, near instruction card */
+  .navmap-compass {
+    top: 60px;
+    right: 8px;
+    width: 34px;
+    height: 34px;
+  }
+  .navmap-compass svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Upcoming steps — below instruction card on mobile */
+  .navmap-upcoming {
+    top: 62px;
+    left: 8px;
+    right: 52px;
+    max-width: calc(100% - 60px);
+  }
+  .navmap-upcoming-toggle {
+    padding: 6px 8px;
+  }
+  .navmap-upcoming-header {
+    font-size: 11px;
+  }
+  .navmap-upcoming-step-icon {
+    width: 18px;
+    height: 18px;
+  }
+  .navmap-upcoming-step-text {
+    font-size: 11px;
+  }
+  .navmap-upcoming-step-dist {
+    font-size: 9px;
+  }
+
+  /* Traffic badge — reposition below compass */
+  .navmap-traffic {
+    top: 100px;
+    right: 8px;
+    padding: 3px 8px 3px 6px;
+  }
+  .navmap-traffic-dot {
+    width: 6px;
+    height: 6px;
+  }
+  .navmap-traffic-label {
+    font-size: 9px;
+  }
+
+  /* Proximity alert */
+  .navmap-proximity-alert {
+    top: 56px;
+    left: 8px;
+    right: 52px;
+    padding: 6px 8px;
+  }
+  .navmap-proximity-alert-icon {
+    width: 28px;
+    height: 28px;
+  }
+  .navmap-proximity-alert-text strong {
+    font-size: 11px;
+  }
+  .navmap-proximity-alert-text span {
+    font-size: 10px;
+  }
+
+  /* Bottom sheet — more compact */
+  .navmap-bottom-time {
+    font-size: 20px;
+  }
+  .navmap-bottom-detail {
+    font-size: 11px;
+  }
+  .navmap-bottom-close {
+    width: 36px;
+    height: 36px;
+  }
+  .navmap-bottom-close svg {
+    width: 16px;
+    height: 16px;
+  }
+  .navmap-bottom-sheet {
+    padding: 10px 14px 20px;
+    border-radius: 16px 16px 0 0;
+  }
+  .navmap-progress {
+    height: 4px;
+  }
+
+  /* Arrival — smaller text */
+  .navmap-arrival-icon {
+    font-size: 44px;
+  }
+  .navmap-arrival-title {
+    font-size: 20px;
+  }
+  .navmap-arrival-sub {
+    font-size: 12px;
+  }
+}
+
+/* Very small screens (<= 380px) */
+@media (max-width: 380px) {
+  .navmap-speedo {
+    width: 38px;
+    height: 38px;
+    left: 4px;
+    bottom: 70px;
+  }
+  .navmap-speedo-value {
+    font-size: 12px;
+  }
+  .navmap-speedo-unit {
+    display: none;
+  }
+  .navmap-actions {
+    right: 4px;
+    bottom: 70px;
+  }
+  .navmap-action-btn {
+    width: 34px;
+    height: 34px;
+  }
+  .navmap-instruction-action {
+    font-size: 13px;
+  }
+  .navmap-instruction-detail {
+    font-size: 10px;
+  }
 }

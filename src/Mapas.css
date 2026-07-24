@@ -820,6 +820,82 @@
   text-align: center;
 }
 
+/* Route alternative selector */
+.mapas-nav-alt-routes {
+  margin: 4px 0;
+}
+
+.mapas-nav-alt-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #66715e;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.mapas-nav-alt-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mapas-nav-alt-item {
+  width: 100%;
+  border: 1px solid #d8cbb8;
+  background: rgba(255, 255, 255, 0.6);
+  color: #33402d;
+  border-radius: 8px;
+  padding: 6px 8px;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  font-size: 12px;
+}
+
+.mapas-nav-alt-item:hover {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(75, 88, 66, 0.25);
+}
+
+.mapas-nav-alt-item.active {
+  border-color: #32CD32;
+  background: rgba(50, 205, 50, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(50, 205, 50, 0.3);
+}
+
+.mapas-nav-alt-badge {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.mapas-nav-alt-badge--green { background: #32CD32; }
+.mapas-nav-alt-badge--blue { background: #7890B0; }
+.mapas-nav-alt-badge--sage { background: #8BA87A; }
+
+.mapas-nav-alt-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.mapas-nav-alt-info strong {
+  display: block;
+  font-size: 11px;
+  color: #2f3729;
+  line-height: 1.2;
+}
+
+.mapas-nav-alt-info small {
+  font-size: 10px;
+  color: #6f746d;
+}
+
 .mapas-nav-panel__msg.locating,
 .mapas-nav-panel__msg.routing {
   background: rgba(241, 154, 32, 0.12);
@@ -1669,20 +1745,33 @@
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background-color: #3b82f6;
+  background-color: #32CD32;
   border: 3px solid #ffffff;
-  box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+  box-shadow: 0 0 0 0 rgba(50, 205, 50, 0.7);
   animation: mapasPulse 1.5s infinite;
+}
+
+.mapas-user-marker--tracking {
+  width: 24px;
+  height: 24px;
+  background-color: #32CD32;
+  border-color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(50, 205, 50, 0.3), 0 4px 16px rgba(0,0,0,0.3);
+  animation: mapasTrackPulse 2s ease infinite;
 }
 
 @keyframes mapasPulse {
   70% {
-    box-shadow: 0 0 0 15px rgba(59, 130, 246, 0);
+    box-shadow: 0 0 0 15px rgba(50, 205, 50, 0.3);
   }
-
   100% {
-    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+    box-shadow: 0 0 0 0 rgba(50, 205, 50, 0);
   }
+}
+
+@keyframes mapasTrackPulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(50, 205, 50, 0.3), 0 4px 16px rgba(0,0,0,0.3); }
+  50% { box-shadow: 0 0 0 8px rgba(50, 205, 50, 0.15), 0 4px 16px rgba(0,0,0,0.3); }
 }
 
 .mapas-modal {
