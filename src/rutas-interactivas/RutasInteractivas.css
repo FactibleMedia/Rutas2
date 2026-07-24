@@ -103,29 +103,25 @@
   max-width: 1200px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 28px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 40px;
 }
 
 /* ============ Route Card ============ */
 
 .rutas-interactivas__route-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
+  display: block;
   border: none;
   border-radius: 28px;
   overflow: hidden;
   cursor: pointer;
-  text-align: left;
-  aspect-ratio: 3 / 4;
-  background: #fff;
-  box-shadow: 0 20px 48px rgba(31, 20, 12, 0.12);
+  background: transparent;
   transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
     box-shadow 0.5s ease;
   padding: 0;
   outline: none;
   -webkit-tap-highlight-color: transparent;
+  width: 100%;
 }
 
 .rutas-interactivas__route-card:focus-visible {
@@ -134,135 +130,25 @@
 }
 
 .rutas-interactivas__route-card--hovered {
-  transform: translateY(-8px) scale(1.02);
+  transform: translateY(-8px) scale(1.03);
   box-shadow: 0 32px 72px rgba(31, 20, 12, 0.22);
 }
 
 .rutas-interactivas__route-card-bg {
-  position: absolute;
-  inset: 0;
   overflow: hidden;
+  border-radius: 28px;
+  line-height: 0;
 }
 
 .rutas-interactivas__route-card-bg img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  display: block;
   transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .rutas-interactivas__route-card--hovered .rutas-interactivas__route-card-bg img {
   transform: scale(1.08);
-}
-
-.rutas-interactivas__route-card-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(0, 0, 0, 0.08) 0%,
-    rgba(0, 0, 0, 0.6) 50%,
-    rgba(0, 0, 0, 0.85) 100%
-  );
-  transition: opacity 0.5s ease;
-}
-
-.rutas-interactivas__route-card--hovered .rutas-interactivas__route-card-overlay {
-  background: linear-gradient(
-    180deg,
-    rgba(0, 0, 0, 0.04) 0%,
-    rgba(0, 0, 0, 0.5) 40%,
-    rgba(0, 0, 0, 0.8) 100%
-  );
-}
-
-.rutas-interactivas__route-card-content {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  flex: 1;
-  padding: 32px 28px;
-  color: #fff;
-}
-
-.rutas-interactivas__route-card-tag {
-  display: inline-block;
-  align-self: flex-start;
-  font-family: "Bebas Neue", sans-serif;
-  font-size: 13px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--card-accent, #c07536);
-  background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(4px);
-  padding: 6px 14px;
-  border-radius: 100px;
-  margin-bottom: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: background 0.3s ease, transform 0.4s ease;
-}
-
-.rutas-interactivas__route-card--hovered .rutas-interactivas__route-card-tag {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
-}
-
-.rutas-interactivas__route-card-title {
-  font-family: "Bebas Neue", sans-serif;
-  font-size: clamp(28px, 3.5vw, 38px);
-  line-height: 1.02;
-  margin: 0 0 10px;
-  transition: transform 0.4s ease;
-}
-
-.rutas-interactivas__route-card--hovered .rutas-interactivas__route-card-title {
-  transform: translateY(-2px);
-}
-
-.rutas-interactivas__route-card-desc {
-  font-family: "Outfit", Arial, sans-serif;
-  font-size: 14px;
-  line-height: 1.7;
-  color: rgba(255, 255, 255, 0.8);
-  margin: 0 0 20px;
-  opacity: 0;
-  transform: translateY(12px);
-  transition: opacity 0.4s ease, transform 0.4s ease;
-  max-width: 90%;
-}
-
-.rutas-interactivas__route-card--hovered .rutas-interactivas__route-card-desc {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.rutas-interactivas__route-card-action {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-family: "Outfit", Arial, sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #fff;
-  padding: 10px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
-  transition: border-color 0.3s ease;
-}
-
-.rutas-interactivas__route-card--hovered .rutas-interactivas__route-card-action {
-  border-color: var(--card-accent, #c07536);
-}
-
-.rutas-interactivas__route-card-arrow {
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.rutas-interactivas__route-card-arrow--animated {
-  transform: translateX(6px);
 }
 
 /* ============ Bottom ============ */
@@ -281,53 +167,119 @@
 /* ============ Interactive Map Section ============ */
 
 .rutas-interactivas__map-section {
-  padding: 120px 24px 80px;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 30px 24px 60px;
+  max-width: 100%;
+  margin: 0;
+  width: 100%;
+}
+
+.rutas-interactivas__map-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: 1400px;
+  margin: 0 auto 12px;
   width: 100%;
 }
 
 .rutas-interactivas__back-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  background: none;
-  border: 2px solid rgba(99, 63, 28, 0.15);
-  border-radius: 100px;
-  padding: 10px 20px;
-  font-family: "Outfit", Arial, sans-serif;
-  font-size: 14px;
-  font-weight: 600;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  background: rgba(99, 63, 28, 0.07);
+  border: none;
+  border-radius: 50%;
   color: #6b5b4a;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-bottom: 32px;
 }
 
 .rutas-interactivas__back-btn:hover {
   background: #2c2116;
-  border-color: #2c2116;
   color: #fff;
-  transform: translateX(-4px);
-}
-
-.rutas-interactivas__map-header {
-  margin-bottom: 40px;
+  transform: translateX(-3px);
 }
 
 .rutas-interactivas__map-title {
   font-family: "Bebas Neue", sans-serif;
-  font-size: clamp(40px, 6vw, 64px);
+  font-size: clamp(24px, 3vw, 36px);
   color: #2f2a22;
-  margin-bottom: 12px;
+  margin: 0;
+  line-height: 1.1;
 }
 
 .rutas-interactivas__map-desc {
   font-family: "Outfit", Arial, sans-serif;
-  font-size: 18px;
-  line-height: 1.8;
+  font-size: 15px;
+  line-height: 1.6;
   color: #6b5b4a;
-  max-width: 600px;
+  max-width: 1400px;
+  margin: 0 auto 16px;
+  width: 100%;
+  padding: 0;
+}
+
+/* ============ Color overlay on map ============ */
+
+.rimap-color-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  transition: backdrop-filter 0.6s ease;
+}
+
+/* Route Legend (for Gran Mapa General) */
+.rimap-route-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(99, 63, 28, 0.08);
+}
+
+.rimap-route-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px 4px 8px;
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(99, 63, 28, 0.08);
+  font-family: "Outfit", Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: #2c2116;
+}
+
+.rimap-route-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.rimap-route-legend-name {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.rimap-route-legend-count {
+  color: #8b7b6a;
+  font-weight: 400;
+}
+
+/* Category indicator dot on legend items (Gran Mapa General) */
+.rimap-legend-cat {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
 /* ============ Interactive Map Component ============ */
@@ -335,14 +287,15 @@
 .rimap-container {
   position: relative;
   width: 100%;
-  aspect-ratio: 4 / 3;
-  border-radius: 24px;
+  max-width: 1400px;
+  margin: 0 auto 32px;
+  aspect-ratio: 2 / 1;
+  border-radius: 20px;
   overflow: hidden;
   background: #fcead5;
-  border: 3px solid rgba(99, 63, 28, 0.15);
-  box-shadow: 0 20px 48px rgba(31, 20, 12, 0.12);
+  border: 2px solid rgba(99, 63, 28, 0.12);
+  box-shadow: 0 16px 40px rgba(31, 20, 12, 0.1);
   cursor: crosshair;
-  margin-bottom: 32px;
 }
 
 .rimap-bg {
@@ -540,6 +493,87 @@
   background: #2c2116;
 }
 
+/* Animation - Circle Ripple */
+.rimap-marker--animating {
+  z-index: 10;
+  transform: translate(-50%, -50%) scale(1.5);
+}
+
+.rimap-marker--animating .rimap-marker-dot {
+  background: #2c2116;
+  box-shadow: 0 0 0 4px rgba(192, 117, 54, 0.4);
+}
+
+/* Circular thumbnail on hover */
+.rimap-marker-thumb {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #fff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  animation: rimap-thumb-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 3;
+}
+
+.rimap-marker-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@keyframes rimap-thumb-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.rimap-marker-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 3px solid #c07536;
+  transform: translate(-50%, -50%) scale(1);
+  animation: rimap-ring-pulse 1.4s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes rimap-ring-pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(3);
+    opacity: 0;
+  }
+}
+
+/* Legend item animation */
+.rimap-legend-item--animating {
+  background: rgba(192, 117, 54, 0.15) !important;
+  animation: rimap-legend-flash 1.4s ease;
+}
+
+@keyframes rimap-legend-flash {
+  0%, 100% { background: rgba(192, 117, 54, 0.15); }
+  50% { background: rgba(192, 117, 54, 0.3); }
+}
+
 /* Modal */
 .rimap-modal-overlay {
   position: fixed;
@@ -654,16 +688,6 @@
 @media (max-width: 1024px) {
   .rutas-interactivas__routes-grid {
     grid-template-columns: 1fr;
-    max-width: 500px;
-  }
-
-  .rutas-interactivas__route-card {
-    aspect-ratio: 4 / 3;
-  }
-
-  .rutas-interactivas__route-card-desc {
-    opacity: 1;
-    transform: none;
   }
 
   .rutas-interactivas__hero {
@@ -685,12 +709,7 @@
   }
 
   .rutas-interactivas__route-card {
-    aspect-ratio: 4 / 3;
     border-radius: 20px;
-  }
-
-  .rutas-interactivas__route-card-content {
-    padding: 24px 20px;
   }
 
   .rutas-interactivas__route-card-title {
@@ -702,7 +721,7 @@
   }
 
   .rutas-interactivas__map-section {
-    padding: 100px 16px 60px;
+    padding: 24px 16px 40px;
   }
 
   .rimap-marker-dot {
