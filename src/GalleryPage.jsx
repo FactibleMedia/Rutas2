@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import TopBar from "./TopBar";
 import Footer from "./Footer";
 import { supabase } from "./supabaseClient";
@@ -319,12 +319,14 @@ function HouseRightSVG() {
 
 function MultimediaGallery() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [galleryItems, setGalleryItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("Todo");
   const [selectedItem, setSelectedItem] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const videoRef = useRef(null);
+  const hasAutoSelected = useRef(false);
 
   // Fetch from Supabase (no fallback)
   useEffect(() => {
@@ -355,6 +357,18 @@ function MultimediaGallery() {
           }));
           setGalleryItems(mapped);
           setLoading(false);
+
+          // Auto-select item from navigation state
+          if (!cancelled && !hasAutoSelected.current) {
+            const selectedId = location.state?.selectedItemId;
+            if (selectedId) {
+              const found = mapped.find((item) => item.id === selectedId);
+              if (found) {
+                setSelectedItem(found);
+                hasAutoSelected.current = true;
+              }
+            }
+          }
         }
       } catch (err) {
         console.warn("Supabase: Error fetching gallery:", err);
@@ -366,7 +380,7 @@ function MultimediaGallery() {
     }
     fetchGallery();
     return () => { cancelled = true; };
-  }, []);
+  }, [location.state?.selectedItemId]);
 
   // Build dynamic filters from data
   const FILTERS = useMemo(() => {
@@ -475,6 +489,21 @@ function MultimediaGallery() {
               <span className="gallery-multimedia__card-category">
                 {getCategoryLabel(item.category)}
               </span>
+              {/* Media type indicator badge */}
+              <div className={`gallery-multimedia__media-badge${item.tipo_multimedia === "Video" ? " gallery-multimedia__media-badge--video" : " gallery-multimedia__media-badge--photo"}`}>
+                {item.tipo_multimedia === "Video" ? (
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <circle cx="8.5" cy="8.5" r="1.5" />
+                    <polyline points="21 15 16 10 5 21" />
+                  </svg>
+                )}
+                <span>{item.tipo_multimedia === "Video" ? "Video" : "Foto"}</span>
+              </div>
               {item.img ? (
                 <img
                   src={item.img}

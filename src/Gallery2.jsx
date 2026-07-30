@@ -368,6 +368,22 @@ export default function Gallery2() {
                     <strong>{item.titulo}</strong>
                     <small>{item.descripcion_breve || ""}</small>
                   </div>
+                  {/* Media type indicator: video or photo */}
+                  <div className={`gallery2__grid-media-badge${item.tipo_multimedia === "Video" ? " gallery2__grid-media-badge--video" : " gallery2__grid-media-badge--photo"}`}>
+                    {item.tipo_multimedia === "Video" ? (
+                      <svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    ) : (
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="12" height="12">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                        <circle cx="8.5" cy="8.5" r="1.5" />
+                        <polyline points="21 15 16 10 5 21" />
+                      </svg>
+                    )}
+                    <span>{item.tipo_multimedia === "Video" ? "Video" : "Foto"}</span>
+                  </div>
+
                   {item.tipo_multimedia === "Video" && (
                     <div style={{
                       position: "absolute",

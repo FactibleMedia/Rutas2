@@ -19,6 +19,7 @@ import glossBgMotetes from "../assets/mcp/gloss_bg_motetes.png";
 import glossBgCantaro from "../assets/mcp/gloss_bg_cantaro.png";
 import glossBgAsiento from "../assets/mcp/gloss_bg_asiento.png";
 import "../styles.css";
+import { supabase } from "../supabaseClient";
 
 
 const glossaryCards = [
@@ -132,32 +133,28 @@ function GlossaryItem({ title, type, meaning, color, borderColor, imageUrl }) {
   );
 }
 
-const gallerySlides = [
-  {
-    img: gal1,
-    titleSlide: "Guardianes del saber",
-    accentColor: "#bb4c18",
-    subtitle: "Entrevistas a sabedores de tradición",
-    sub2: "Voces que mantienen viva la identidad cultural y patrimonial vallenata",
-    hasPlay: true,
-  },
-  {
-    img: gal2,
-    titleSlide: "Guardianes del saber",
-    accentColor: "#627c50",
-    subtitle: "Museo del Acordeón Beto Murgas",
-    sub2: "Beto Murgas",
-    hasPlay: false,
-  },
-  {
-    img: gal3,
-    titleSlide: "Postales del Valle",
-    accentColor: "#564e87",
-    subtitle: "Museo del Acordeon Beto Murgas",
-    sub2: "Beto Murgas",
-    hasPlay: false,
-  },
-];
+const CATEGORY_COLORS = {
+  Patrimonial: "#4B5940",
+  Gastronomico: "#C76725",
+  Cultural: "#bb4c18",
+  Mitico: "#5B5180",
+  Historico: "#564e87",
+};
+
+const getVideoThumbnail = (url) => {
+  if (!url) return null;
+  try {
+    const u = new URL(url);
+    let vid = null;
+    if (u.hostname.includes("youtube.com")) {
+      vid = u.searchParams.get("v");
+    } else if (u.hostname === "youtu.be") {
+      vid = u.pathname.slice(1).split("?")[0];
+    }
+    if (vid) return `https://img.youtube.com/vi/${vid}/hqdefault.jpg`;
+  } catch {}
+  return null;
+};
 
 // ── Configuración de rutas ──
 const routesConfig = [
@@ -349,32 +346,130 @@ function Glossary() {
 }
 
 function Gallery() {
+  const navigate = useNavigate();
   const [current, setCurrent] = useState(0);
+  const [slides, setSlides] = useState([]);
+  const [loading, setLoading] = useState(true);
   const galleryTimerRef = useRef(null);
+
+  // Fetch real gallery data from Supabase
+  useEffect(() => {
+    let cancelled = false;
+    async function fetchGallery() {
+      try {
+        const { data, error } = await supabase
+          .from("galeria_multimedia")
+          .select("*")
+          .eq("activo", true)
+          .order("creado_en", { ascending: false });
+
+        if (!cancelled) {
+          if (error) throw error;
+
+          const mapped = (data || []).map((item) => ({
+            id: item.id,
+            img: item.video_imagen || item.imagen_principal || getVideoThumbnail(item.video_url) || "",
+            accentColor: CATEGORY_COLORS[item.tipo_sitio] || "#bb4c18",
+            subtitle: item.titulo,
+            sub2: item.descripcion_breve || "",
+            titleSlide: item.tipo_sitio ? ({
+              Patrimonial: "Patrimonio Vivo",
+              Gastronomico: "Sabores del Valle",
+              Cultural: "Cultura Vallenata",
+              Mitico: "Mitos y Leyendas",
+              Historico: "Memorias Históricas",
+            })[item.tipo_sitio] || "Galería Multimedia" : "Galería Multimedia",
+            hasPlay: item.tipo_multimedia === "Video",
+            tipo_sitio: item.tipo_sitio,
+          }));
+
+          if (!cancelled) {
+            setSlides(mapped);
+            setLoading(false);
+          }
+        }
+      } catch (err) {
+        console.warn("Error fetching gallery for home:", err);
+        if (!cancelled) {
+          setSlides([]);
+          setLoading(false);
+        }
+      }
+    }
+    fetchGallery();
+    return () => { cancelled = true; };
+  }, []);
 
   const startGalleryAutoplay = () => {
     clearInterval(galleryTimerRef.current);
+    if (slides.length === 0) return;
     galleryTimerRef.current = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % gallerySlides.length);
+      setCurrent((prev) => (prev + 1) % slides.length);
     }, 5200);
   };
 
   useEffect(() => {
     startGalleryAutoplay();
     return () => clearInterval(galleryTimerRef.current);
-  }, []);
+  }, [slides.length]);
 
-  const activeSlide = gallerySlides[current];
+  const handleSlideClick = (slide) => {
+    navigate("/galeria", { state: { selectedItemId: slide.id } });
+  };
+
+  const activeSlide = slides[current] || null;
+
+  if (loading) {
+    return (
+      <section id="galeria" className="gallery-section reveal">
+        <div className="gallery-section__heading">
+          <h2>Este espacio es especial para escuchar la voz del viejo Valle</h2>
+          <p>Aquí están personas que hacen parte de esa herencia que sigue viva.</p>
+        </div>
+        <div style={{ textAlign: "center", padding: "80px 16px", color: "#8A7968" }}>
+          <div style={{
+            width: 32, height: 32,
+            border: "3px solid rgba(194,98,42,0.2)",
+            borderTopColor: "#C2622A",
+            borderRadius: "50%",
+            animation: "spin 0.8s linear infinite",
+            margin: "0 auto 16px",
+          }} />
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 14 }}>Cargando galería...</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (slides.length === 0) {
+    return (
+      <section id="galeria" className="gallery-section reveal">
+        <div className="gallery-section__heading">
+          <h2>Este espacio es especial para escuchar la voz del viejo Valle</h2>
+          <p>Aquí están personas que hacen parte de esa herencia que sigue viva.</p>
+        </div>
+        <div style={{ textAlign: "center", padding: "60px 16px", color: "#8A7968" }}>
+          <span style={{ fontSize: 48, opacity: 0.3, display: "block", marginBottom: 12 }}>📷</span>
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 14 }}>Próximamente contenido multimedia.</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="galeria" className="gallery-section reveal">
       <div className="gallery-section__heading">
-        <h2>Este espacio es especial para escuchar la voz del viejo Valle</h2>          <p>Aquí están personas que hacen parte de esa herencia que sigue viva.</p>
+        <h2>Este espacio es especial para escuchar la voz del viejo Valle</h2>
+        <p>Aquí están personas que hacen parte de esa herencia que sigue viva.</p>
       </div>
       <div className="gallery-carousel" onMouseEnter={() => clearInterval(galleryTimerRef.current)} onMouseLeave={startGalleryAutoplay}>
-        {gallerySlides.map((slide, index) => (
-          <div key={slide.img} className={`gallery-slide${index === current ? " active" : ""}`}>
-            <img src={slide.img} alt={slide.titleSlide} className="gallery-slide__img" loading="lazy" decoding="async" />
+        {slides.map((slide, index) => (
+          <div
+            key={slide.id}
+            className={`gallery-slide${index === current ? " active" : ""} gallery-slide--clickable`}
+            onClick={() => handleSlideClick(slide)}
+          >
+            <img src={slide.img} alt={slide.subtitle} className="gallery-slide__img" loading="lazy" decoding="async" />
             <div className="gallery-slide__gradient" />
             <div className="gallery-slide__bar" style={{ backgroundColor: slide.accentColor }}>
               <div className="gallery-slide__info">
@@ -386,15 +481,15 @@ function Gallery() {
           </div>
         ))}
 
-        <div className="gallery-title" key={activeSlide.titleSlide + current}>
+        <div className="gallery-title" key={activeSlide.id}>
           {activeSlide.titleSlide}
         </div>
 
         <div className="gallery-nav">
-          <button className="gallery-nav-btn" onClick={() => setCurrent((prev) => (prev - 1 + gallerySlides.length) % gallerySlides.length)}>
+          <button className="gallery-nav-btn" onClick={() => setCurrent((prev) => (prev - 1 + slides.length) % slides.length)}>
             &#9650;
           </button>
-          <button className="gallery-nav-btn" onClick={() => setCurrent((prev) => (prev + 1) % gallerySlides.length)}>
+          <button className="gallery-nav-btn" onClick={() => setCurrent((prev) => (prev + 1) % slides.length)}>
             &#9660;
           </button>
         </div>
@@ -404,11 +499,15 @@ function Gallery() {
 }
 
 function CTASection() {
+  const navigate = useNavigate();
   return (
     <section className="cta-section reveal">
-      <img src={ctaBgIcon} alt="" className="cta-section__bg-icon" loading="lazy" />        <h2>¿Listo para explorar Valledupar?</h2>
+      <img src={ctaBgIcon} alt="" className="cta-section__bg-icon" loading="lazy" />
+      <h2>¿Listo para explorar Valledupar?</h2>
       <p>Planifica tu ruta ahora mismo desde el mapa interactivo</p>
-      <button className="cta-section__btn">Ver el mapa interactivo</button>
+      <button className="cta-section__btn" onClick={() => navigate("/mapas")}>
+        Ver el mapa interactivo
+      </button>
     </section>
   );
 }
@@ -438,7 +537,7 @@ export default function InicioPage() {
   useScrollReveal();
 
   useEffect(() => {
-    const sectionIds = ["inicio", "mapas", "glosario", "galeria", "footer"];
+    const sectionIds = ["inicio", "mapas", "galeria", "glosario", "footer"];
     const sectionNodes = sectionIds.map((id) => document.getElementById(id)).filter(Boolean);
 
     const observer = new IntersectionObserver(
@@ -471,8 +570,8 @@ export default function InicioPage() {
       <TopBar activeSection={activeSection} isAuthenticated={isRegistered} user={{ name: "Usuario Válido", initials: "UV" }} onSectionChange={handleSectionChange} />
       <InitialSlider onNavigate={handleSectionChange} />
       <Maps />
-      <Glossary />
       <Gallery />
+      <Glossary />
       <CTASection />
       <Footer />
     </div>
