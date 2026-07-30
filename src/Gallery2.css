@@ -316,6 +316,47 @@
   white-space: nowrap;
 }
 
+/* ---- Media type badge (video / photo indicator) ---- */
+
+.gallery2__grid-media-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-family: var(--font-inter);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  transition: transform 0.3s ease;
+  pointer-events: none;
+}
+
+.gallery2__grid-media-badge--video {
+  background: rgba(194, 98, 42, 0.9);
+  color: #fff;
+}
+
+.gallery2__grid-media-badge--photo {
+  background: rgba(30, 22, 16, 0.7);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.gallery2__grid-item:hover .gallery2__grid-media-badge {
+  transform: scale(1.1);
+}
+
+.gallery2__grid-media-badge svg {
+  flex-shrink: 0;
+}
+
 /* ---- Video cards ---- */
 
 .gallery2__video-card {
