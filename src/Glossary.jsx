@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Search } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import TopBar from './TopBar';
 import Footer from './Footer';
 import SubmitWordModal from './SubmitWordModal';
@@ -56,7 +56,7 @@ const heroWords = [
   { id: 3, word: "Perrenque", meaning: "Alguien que tiene muchas ganas de hacer algo", type: "(Para referirse)", img: imgRecurso1Postal3, rotate: 2.03, bg: "green" },
   { id: 4, word: "Fundingue", meaning: "Personas que están en el desorden cuando hay una festividad", type: "(Para referirse)", img: imgRecurso3PostalMorado1, rotate: 11.74, bg: "purple" },
   { id: 5, word: "Rula o sable", meaning: "Machete con cuchillo grande que tiene mucho filo y es utilizada por jornaleros", type: "(Objeto)", img: imgRecurso1Postal3, rotate: 21.55, bg: "green" },
-  { id: 6, word: "Foquiao", meaning: "Persona que esta dormida profundamente", type: "(Para referirse)", img: imgRecurso3PostalMorado1, rotate: 32.29, bg: "purple" },
+  { id: 6, word: "Foquiao", meaning: "Persona que está dormida profundamente", type: "(Para referirse)", img: imgRecurso3PostalMorado1, rotate: 32.29, bg: "purple" },
   { id: 7, word: "Apalastrao", meaning: "Persona que tiene mucha flojera o no tiene ánimos para hacer algo", type: "(Para referirse)", img: imgRecurso1Postal3, rotate: 42.82, bg: "green" },
   { id: 8, word: "Derroche", meaning: "Acción de malgastar o desperdiciar algo", type: "(Para referirse)", img: imgRecurso3PostalMorado1, rotate: 32.56, bg: "purple" },
 ];
@@ -77,34 +77,142 @@ const orbitShapesConfig = [
   { img: orbitImages[5], sizeLarge: "120px", sizeSmall: "90px", delay: 1 },
 ];
 
-// ========= Hero1 Component (stamp layout + glosario1 typography & animations) =========
+// ========= SVG Components for Stamp Design =========
 
-const imgVector = "/assets/glosario/b73c7b38153a37b28c7dd09804c37c6904b4c5e3.svg";
+// Generates the scalloped border of the outer stamp
+const StampBorderSVG = () => {
+  return (
+    <svg
+      className="gloss-hero1__stamp-border-svg"
+      preserveAspectRatio="none"
+      viewBox="0 0 100 100"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <mask id="gloss-scallop-mask">
+          <rect width="100" height="100" fill="white" />
+          {/* Top edge scallops */}
+          <circle cx="5" cy="0" r="2" fill="black" />
+          <circle cx="15" cy="0" r="2" fill="black" />
+          <circle cx="25" cy="0" r="2" fill="black" />
+          <circle cx="35" cy="0" r="2" fill="black" />
+          <circle cx="45" cy="0" r="2" fill="black" />
+          <circle cx="55" cy="0" r="2" fill="black" />
+          <circle cx="65" cy="0" r="2" fill="black" />
+          <circle cx="75" cy="0" r="2" fill="black" />
+          <circle cx="85" cy="0" r="2" fill="black" />
+          <circle cx="95" cy="0" r="2" fill="black" />
+          {/* Bottom edge scallops */}
+          <circle cx="5" cy="100" r="2" fill="black" />
+          <circle cx="15" cy="100" r="2" fill="black" />
+          <circle cx="25" cy="100" r="2" fill="black" />
+          <circle cx="35" cy="100" r="2" fill="black" />
+          <circle cx="45" cy="100" r="2" fill="black" />
+          <circle cx="55" cy="100" r="2" fill="black" />
+          <circle cx="65" cy="100" r="2" fill="black" />
+          <circle cx="75" cy="100" r="2" fill="black" />
+          <circle cx="85" cy="100" r="2" fill="black" />
+          <circle cx="95" cy="100" r="2" fill="black" />
+          {/* Left edge scallops */}
+          <circle cx="0" cy="10" r="2" fill="black" />
+          <circle cx="0" cy="20" r="2" fill="black" />
+          <circle cx="0" cy="30" r="2" fill="black" />
+          <circle cx="0" cy="40" r="2" fill="black" />
+          <circle cx="0" cy="50" r="2" fill="black" />
+          <circle cx="0" cy="60" r="2" fill="black" />
+          <circle cx="0" cy="70" r="2" fill="black" />
+          <circle cx="0" cy="80" r="2" fill="black" />
+          <circle cx="0" cy="90" r="2" fill="black" />
+          {/* Right edge scallops */}
+          <circle cx="100" cy="10" r="2" fill="black" />
+          <circle cx="100" cy="20" r="2" fill="black" />
+          <circle cx="100" cy="30" r="2" fill="black" />
+          <circle cx="100" cy="40" r="2" fill="black" />
+          <circle cx="100" cy="50" r="2" fill="black" />
+          <circle cx="100" cy="60" r="2" fill="black" />
+          <circle cx="100" cy="70" r="2" fill="black" />
+          <circle cx="100" cy="80" r="2" fill="black" />
+          <circle cx="100" cy="90" r="2" fill="black" />
+        </mask>
+      </defs>
+      <rect x="0" y="0" width="100" height="100" fill="#E89D26" mask="url(#gloss-scallop-mask)" />
+    </svg>
+  );
+};
+
+// Generates the chaotic, layered jagged frames behind the main card
+const JaggedLayer = ({ color, className }) => (
+  <svg
+    viewBox="0 0 100 100"
+    preserveAspectRatio="none"
+    className={`gloss-hero1__jagged ${className}`}
+  >
+    <polygon
+      fill={color}
+      points="3,5 12,2 25,7 40,1 60,6 78,2 88,8 96,18 92,35 98,50 94,68 99,82 85,95 65,92 45,98 25,91 10,96 2,82 6,60 1,45 5,25"
+    />
+  </svg>
+);
+
+// ========= Hero1 Component – Palabras populares (redesign) =========
 
 function Hero1Section() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const totalCards = heroWords.length;
 
-  const nextCard = () => {
-    setCurrentIndex((prev) => (prev + 1) % heroWords.length);
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % totalCards);
   };
 
-  const prevCard = () => {
-    setCurrentIndex((prev) => (prev - 1 + heroWords.length) % heroWords.length);
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev - 1 + totalCards) % totalCards);
   };
 
-  // Stack of 4 visible cards
-  const visibleCards = [];
-  for (let i = 0; i < 4; i++) {
-    const index = (currentIndex + i) % heroWords.length;
-    visibleCards.push(heroWords[index]);
-  }
-  const stack = [...visibleCards].reverse();
+  // Helper to determine card position/visibility
+  const getCardStyles = (index) => {
+    let diff = index - currentIndex;
+    if (diff < 0) diff += totalCards;
+
+    // Card that just left (animating out)
+    if (diff === totalCards - 1) {
+      return {
+        wrapper: 'gloss-hero1__card--exit-left',
+        content: 'gloss-hero1__card-fade-out',
+      };
+    }
+    // Active card (front)
+    if (diff === 0) {
+      return {
+        wrapper: 'gloss-hero1__card--active',
+        content: 'gloss-hero1__card-fade-in',
+      };
+    }
+    // Card right behind
+    if (diff === 1) {
+      return {
+        wrapper: 'gloss-hero1__card--behind-1',
+        content: 'gloss-hero1__card-fade-out',
+      };
+    }
+    // Card two steps behind
+    if (diff === 2) {
+      return {
+        wrapper: 'gloss-hero1__card--behind-2',
+        content: 'gloss-hero1__card-fade-out',
+      };
+    }
+    // Hidden
+    return {
+      wrapper: 'gloss-hero1__card--hidden',
+      content: 'gloss-hero1__card-fade-out',
+    };
+  };
 
   return (
     <section className="gloss-hero1">
       <div className="gloss-hero1__container">
 
-        {/* LEFT COLUMN: Info Card (glosario1 typography) */}
+        {/* LEFT COLUMN: Info Card */}
         <div className="gloss-hero1__info-card">
           <p className="gloss-hero1__info-subtitle">
             ¿No entendiste? ¡No pasa nada, ombe!
@@ -117,69 +225,61 @@ function Hero1Section() {
           <p className="gloss-hero1__info-desc">
             Si te dijeron que eras un 'Bacano' o te mandaron a 'recoger una vaina', aquí te explicamos el asunto. Este glosario es la guía para entender el hablao' del pueblo. Referencias locales y toda esa jerga que nos hace únicos en el mapa.
           </p>
-          <div className="gloss-hero1__info-cta">
+          <div className="gloss-hero1__info-cta" onClick={() => document.getElementById('gloss-categories')?.scrollIntoView({ behavior: 'smooth' })}>
             CONOCE MÁS PALABRAS
           </div>
         </div>
 
-        {/* RIGHT COLUMN: Stamp card stack (como glosario1) */}
+        {/* RIGHT COLUMN: Interactive Stamp Carousel */}
         <div className="gloss-hero1__stamp-wrapper">
-          {/* Orange stamp SVG background (como glosario1) */}
-          <div className="gloss-hero1__stamp-bg">
-            <img alt="" src={imgVector} />
-          </div>
+          {/* Inner area con Group 143726149.png de fondo */}
+          <div className="gloss-hero1__stamp-inner">
+            <div className="gloss-hero1__card-stage">
+              {heroWords.map((item, index) => {
+                const styles = getCardStyles(index);
+                const isInteractive = index === currentIndex;
+                const isGreen = item.bg === 'green';
+                const jaggedColors = isGreen
+                  ? { layer1: '#5A7A4E', layer2: '#464C33', layer3: '#F4B333' }
+                  : { layer1: '#86749C', layer2: '#564E87', layer3: '#F4B333' };
 
-          {/* Card stack animation (from glosario1) */}
-          <div className="gloss-hero1__card-stack">
-            <AnimatePresence mode="popLayout">
-              {stack.map((item, i) => {
-                const isTop = i === stack.length - 1;
-                const cardInnerClass = item.bg === "green"
-                  ? "gloss-hero1__card-inner gloss-hero1__card-inner--verde"
-                  : "gloss-hero1__card-inner gloss-hero1__card-inner--morado";
-                return (
-                  <motion.div
+                const cardTheme = isGreen ? 'gloss-hero1__card-body--green' : 'gloss-hero1__card-body--purple';
+
+                return (                    <div
                     key={item.id}
-                    layoutId={`card-${item.id}`}
-                    initial={{ opacity: 0, scale: 0.8, y: 50, rotate: item.rotate - 10 }}
-                    animate={{
-                      opacity: 1,
-                      scale: isTop ? 1 : 1 - (stack.length - 1 - i) * 0.05,
-                      y: isTop ? 0 : (stack.length - 1 - i) * 20,
-                      rotate: item.rotate,
-                    }}
-                    exit={{ opacity: 0, scale: 1.2, x: 200, rotate: item.rotate + 10 }}
-                    transition={{ duration: 0.5, type: 'spring', bounce: 0.3 }}
-                    className="gloss-hero1__card"
-                    style={{ zIndex: i }}
+                    className={`gloss-hero1__card ${styles.wrapper}`}
+                    style={{ pointerEvents: isInteractive ? 'auto' : 'none' }}
                   >
-                    <div className={cardInnerClass}>
-                      <div className="gloss-hero1__card-overlay" />
-                      <div className="gloss-hero1__card-content">
-                        <div className="gloss-hero1__card-word-wrap">
-                          <p className="gloss-hero1__card-word">{item.word}</p>
+                    {/* Decorative Jagged Layers behind card */}
+                    <JaggedLayer color={jaggedColors.layer1} className="gloss-hero1__jagged--1" />
+                    <JaggedLayer color={jaggedColors.layer2} className="gloss-hero1__jagged--2" />
+                    <JaggedLayer color={jaggedColors.layer3} className="gloss-hero1__jagged--3" />
+
+                    {/* Main card body */}
+                    <div className={`gloss-hero1__card-body ${cardTheme}`}>
+                      <div className={`gloss-hero1__card-content-inner ${styles.content}`}>
+                        <h3 className="gloss-hero1__card-word">{item.word}</h3>
+                        <div className="gloss-hero1__card-meaning">
+                          <span className="gloss-hero1__card-meaning-label">Significado:</span>
+                          <p className="gloss-hero1__card-meaning-text">{item.meaning}</p>
                         </div>
-                        <p className="gloss-hero1__card-meaning-label">Significado:</p>
-                        <div className="gloss-hero1__card-meaning-text">
-                          <p>{item.meaning}</p>
-                        </div>
-                        <p className="gloss-hero1__card-type">{item.type}</p>
+                        <span className="gloss-hero1__card-type">{item.type}</span>
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
                 );
               })}
-            </AnimatePresence>
-          </div>
+            </div>
 
-          {/* Navigation buttons */}
-          <div className="gloss-hero1__stamp-nav">
-            <button onClick={prevCard} className="gloss-hero1__stamp-btn">
-              Ant.
-            </button>
-            <button onClick={nextCard} className="gloss-hero1__stamp-btn">
-              Sig.
-            </button>
+            {/* Navigation controls */}
+            <div className="gloss-hero1__stamp-nav">
+              <button onClick={handlePrev} className="gloss-hero1__stamp-btn">
+                ANT.
+              </button>
+              <button onClick={handleNext} className="gloss-hero1__stamp-btn">
+                SIG.
+              </button>
+            </div>
           </div>
         </div>
 
@@ -266,7 +366,7 @@ function CategoriesSection({ categoryCounts, glossaryData }) {
 
   return (
     <>
-      <section className="gloss-categories">
+      <section id="gloss-categories" className="gloss-categories">
         <div className="gloss-categories__header">
           <h2 className="gloss-categories__title">Categorías</h2>
           <p className="gloss-categories__desc">
@@ -414,6 +514,7 @@ export default function Glossary() {
   const [glossaryData, setGlossaryData] = useState([]);
   const [categoryCounts, setCategoryCounts] = useState({});
   const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [selectedSearchWord, setSelectedSearchWord] = useState(null);
 
   // Fetch glossary words from Supabase
   const fetchWords = useCallback(async () => {
@@ -546,9 +647,9 @@ export default function Glossary() {
               <span className="gloss-hero__title--local">vallenato</span>
             </h1>
             <p className="gloss-hero__desc">
-              En este Glosario encontrarás más de 200 palabras que te ayudarán a entender
+              En este Glosario encontrarás más de 200 palabras
               <br className="gloss-hero__desc-br" />
-              el habla'o de los Valduparenses.
+              que te ayudarán a entender el habla'o de los Valduparenses.
             </p>
           </div>
 
@@ -572,7 +673,7 @@ export default function Glossary() {
               {isSearching && searchResults.length > 0 ? (
                 <ul className="gloss-hero__results-list">
                   {searchResults.map((item, index) => (
-                    <li key={index} className="gloss-hero__results-item">
+                    <li key={index} className="gloss-hero__results-item" onClick={() => setSelectedSearchWord(item)}>
                       <h3 className="gloss-hero__results-word">{item.word}</h3>
                       <p className="gloss-hero__results-def">{item.definition}</p>
                     </li>
@@ -611,6 +712,67 @@ export default function Glossary() {
           }}
         />
       )}
+
+      {/* Full-screen Stamp Overlay */}
+      {selectedSearchWord && (
+        <WordStampOverlay
+          word={selectedSearchWord}
+          onClose={() => setSelectedSearchWord(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ========= WordStampOverlay – Estampa en pantalla completa =========
+
+function WordStampOverlay({ word, onClose }) {
+  // Close on Escape
+  useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [onClose]);
+
+  // Prevent body scroll
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
+  const isGreen = word.color_postal === 'verde' || !word.color_postal;
+  const stampBg = isGreen
+    ? 'gloss-stamp-overlay__card--green'
+    : 'gloss-stamp-overlay__card--purple';
+
+  return (
+    <div className="gloss-stamp-overlay" onClick={onClose}>
+      <button className="gloss-stamp-overlay__close" onClick={onClose}>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
+
+      <div className="gloss-stamp-overlay__card-wrapper" onClick={(e) => e.stopPropagation()}>
+        <div className={`gloss-stamp-overlay__card ${stampBg}`}>
+          <div className="gloss-stamp-overlay__card-inner">
+            <span className="gloss-stamp-overlay__label">Palabra</span>
+            <h2 className="gloss-stamp-overlay__word">{word.word}</h2>
+
+            <div className="gloss-stamp-overlay__divider" />
+
+            <span className="gloss-stamp-overlay__label">Significado:</span>
+            <p className="gloss-stamp-overlay__meaning">{word.definition}</p>
+
+            <div className="gloss-stamp-overlay__divider" />
+
+            <span className="gloss-stamp-overlay__category">
+              {word.categoria ? `(${word.categoria})` : ''}
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

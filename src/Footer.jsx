@@ -13,7 +13,7 @@ export default function Footer() {
         <div>
           <img src={logoFooter} alt="Rutas de Valledupar" className="footer__logo" />
           <p className="footer__desc">
-            Un proyecto turistico-cultural para explorar y preservar la identidad de Valledupar, capital mundial del vallenato.
+            Un proyecto turístico-cultural para explorar y preservar la identidad de Valledupar, capital mundial del vallenato.
           </p>
           <div className="footer__socials">
             <a href="https://www.instagram.com/rutasvalledupar" target="_blank" rel="noreferrer" className="footer__social-btn">
@@ -31,21 +31,21 @@ export default function Footer() {
             Ruta Patrimonial
           </Link>
           <Link to="/mapas" className="footer__link">
-            Ruta Gastronomica
+            Ruta Gastronómica
           </Link>
           <Link to="/mapas" className="footer__link">
-            Ruta Mistica
+            Ruta Mística
           </Link>
           <Link to="/glosario" className="footer__link">
             Glosario vallenato
           </Link>
           <a href="/inicio#galeria" className="footer__link">
-            Galeria
+            Galería
           </a>
         </div>
 
         <div>
-          <h3 className="footer__col-title">Informacion</h3>
+          <h3 className="footer__col-title">Información</h3>
           <Link to="/terminos-y-condiciones" className="footer__link">
             Términos y condiciones
           </Link>
@@ -57,7 +57,7 @@ export default function Footer() {
         <div>
           <h3 className="footer__col-title">Contacto</h3>
           <div className="footer__contact-item">
-            <img src={iconLocation} alt="Ubicacion" />
+            <img src={iconLocation} alt="Ubicación" />
             <span>Valledupar, Cesar, Colombia</span>
           </div>
           <div className="footer__contact-item">

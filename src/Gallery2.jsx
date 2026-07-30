@@ -347,7 +347,7 @@ export default function Gallery2() {
                     onError={(e) => { e.target.style.display = "none"; }}
                   />
                   <div className="gallery2__grid-item-overlay" />
-                  <span className="gallery2__grid-item-badge">{item.tipo_multimedia}</span>
+                  <span className="gallery2__grid-item-badge">{mediaLabel(item.tipo_multimedia)?.name || item.tipo_multimedia}</span>
                   <div className="gallery2__grid-item-caption">
                     <strong>{item.titulo}</strong>
                     <small>{item.descripcion_breve || ""}</small>
@@ -426,7 +426,7 @@ export default function Gallery2() {
                   onError={(e) => { e.target.style.display = "none"; e.target.parentElement.style.background = "#C2622A"; }}
                 />
               )}
-              <span className="gallery2__click-badge">{selectedItem.tipo_sitio}</span>
+              <span className="gallery2__click-badge">{catLabel(selectedItem.tipo_sitio)?.name || selectedItem.tipo_sitio}</span>
             </div>
 
             {/* Info */}
@@ -447,7 +447,7 @@ export default function Gallery2() {
                 letterSpacing: "0.04em",
                 marginBottom: 12,
               }}>
-                {selectedItem.tipo_multimedia}
+                {mediaLabel(selectedItem.tipo_multimedia)?.name || selectedItem.tipo_multimedia}
               </span>
 
               {selectedItem.descripcion_breve && (
@@ -479,7 +479,7 @@ export default function Gallery2() {
                   Haz clic fuera para cerrar
                 </span>
                 <strong style={{ color: "#C2622A", fontFamily: "'Inter', sans-serif", fontSize: 11, textTransform: "uppercase" }}>
-                  {selectedItem.tipo_sitio} • Galería 2026
+                  {catLabel(selectedItem.tipo_sitio)?.name || selectedItem.tipo_sitio} • Galería 2026
                 </strong>
               </div>
             </div>

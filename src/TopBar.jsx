@@ -13,7 +13,7 @@ const navItems = [
   { id: "mapas", label: "Mapa", to: "/mapas" },
   { id: "rutas-interactivas", label: "Rutas", to: "/rutas-interactivas" },
   { id: "glosario", label: "Glosario", to: "/glosario" },
-  { id: "galeria", label: "Galeria", to: "/galeria" },
+  { id: "galeria", label: "Galería", to: "/galeria" },
   { id: "acerca", label: "Acerca de", to: "/acerca-de" },
 ];
 
@@ -177,7 +177,7 @@ export default function TopBar({
     : [
         {
           id: "mi-perfil",
-          label: "Mi Perfil",
+          label: "Mi perfil",
           icon: "user",
           action: "profile",
         },

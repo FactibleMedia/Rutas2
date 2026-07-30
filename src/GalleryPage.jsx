@@ -9,35 +9,8 @@ import "./GalleryPage.css";
    Image Assets from /assets/gallery/
    ========================================================= */
 
-const imgFestivalUstaris = "/assets/gallery/FESTIVAL_Ustaris 1.png";
-const imgFestivalIglesia = "/assets/gallery/FESTIVAL_Iglesia 1.png";
 const imgPostal3 = "/assets/gallery/postal3.png";
 const imgPostalPlazaMarco = "/assets/gallery/Postal_Plaza_CON MARCO 1.png";
-
-/* =========================================================
-   Photo Data – Block 1
-   ========================================================= */
-
-const photoData = [
-  {
-    id: 0,
-    imgSrc: imgPostal3,
-    borderClass: "gallery-hero__photo-inner--green",
-    filterClass: "gallery-hero__photo-img--contrast-sepia",
-  },
-  {
-    id: 1,
-    imgSrc: imgPostalPlazaMarco,
-    borderClass: "gallery-hero__photo-inner--yellow",
-    filterClass: "gallery-hero__photo-img--contrast-saturate",
-  },
-  {
-    id: 2,
-    imgSrc: imgPostalPlazaMarco,
-    borderClass: "gallery-hero__photo-inner--yellow",
-    filterClass: "gallery-hero__photo-img--contrast-bright",
-  },
-];
 
 /* =========================================================
    Helper: Extract embed URL (YouTube & Google Drive)
@@ -66,7 +39,208 @@ function getEmbedUrl(url) {
 }
 
 /* =========================================================
-   House SVG Component (for Block 2)
+   SVG Components – Iglesia y Casa Colonial (del código de referencia)
+   ========================================================= */
+
+/** Iglesia de la Inmaculada Concepción */
+function ChurchSVG() {
+  return (
+    <svg width="140" height="160" viewBox="0 0 140 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <g style={{ filter: 'drop-shadow(0px 10px 15px rgba(0,0,0,0.3))' }}>
+        <path d="M20 150 L120 150 L120 160 L20 160 Z" fill="#D3A780" />
+        <path d="M10 150 L40 60 L100 60 L130 150 Z" fill="#FCE9D5" />
+        <path d="M40 60 L70 20 L100 60 Z" fill="#F9D7B3" />
+        <rect x="55" y="60" width="30" height="90" fill="#F6C594" />
+        <path d="M35 60 L70 15 L105 60 L100 65 L70 25 L40 65 Z" fill="#E88B4A" />
+        <path d="M10 150 L40 60 L45 65 L15 150 Z" fill="#E88B4A" />
+        <path d="M130 150 L100 60 L95 65 L125 150 Z" fill="#E88B4A" />
+        <path d="M60 110 C60 90 80 90 80 110 L80 150 L60 150 Z" fill="#2E2218" />
+        <circle cx="70" cy="80" r="8" fill="#2E2218" />
+        <circle cx="35" cy="115" r="4" fill="#2E2218" />
+        <circle cx="105" cy="115" r="4" fill="#2E2218" />
+        <rect x="68" y="0" width="4" height="20" fill="#E88B4A" />
+        <rect x="63" y="5" width="14" height="4" fill="#E88B4A" />
+      </g>
+    </svg>
+  );
+}
+
+/** Casa Colonial */
+function HouseSVG() {
+  return (
+    <svg width="130" height="130" viewBox="0 0 130 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <g style={{ filter: 'drop-shadow(0px 10px 15px rgba(0,0,0,0.3))' }}>
+        <rect x="15" y="45" width="100" height="75" fill="#F4E9DC" />
+        <path d="M5 45 L65 15 L125 45 Z" fill="#5A3A2B" />
+        <rect x="10" y="45" width="110" height="15" fill="#754C38" />
+        <rect x="15" y="60" width="100" height="25" fill="#5A3A2B" />
+        <rect x="20" y="65" width="10" height="15" fill="#F4E9DC" />
+        <rect x="40" y="65" width="10" height="15" fill="#F4E9DC" />
+        <rect x="60" y="65" width="10" height="15" fill="#F4E9DC" />
+        <rect x="80" y="65" width="10" height="15" fill="#F4E9DC" />
+        <rect x="100" y="65" width="10" height="15" fill="#F4E9DC" />
+        <rect x="25" y="95" width="20" height="25" fill="#5A3A2B" />
+        <rect x="55" y="100" width="20" height="15" fill="#5A3A2B" />
+        <rect x="85" y="95" width="20" height="25" fill="#5A3A2B" />
+      </g>
+    </svg>
+  );
+}
+
+/** Tarjeta postal – estilo original (marco blanco + borde dashed) */
+function PhotoCard({ imageSrc, borderClass, rotation, zIndex, offsetX, offsetY, filterClass, onClick }) {
+  return (
+    <div
+      className="gallery-hero__photo-frame"
+      onClick={onClick}
+      style={{
+        transform: `translate(${offsetX}px, ${offsetY}px) rotate(${rotation}deg)`,
+        zIndex: zIndex,
+      }}
+    >
+      <div className={`gallery-hero__photo-inner ${borderClass}`}>
+        <img
+          src={imageSrc}
+          alt="Galería"
+          className={`gallery-hero__photo-img ${filterClass || ''}`}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
+   Block 1 – Hero (Photo Stack + Typography)
+   ========================================================= */
+
+function GalleryHero() {
+  const [stack, setStack] = useState([0, 1, 2]);
+
+  const bringToFront = (id) => {
+    setStack((prev) => {
+      const newStack = prev.filter((item) => item !== id);
+      newStack.push(id);
+      return newStack;
+    });
+  };
+
+  // Posiciones fijas del diseño anterior para el stack
+  const stackPositions = [
+    { offsetX: 0, offsetY: 40, rotation: -16 },
+    { offsetX: 60, offsetY: 10, rotation: -6 },
+    { offsetX: 130, offsetY: 20, rotation: 4 },
+  ];
+
+  const photoCards = [
+    {
+      id: 0,
+      imgSrc: imgPostal3,
+      borderClass: 'gallery-hero__photo-inner--green',
+      filterClass: 'gallery-hero__photo-img--contrast-sepia',
+    },
+    {
+      id: 1,
+      imgSrc: imgPostalPlazaMarco,
+      borderClass: 'gallery-hero__photo-inner--yellow',
+      filterClass: 'gallery-hero__photo-img--contrast-saturate',
+    },
+    {
+      id: 2,
+      imgSrc: imgPostalPlazaMarco,
+      borderClass: 'gallery-hero__photo-inner--yellow',
+      filterClass: 'gallery-hero__photo-img--contrast-bright',
+    },
+  ];
+
+  const getStackIndex = (id) => stack.indexOf(id);
+
+  return (
+    <div className="gallery-hero__inner">
+      {/* LEFT – Visual */}
+      <div className="gallery-hero__visual">
+        {/* Shadow overlays de fondo */}
+        <div className="gallery-hero__shadow-overlay gallery-hero__shadow-overlay--tl" />
+        <div className="gallery-hero__shadow-overlay gallery-hero__shadow-overlay--br" />
+        <div className="gallery-hero__shadow-overlay gallery-hero__shadow-overlay--center" />
+
+        {/* Church SVG flotante */}
+        <div className="gallery-hero__church">
+          <ChurchSVG />
+        </div>
+
+        {/* Photo Stack con postales al estilo anterior */}
+        <div className="gallery-hero__photo-stack">
+          {photoCards.map((card) => {
+            const stackIdx = getStackIndex(card.id);
+            const pos = stackPositions[stackIdx];
+            const dynamicZ = 10 + stackIdx * 10;
+            return (
+              <PhotoCard
+                key={card.id}
+                imageSrc={card.imgSrc}
+                borderClass={card.borderClass}
+                rotation={pos.rotation}
+                zIndex={dynamicZ}
+                offsetX={pos.offsetX}
+                offsetY={pos.offsetY}
+                filterClass={card.filterClass}
+                onClick={() => bringToFront(card.id)}
+              />
+            );
+          })}
+        </div>
+
+        {/* House SVG flotante */}
+        <div className="gallery-hero__house">
+          <HouseSVG />
+        </div>
+      </div>
+
+      {/* RIGHT – Content */}
+      <div className="gallery-hero__content">
+        <h1 className="gallery-hero__title">
+          <span className="gallery-hero__title-line gallery-hero__title-line--mira">
+            MIRA,
+          </span>
+          <span className="gallery-hero__title-line gallery-hero__title-line--escucha">
+            ESCUCHA
+          </span>
+          <span className="gallery-hero__title-line gallery-hero__title-line--siente">
+            Y SIENTE
+          </span>
+          <span className="gallery-hero__title-line gallery-hero__title-line--valle">
+            EL VALLE
+          </span>
+        </h1>
+
+        <p className="gallery-hero__description">
+          Un recorrido audiovisual por la esencia de Valledupar. Explora una
+          colección de momentos, sonidos y paisajes que definen quiénes somos.
+        </p>
+
+        <button className="gallery-hero__cta">VER AHORA</button>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
+/* =========================================================
+   Label mappings for proper Spanish orthography
+   ========================================================= */
+
+const TIPO_SITIO_LABELS = {
+  "Patrimonial": "Patrimonial",
+  "Gastronomico": "Gastronómico",
+  "Mitico": "Mítico",
+  "Historico": "Histórico",
+  "Cultural": "Cultural",
+};
+
+const getCategoryLabel = (cat) => TIPO_SITIO_LABELS[cat] || cat;
+
+/* =========================================================
+   House SVG Components (for Block 2 – multimedia)
    ========================================================= */
 
 function HouseLeftSVG() {
@@ -120,104 +294,6 @@ function HouseRightSVG() {
       <circle cx="102" cy="7" r="1.5" fill="#d35400" />
       <circle cx="98" cy="8" r="1" fill="#333" />
     </svg>
-  );
-}
-
-/* =========================================================
-   Block 1 – Hero (Photo Stack + Typography)
-   ========================================================= */
-
-function GalleryHero() {
-  const [stack, setStack] = useState([0, 1, 2]);
-
-  const bringToFront = (id) => {
-    setStack((prev) => {
-      const newStack = prev.filter((item) => item !== id);
-      newStack.push(id);
-      return newStack;
-    });
-  };
-
-  const getStackStyles = (stackIndex) => {
-    switch (stackIndex) {
-      case 0:
-        return { transform: "translate(0px, 40px) rotate(-16deg)", zIndex: 10 };
-      case 1:
-        return { transform: "translate(60px, 10px) rotate(-6deg)", zIndex: 20 };
-      case 2:
-        return { transform: "translate(130px, 20px) rotate(4deg)", zIndex: 30 };
-      default:
-        return {};
-    }
-  };
-
-  return (
-    <div className="gallery-hero__inner">
-      {/* LEFT – Visual */}
-      <div className="gallery-hero__visual">
-        <div className="gallery-hero__guide-line gallery-hero__guide-line--vertical" />
-        <div className="gallery-hero__guide-line gallery-hero__guide-line--horizontal" />
-
-        {/* Church – sin fondo, solo imagen */}
-        <div className="gallery-hero__church">
-          <img src={imgFestivalIglesia} alt="Festival Iglesia" />
-        </div>
-
-        {/* Photo Stack */}
-        <div className="gallery-hero__photo-stack">
-          {photoData.map((photo) => {
-            const stackIndex = stack.indexOf(photo.id);
-            return (
-              <div
-                key={photo.id}
-                onClick={() => bringToFront(photo.id)}
-                className="gallery-hero__photo-frame"
-                style={getStackStyles(stackIndex)}
-              >
-                <div className={`gallery-hero__photo-inner ${photo.borderClass}`}>
-                  <img
-                    src={photo.imgSrc}
-                    alt="Galería"
-                    className={`gallery-hero__photo-img ${photo.filterClass}`}
-                  />
-                </div>
-              </div>
-            );
-          })}
-
-          {/* House – sin fondo, solo imagen */}
-          <div className="gallery-hero__house">
-            <img src={imgFestivalUstaris} alt="Festival Ustaris" />
-          </div>
-        </div>
-      </div>
-
-      {/* RIGHT – Content */}
-      <div className="gallery-hero__content">
-        <h1 className="gallery-hero__title">
-          <span className="gallery-hero__title-line gallery-hero__title-line--mira">
-            MIRA,
-            <span className="gallery-hero__tag-badge">1247</span>
-          </span>
-          <span className="gallery-hero__title-line gallery-hero__title-line--escucha">
-            ESCUCHA
-          </span>
-          <span className="gallery-hero__title-line gallery-hero__title-line--siente">
-            Y SIENTE
-          </span>
-          <span className="gallery-hero__title-line gallery-hero__title-line--valle">
-            EL VALLE
-          </span>
-        </h1>
-
-        <p className="gallery-hero__description">
-          Un recorrido audiovisual por la esencia de Valledupar. Explora una
-          colección de momentos, sonidos y paisajes que definen quiénes somos.
-        </p>
-
-        <button className="gallery-hero__cta">VER AHORA</button>
-      </div>
-    </div>
   );
 }
 
@@ -354,7 +430,7 @@ function MultimediaGallery() {
                 filter === btn ? " gallery-multimedia__filter-btn--active" : ""
               }`}
             >
-              {btn}
+              {btn === "Todo" ? btn : getCategoryLabel(btn)}
             </button>
           ))}
         </div>
@@ -381,7 +457,7 @@ function MultimediaGallery() {
               onClick={() => setSelectedItem(item)}
             >
               <span className="gallery-multimedia__card-category">
-                {item.category}
+                {getCategoryLabel(item.category)}
               </span>
               {item.img ? (
                 <img
@@ -503,7 +579,7 @@ function MultimediaGallery() {
 
               {!isPlaying && (
                 <span className="gallery-multimedia__modal-video-tag">
-                  {selectedItem.category}
+                  {getCategoryLabel(selectedItem.category)}
                 </span>
               )}
             </div>
@@ -578,9 +654,6 @@ export default function GalleryPage() {
 
       {/* Block 1 – Hero */}
       <section className="gallery-hero">
-        <div className="gallery-hero__bg-blur gallery-hero__bg-blur--top-right" />
-        <div className="gallery-hero__bg-blur gallery-hero__bg-blur--bottom-left" />
-        <div className="gallery-hero__bg-blur gallery-hero__bg-blur--center-left" />
         <GalleryHero />
       </section>
 

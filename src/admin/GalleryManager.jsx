@@ -11,6 +11,25 @@ const TIPO_SITIO = ["Patrimonial", "Gastronomico", "Mitico", "Historico", "Cultu
 const TIPO_MULTIMEDIA = ["Fotografia", "Ilustracion", "Galeria de Fotos", "Video"];
 const FILTERS = ["Todas", ...TIPO_SITIO];
 
+// Etiquetas con ortografía correcta
+const TIPO_SITIO_LABELS = {
+  "Patrimonial": "Patrimonial",
+  "Gastronomico": "Gastronómico",
+  "Mitico": "Mítico",
+  "Historico": "Histórico",
+  "Cultural": "Cultural",
+};
+
+const TIPO_MULTIMEDIA_LABELS = {
+  "Fotografia": "Fotografía",
+  "Ilustracion": "Ilustración",
+  "Galeria de Fotos": "Galería de Fotos",
+  "Video": "Video",
+};
+
+const getSitioLabel = (key) => TIPO_SITIO_LABELS[key] || key;
+const getMultimediaLabel = (key) => TIPO_MULTIMEDIA_LABELS[key] || key;
+
 const STORAGE_BUCKET = "media-rutas";
 
 const EMPTY_FORM = {
@@ -565,7 +584,7 @@ export default function GalleryManager() {
               {stats.counts[tipo] || 0}
             </p>
             <p className="admin-metric__label" style={{ fontSize: 10, margin: 0, whiteSpace: "nowrap" }}>
-              {tipo}
+              {getSitioLabel(tipo)}
             </p>
           </button>
         ))}
@@ -606,7 +625,7 @@ export default function GalleryManager() {
                       onChange={(e) => setForm((p) => ({ ...p, tipo_sitio: e.target.value }))}
                     >
                       {TIPO_SITIO.map((t) => (
-                        <option key={t} value={t}>{t}</option>
+                        <option key={t} value={t}>{getSitioLabel(t)}</option>
                       ))}
                     </select>
                   </div>
@@ -619,7 +638,7 @@ export default function GalleryManager() {
                       onChange={(e) => setForm((p) => ({ ...p, tipo_multimedia: e.target.value }))}
                     >
                       {TIPO_MULTIMEDIA.map((t) => (
-                        <option key={t} value={t}>{t}</option>
+                        <option key={t} value={t}>{getMultimediaLabel(t)}</option>
                       ))}
                     </select>
                   </div>
@@ -930,7 +949,7 @@ export default function GalleryManager() {
                       textTransform: "uppercase",
                       letterSpacing: "0.06em",
                     }}>
-                      {form.tipo_sitio}
+                      {getSitioLabel(form.tipo_sitio)}
                     </span>
                   </div>
                   <div style={{ textAlign: "center", width: "100%", maxWidth: 280 }}>
@@ -956,7 +975,7 @@ export default function GalleryManager() {
                       background: "rgba(197,98,56,0.1)",
                       color: "#c56238",
                     }}>
-                      {form.tipo_multimedia}
+                      {getMultimediaLabel(form.tipo_multimedia)}
                     </span>
                   </div>
                 </div>
@@ -978,7 +997,7 @@ export default function GalleryManager() {
               style={{ maxWidth: 400 }}
             />
             <span style={{ fontSize: 13, color: "var(--on-surface-variant)" }}>
-              {filterTipo !== "Todas" && `Filtrando: ${filterTipo}`}
+              {filterTipo !== "Todas" && `Filtrando: ${getSitioLabel(filterTipo)}`}
             </span>
           </div>
 
@@ -1014,7 +1033,7 @@ export default function GalleryManager() {
                     <tr key={item.id}>
                       <td data-label="Título" style={{ fontWeight: 700 }}>{item.titulo}</td>
                       <td data-label="Tipo Sitio">
-                        <span className="admin-badge admin-badge--published">{item.tipo_sitio}</span>
+                        <span className="admin-badge admin-badge--published">{getSitioLabel(item.tipo_sitio)}</span>
                       </td>
                       <td data-label="Multimedia">
                         <span style={{
@@ -1028,7 +1047,7 @@ export default function GalleryManager() {
                           background: "rgba(197,98,56,0.1)",
                           color: "#c56238",
                         }}>
-                          {item.tipo_multimedia}
+                          {getMultimediaLabel(item.tipo_multimedia)}
                         </span>
                       </td>
                       <td data-label="Descripción" style={{ fontSize: 13, color: "var(--on-surface-variant)", maxWidth: 250, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
