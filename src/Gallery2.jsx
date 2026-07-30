@@ -184,6 +184,22 @@ export default function Gallery2() {
     return null;
   };
 
+  // Extract video thumbnail from YouTube URL (fallback cuando no hay imagen)
+  const getVideoThumbnail = (url) => {
+    if (!url) return null;
+    try {
+      const u = new URL(url);
+      let vid = null;
+      if (u.hostname.includes("youtube.com")) {
+        vid = u.searchParams.get("v");
+      } else if (u.hostname === "youtu.be") {
+        vid = u.pathname.slice(1).split("?")[0];
+      }
+      if (vid) return `https://img.youtube.com/vi/${vid}/hqdefault.jpg`;
+    } catch {}
+    return null;
+  };
+
   return (
     <div className="gallery2-enter" style={pageStyle}>
       <div className="gallery2__dot-texture" />
@@ -342,7 +358,7 @@ export default function Gallery2() {
                   style={{ height: 260, cursor: "pointer" }}
                 >
                   <img
-                    src={item.video_imagen || item.imagen_principal || ""}
+                    src={item.video_imagen || item.imagen_principal || getVideoThumbnail(item.video_url) || ""}
                     alt={item.titulo}
                     onError={(e) => { e.target.style.display = "none"; }}
                   />

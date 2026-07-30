@@ -38,6 +38,22 @@ function getEmbedUrl(url) {
   return null;
 }
 
+/* Fallback: extraer miniatura de YouTube cuando no hay imagen */
+function getVideoThumbnail(url) {
+  if (!url) return null;
+  try {
+    const u = new URL(url);
+    let vid = null;
+    if (u.hostname.includes("youtube.com")) {
+      vid = u.searchParams.get("v");
+    } else if (u.hostname === "youtu.be") {
+      vid = u.pathname.slice(1).split("?")[0];
+    }
+    if (vid) return `https://img.youtube.com/vi/${vid}/hqdefault.jpg`;
+  } catch {}
+  return null;
+}
+
 /* =========================================================
    SVG Components – Iglesia y Casa Colonial (del código de referencia)
    ========================================================= */
@@ -330,7 +346,7 @@ function MultimediaGallery() {
             title: item.titulo,
             location: item.ubicacion_id || "Valledupar",
             description: item.descripcion_narrativa || item.descripcion_breve,
-            img: item.video_imagen || item.imagen_principal || "",
+            img: item.video_imagen || item.imagen_principal || getVideoThumbnail(item.video_url) || "",
             videoUrl: item.video_url || "",
             tipo_multimedia: item.tipo_multimedia,
             longitud: item.longitud,
