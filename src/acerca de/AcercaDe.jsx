@@ -1,15 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TopBar from "../TopBar";
 import Footer from "../Footer";
 import iconInstagram from "../assets/mcp/icon_instagram.png";
 import iconMail from "../assets/mcp/icon_mail.png";
+import { supabase, isSupabaseReady } from "../supabaseClient";
 import "./AcercaDe.css";
 
 /* =========================================================
-   DATA – Team members
+   DATA – Default team members (fallback si no hay Supabase)
    ========================================================= */
 
-const teamMembers = [
+const DEFAULT_TEAM = [
   {
     name: "Stephanie De Castro",
     role: "Docente Líder De Investigación",
@@ -29,22 +30,6 @@ const teamMembers = [
     image: "https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?auto=format&fit=crop&w=600&q=80",
   },
 ];
-
-/* =========================================================
-   COMPONENTS – Reusable decorative elements
-   ========================================================= */
-
-/** Pattern border with orange flower/star motif (CSS data-URI based) */
-function PatternBorder({ top, bottom, left, right }) {
-  return (
-    <>
-      {top && <div className="acerca-pattern-border acerca-pattern-border--top" />}
-      {bottom && <div className="acerca-pattern-border acerca-pattern-border--bottom" />}
-      {left && <div className="acerca-pattern-border acerca-pattern-border--left" />}
-      {right && <div className="acerca-pattern-border acerca-pattern-border--right" />}
-    </>
-  );
-}
 
 /* =========================================================
    SECTION 1 – Hero Header (con logo, baldosas y patrones de fondo)
@@ -143,13 +128,20 @@ function IntroQuoteSection() {
 function ManifestoSection() {
   return (
     <section className="acerca-manifesto">
-      {/* Left: Parchment Text */}
+      {/* Left: Manifiesto background image + text */}
       <div className="acerca-manifesto__parchment">
-        <div className="acerca-manifesto__parchment-inner" />
         <div className="acerca-manifesto__heading">
-          <span className="acerca-manifesto__dot" />
+          <img
+            src="/assets/acerca/Baldosa Verde.png"
+            alt=""
+            className="acerca-manifesto__tile"
+          />
           <h2 className="acerca-manifesto__title">Manifiesto</h2>
-          <span className="acerca-manifesto__dot" />
+          <img
+            src="/assets/acerca/Baldosa Verde.png"
+            alt=""
+            className="acerca-manifesto__tile"
+          />
         </div>
         <p className="acerca-manifesto__copy">
           En Rutas de Valledupar, viajar no significa desplazarse; significa reencontrarse.
@@ -167,14 +159,21 @@ function ManifestoSection() {
         </p>
       </div>
 
-      {/* Right: Framed Portrait */}
+      {/* Right: Framed Video with baldosa naranja postal border */}
       <div className="acerca-manifesto__portrait">
         <div className="acerca-manifesto__portrait-frame">
-          <img
-            src="https://images.unsplash.com/photo-1597495511110-9155d2fa3030?auto=format&fit=crop&w=600&q=80"
-            alt="Retrato Manifiesto"
+          <video
+            src="/assets/acerca/video.mp4"
+            className="acerca-manifesto__portrait-video"
+            autoPlay
+            muted
+            loop
+            playsInline
           />
-          <PatternBorder top bottom left right />
+          <div className="acerca-manifesto__border-top" />
+          <div className="acerca-manifesto__border-bottom" />
+          <div className="acerca-manifesto__border-left" />
+          <div className="acerca-manifesto__border-right" />
         </div>
       </div>
     </section>
@@ -200,7 +199,40 @@ function TransitionSection() {
    ========================================================= */
 
 function TeamSection() {
+  const [teamMembers, setTeamMembers] = useState(DEFAULT_TEAM);
   const [activeIndex, setActiveIndex] = useState(0);
+
+  /* Cargar miembros desde Supabase */
+  useEffect(() => {
+    if (!isSupabaseReady()) return;
+
+    let cancelled = false;
+
+    async function fetchTeam() {
+      try {
+        const { data, error } = await supabase
+          .from("equipo_acerca")
+          .select("*")
+          .order("orden", { ascending: true });
+
+        if (!cancelled && !error && data && data.length > 0) {
+          setTeamMembers(
+            data.map((m) => ({
+              name: m.nombre,
+              role: m.cargo,
+              org: m.apodo,
+              image: m.foto_url,
+            }))
+          );
+        }
+      } catch (err) {
+        console.warn("Error fetching team from Supabase, using defaults:", err);
+      }
+    }
+
+    fetchTeam();
+    return () => { cancelled = true; };
+  }, []);
 
   const handlePrev = () => {
     setActiveIndex((prev) => (prev - 1 + teamMembers.length) % teamMembers.length);
@@ -210,7 +242,15 @@ function TeamSection() {
     setActiveIndex((prev) => (prev + 1) % teamMembers.length);
   };
 
-  /* Calcula posición y estilo de cada slide según su diferencia con el activo */
+  /* Auto-rotación cada 4 segundos */
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % teamMembers.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [teamMembers.length]);
+
+  /* Calcula posición y estilo de cada slide */
   const getSlideStyles = (index) => {
     let diff = index - activeIndex;
     const len = teamMembers.length;
@@ -219,21 +259,18 @@ function TeamSection() {
     if (diff > 1) diff -= len;
 
     if (diff === 0) {
-      // Centro – Activo
       return {
         wrapper: "acerca-team__slide acerca-team__slide--center",
         img: "",
         text: "",
       };
     } else if (diff === 1) {
-      // Derecha – Siguiente
       return {
         wrapper: "acerca-team__slide acerca-team__slide--right",
         img: "acerca-team__slide-img--blur",
         text: "acerca-team__slide-text--blur",
       };
     } else if (diff === -1) {
-      // Izquierda – Anterior
       return {
         wrapper: "acerca-team__slide acerca-team__slide--left",
         img: "acerca-team__slide-img--blur",
@@ -256,8 +293,7 @@ function TeamSection() {
         {teamMembers.map((member, idx) => {
           const styles = getSlideStyles(idx);
           return (
-            <div key={member.name} className={`${styles.wrapper}`}>
-              {/* Foto con máscara de degradado */}
+            <div key={`team-${idx}`} className={`${styles.wrapper}`}>
               <div className="acerca-team__slide-img-wrap">
                 <img
                   src={member.image}
@@ -266,7 +302,6 @@ function TeamSection() {
                 />
               </div>
 
-              {/* Texto informativo */}
               <div className={`acerca-team__slide-info ${styles.text}`}>
                 <h4 className="acerca-team__slide-name">{member.name}</h4>
                 {member.org && (
@@ -278,7 +313,6 @@ function TeamSection() {
           );
         })}
 
-        {/* Controles de navegación */}
         <div className="acerca-team__nav">
           <button className="acerca-team__arrow" onClick={handlePrev} aria-label="Anterior">
             <svg width="24" height="12" viewBox="0 0 24 12" fill="none">

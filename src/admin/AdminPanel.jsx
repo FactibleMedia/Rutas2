@@ -9,6 +9,7 @@ import ContentEditor from "./ContentEditor";
 import GlossaryManager from "./GlossaryManager";
 import GalleryManager from "./GalleryManager";
 import RoutesInteractivasManager from "./RoutesInteractivasManager";
+import TeamManager from "./TeamManager";
 import logoAdmin from "../assets/mcp/logo_admin.png";
 import "./AdminPanel.css";
 
@@ -22,6 +23,7 @@ const NAV_ITEMS = [
   { id: "galeria", label: "Gestión de Galería Multimedia", icon: "photo_library", path: "/admin/panel/galeria" },
   { id: "usuarios", label: "Usuarios y Roles", icon: "group", path: "/admin/panel/usuarios" },
   { id: "rutas-interactivas", label: "Rutas Interactivas", icon: "route", path: "/admin/panel/rutas-interactivas" },
+  { id: "equipo", label: "Equipo Acerca de", icon: "groups", path: "/admin/panel/equipo" },
   { id: "config", label: "Configuración", icon: "settings", path: "/admin/panel/configuracion" },
 ];
 
@@ -265,6 +267,11 @@ export default function AdminPanel() {
             <Route path="rutas-interactivas" element={
               <div className="admin-route-wrapper" key={location.key}>
                 <RoutesInteractivasManager />
+              </div>
+            } />
+            <Route path="equipo" element={
+              <div className="admin-route-wrapper" key={location.key}>
+                <TeamManager />
               </div>
             } />
             <Route path="configuracion" element={
