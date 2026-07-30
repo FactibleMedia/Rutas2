@@ -3,7 +3,6 @@
    ========================================================= */
 
 :root {
-  --acerca-bg: #f7f4e5;
   --acerca-text: #2a2621;
   --acerca-accent: #d2743d;
   --acerca-green: #586a4c;
@@ -13,11 +12,14 @@
 }
 
 /* =========================================================
-   PAGE SHELL
+   PAGE SHELL – Fondo completo con Frame
    ========================================================= */
 
 .acerca-page {
-  background: var(--acerca-bg);
+  background-image: url("/assets/acerca/Frame 143726283.png");
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
   color: var(--acerca-text);
   min-height: 100vh;
 }
@@ -29,79 +31,6 @@
 }
 
 /* =========================================================
-   PATTERN BORDER – Decorative orange flower/star motif
-   ========================================================= */
-
-.acerca-pattern-border {
-  position: absolute;
-  pointer-events: none;
-  z-index: 5;
-}
-
-.acerca-pattern-border--top {
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 24px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M12 4 L14 10 L20 12 L14 14 L12 20 L10 14 L4 12 L10 10 Z' fill='%23D2743D'/%3E%3Ccircle cx='12' cy='12' r='2' fill='%23F8F5E9'/%3E%3C/svg%3E");
-  background-repeat: repeat-x;
-  background-size: 24px 24px;
-}
-
-.acerca-pattern-border--bottom {
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 24px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M12 4 L14 10 L20 12 L14 14 L12 20 L10 14 L4 12 L10 10 Z' fill='%23D2743D'/%3E%3Ccircle cx='12' cy='12' r='2' fill='%23F8F5E9'/%3E%3C/svg%3E");
-  background-repeat: repeat-x;
-  background-size: 24px 24px;
-}
-
-.acerca-pattern-border--left {
-  top: 0;
-  left: 0;
-  width: 24px;
-  height: 100%;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M12 4 L14 10 L20 12 L14 14 L12 20 L10 14 L4 12 L10 10 Z' fill='%23D2743D'/%3E%3Ccircle cx='12' cy='12' r='2' fill='%23F8F5E9'/%3E%3C/svg%3E");
-  background-repeat: repeat-y;
-  background-position: center center;
-  background-size: 24px 24px;
-}
-
-.acerca-pattern-border--right {
-  top: 0;
-  right: 0;
-  width: 24px;
-  height: 100%;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M12 4 L14 10 L20 12 L14 14 L12 20 L10 14 L4 12 L10 10 Z' fill='%23D2743D'/%3E%3Ccircle cx='12' cy='12' r='2' fill='%23F8F5E9'/%3E%3C/svg%3E");
-  background-repeat: repeat-y;
-  background-position: center center;
-  background-size: 24px 24px;
-}
-
-/* =========================================================
-   ORNAMENT – Decorative crossed-line dividers
-   ========================================================= */
-
-.acerca-ornament {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.acerca-ornament__item {
-  width: 32px;
-  height: 32px;
-  border: 2px solid var(--acerca-green);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  background: var(--acerca-cream);
-}
-
-/* =========================================================
    SECTION 1 – Hero Header (con logo, baldosas y patrones)
    ========================================================= */
 
@@ -110,10 +39,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   padding: 80px 24px 60px;
   position: relative;
   overflow: hidden;
-  min-height: 320px;
+  min-height: 381px;
 }
 
 /* Patrones de fondo: izquierdo ocupa mitad izquierda, derecho la mitad derecha */
@@ -148,6 +78,17 @@
 .acerca-hero__inner {
   position: relative;
   z-index: 3;
+  width: 100%;
+  max-width: 1920px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+@media (min-width: 1200px) {
+  .acerca-hero__inner {
+    padding-left: 196px;
+    padding-right: 171px;
+  }
 }
 
 .acerca-hero__brand {
@@ -194,9 +135,16 @@
 
 .acerca-hero-image {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1920px;
   padding: 0 24px;
-  margin-bottom: 80px;
+  margin: 0 auto 80px;
+}
+
+@media (min-width: 1200px) {
+  .acerca-hero-image {
+    padding-left: 196px;
+    padding-right: 171px;
+  }
 }
 
 .acerca-hero-image__frame {
@@ -204,16 +152,12 @@
   width: 100%;
   height: 300px;
   overflow: hidden;
-  /* Padding interior para que la imagen no toque el borde */
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 @media (min-width: 768px) {
-  .acerca-hero-image {
-    padding: 0 32px;
-  }
   .acerca-hero-image__frame {
     height: 450px;
   }
@@ -295,13 +239,21 @@
 
 .acerca-intro {
   width: 100%;
-  max-width: 1100px;
+  max-width: 1920px;
+  margin: 0 auto 120px;
   padding: 0 24px;
-  margin-bottom: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 32px;
+  min-height: 381px;
+}
+
+@media (min-width: 1200px) {
+  .acerca-intro {
+    padding-left: 196px;
+    padding-right: 171px;
+  }
 }
 
 .acerca-intro__text {
@@ -355,13 +307,20 @@
 
 .acerca-manifesto {
   width: 100%;
-  max-width: 1100px;
+  max-width: 1920px;
+  margin: 0 auto 160px;
   padding: 0 24px;
-  margin-bottom: 160px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+@media (min-width: 1200px) {
+  .acerca-manifesto {
+    padding-left: 0;
+    padding-right: 171px;
+  }
 }
 
 @media (min-width: 768px) {
@@ -370,14 +329,15 @@
   }
 }
 
-/* Left: Parchment */
+/* Left: Manifiesto */
 .acerca-manifesto__parchment {
   width: 100%;
   position: relative;
   padding: 40px 36px 64px;
-  background-color: #e6dfcd;
-  background-image: radial-gradient(circle at center, transparent 0%, #d4ccb3 100%);
-  box-shadow: inset 0 0 40px rgba(180, 170, 140, 0.5), 0 4px 20px rgba(0, 0, 0, 0.08);
+  background-image: url("/assets/acerca/manifiesto.png");
+  background-size: cover;
+  background-position: left top;
+  background-repeat: no-repeat;
   z-index: 2;
 }
 
@@ -387,34 +347,28 @@
   }
 }
 
-.acerca-manifesto__parchment-inner {
-  position: absolute;
-  inset: 8px;
-  border: 1px solid #c5bba5;
-  opacity: 0.5;
-  pointer-events: none;
-}
-
 .acerca-manifesto__heading {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 16px;
   margin-bottom: 28px;
 }
 
-.acerca-manifesto__dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--acerca-green);
+.acerca-manifesto__tile {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
 }
 
 .acerca-manifesto__title {
-  font-family: "Bebas Neue", sans-serif;
-  font-size: clamp(32px, 4vw, 44px);
-  color: var(--acerca-accent);
-  letter-spacing: 0.02em;
+  font-family: "Heritage Sans", serif;
+  font-size: 43.719px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 90.001px;
+  letter-spacing: 0.874px;
+  color: #000;
   margin: 0;
 }
 
@@ -457,6 +411,10 @@
   height: 350px;
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.25);
   transform: rotate(2deg);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @media (min-width: 768px) {
@@ -465,14 +423,66 @@
   }
 }
 
-.acerca-manifesto__portrait-frame img {
+.acerca-manifesto__portrait-video {
   width: calc(100% - 48px);
   height: calc(100% - 48px);
   object-fit: cover;
-  position: absolute;
-  top: 24px;
-  left: 24px;
+  display: block;
+  position: relative;
   z-index: 1;
+}
+
+/* Borde estilo postal con baldosa naranja para el video */
+.acerca-manifesto__border-left {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 24px;
+  height: 100%;
+  background-image: url("/assets/acerca/Baldosa Naranja.png");
+  background-repeat: repeat-y;
+  background-size: 24px auto;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.acerca-manifesto__border-right {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 24px;
+  height: 100%;
+  background-image: url("/assets/acerca/Baldosa Naranja.png");
+  background-repeat: repeat-y;
+  background-size: 24px auto;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.acerca-manifesto__border-top {
+  position: absolute;
+  top: 0;
+  left: 24px;
+  width: calc(100% - 48px);
+  height: 24px;
+  background-image: url("/assets/acerca/Baldosa Naranja.png");
+  background-repeat: repeat-x;
+  background-size: auto 24px;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.acerca-manifesto__border-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 24px;
+  width: calc(100% - 48px);
+  height: 24px;
+  background-image: url("/assets/acerca/Baldosa Naranja.png");
+  background-repeat: repeat-x;
+  background-size: auto 24px;
+  z-index: 4;
+  pointer-events: none;
 }
 
 /* =========================================================
@@ -481,17 +491,31 @@
 
 .acerca-transition {
   width: 100%;
+  max-width: 1920px;
   text-align: center;
+  margin: 0 auto 120px;
   padding: 0 24px;
-  margin-bottom: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 381px;
+}
+
+@media (min-width: 1200px) {
+  .acerca-transition {
+    padding-left: 196px;
+    padding-right: 171px;
+  }
 }
 
 .acerca-transition__text {
-  font-family: "Inter", sans-serif;
-  font-weight: 700;
-  font-size: clamp(12px, 1.2vw, 16px);
-  letter-spacing: 0.2em;
-  color: var(--acerca-dark);
+  font-family: "Heritage Sans", serif;
+  font-size: 43.719px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 90.001px;
+  letter-spacing: 0.874px;
+  color: #000;
   margin: 0;
 }
 
@@ -513,14 +537,25 @@
 }
 
 .acerca-team__title {
-  font-family: "Inter", sans-serif;
-  font-size: clamp(36px, 5vw, 60px);
-  font-weight: 500;
-  font-style: italic;
-  color: #f0ead6;
+  font-family: "Trattatello", fantasy;
+  font-size: 95px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 149px;
+  letter-spacing: 8.55px;
+  color: #fffce6;
   text-align: center;
-  margin: 0 0 64px;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  margin: 0 auto 64px;
+  max-width: 1920px;
+  width: 100%;
+  padding: 0 24px;
+}
+
+@media (min-width: 1200px) {
+  .acerca-team__title {
+    padding-left: 196px;
+    padding-right: 171px;
+  }
 }
 
 /* ---- Carousel Container ---- */
@@ -529,7 +564,7 @@
   position: relative;
   width: 100%;
   max-width: 900px;
-  height: 420px;
+  height: 620px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -539,7 +574,7 @@
 
 @media (min-width: 768px) {
   .acerca-team__carousel {
-    height: 480px;
+    height: 740px;
   }
 }
 
@@ -550,13 +585,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 220px;
+  width: 260px;
   transition: all 0.7s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 @media (min-width: 768px) {
   .acerca-team__slide {
-    width: 320px;
+    width: 380px;
   }
 }
 
@@ -602,8 +637,8 @@
 .acerca-team__slide-img-wrap {
   position: relative;
   width: 100%;
-  height: 250px;
-  margin-bottom: 8px;
+  height: 420px;
+  margin-bottom: 2px;
   display: flex;
   justify-content: center;
   pointer-events: none;
@@ -611,7 +646,7 @@
 
 @media (min-width: 768px) {
   .acerca-team__slide-img-wrap {
-    height: 300px;
+    height: 520px;
   }
 }
 
@@ -620,8 +655,6 @@
   height: 100%;
   object-fit: contain;
   transition: all 0.7s ease;
-  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 95%);
-  mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 95%);
 }
 
 .acerca-team__slide-img--blur {
@@ -637,6 +670,9 @@
   align-items: center;
   width: 100%;
   padding: 0 8px;
+  margin-top: 0;
+  position: relative;
+  z-index: 5;
   transition: all 0.7s ease;
 }
 
@@ -646,41 +682,51 @@
 }
 
 .acerca-team__slide-name {
-  font-family: "Inter", sans-serif;
-  font-size: clamp(20px, 2.5vw, 28px);
-  font-weight: 500;
-  font-style: italic;
-  color: #f0ead6;
-  margin: 0 0 4px;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  font-family: "Trattatello", fantasy;
+  font-size: 41.733px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 60px;
+  color: #fff;
+  text-align: center;
+  margin: 0 0 6px;
 }
 
 .acerca-team__slide-org {
-  font-family: "Inter", sans-serif;
-  font-size: clamp(11px, 1vw, 13px);
-  font-weight: 600;
-  color: #c1c6b4;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-family: "Heritage Sans", serif;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 36px;
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
   margin: 0 0 2px;
 }
 
 .acerca-team__slide-role {
-  font-family: "Inter", sans-serif;
-  font-size: clamp(8px, 0.8vw, 10px);
-  color: #a8b098;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
+  font-family: "Heritage Sans", serif;
+  font-size: 22px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 34px;
+  color: #fff;
   text-align: center;
-  width: 120%;
-  margin: 0 0 0 -10%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  margin: 0;
 }
 
 /* ---- Navigation Arrows ---- */
 
 .acerca-team__nav {
   position: absolute;
-  bottom: 0;
+  bottom: 12px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -691,6 +737,7 @@
 @media (min-width: 768px) {
   .acerca-team__nav {
     gap: 24px;
+    bottom: 20px;
   }
 }
 
@@ -737,7 +784,8 @@
 
 .acerca-contact {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1920px;
+  margin: 0 auto;
   padding: 96px 24px;
   display: flex;
   flex-direction: column;
@@ -750,7 +798,13 @@
 @media (min-width: 1024px) {
   .acerca-contact {
     flex-direction: row;
-    padding: 96px 48px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .acerca-contact {
+    padding-left: 196px;
+    padding-right: 171px;
   }
 }
 
@@ -1006,7 +1060,5 @@
     max-width: 100%;
   }
 
-  .acerca-ornament {
-    display: none;
-  }
+
 }
