@@ -116,13 +116,16 @@
   min-height: 320px;
 }
 
-/* Patrones de fondo izquierdo y derecho - rellenan todo el fondo */
+/* Patrones de fondo: izquierdo ocupa mitad izquierda, derecho la mitad derecha */
 .acerca-hero__bg-left {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
   background-image: url("/assets/acerca/Patron izquierdo1.png");
   background-repeat: repeat;
-  background-position: left top;
+  background-position: center center;
   background-size: auto;
   pointer-events: none;
   z-index: 1;
@@ -130,10 +133,13 @@
 
 .acerca-hero__bg-right {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  width: 50%;
+  height: 100%;
   background-image: url("/assets/acerca/Patron derecho.png");
   background-repeat: repeat;
-  background-position: right top;
+  background-position: center center;
   background-size: auto;
   pointer-events: none;
   z-index: 1;
