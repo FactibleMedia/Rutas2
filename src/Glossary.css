@@ -232,7 +232,7 @@
 .gloss-hero__search-bar {
   position: relative;
   width: 100%;
-  border-radius: 25px;
+  border-radius: 9999px;
   background: #E8981B;
   border: 2px solid #D67D0F;
   box-shadow: 0 8px 32px rgba(229, 140, 23, 0.35);
@@ -246,30 +246,34 @@
 
 .gloss-hero__search-icon-box {
   position: absolute;
-  inset-y: 0;
+  inset: 0;
   left: 0;
   display: flex;
   align-items: center;
-  padding-left: 16px;
+  justify-content: center;
+  width: 48px;
+  height: 100%;
   pointer-events: none;
 }
 
 .gloss-hero__search-icon {
-  width: 20px;
-  height: 20px;
-  color: rgba(255, 255, 255, 0.8);
+  width: 18px;
+  height: 18px;
+  color: rgba(255, 255, 255, 0.85);
+  display: block;
 }
 
 .gloss-hero__search-input {
   display: block;
   width: 100%;
-  padding: 16px 20px 16px 48px;
+  padding: 14px 20px 14px 48px;
   border-radius: 9999px;
   background: transparent;
   border: none;
   color: #fff;
   font-family: var(--font-roboto);
   font-size: 16px;
+  line-height: 1.5;
   outline: none;
 }
 
@@ -471,7 +475,7 @@
   line-height: 40px;
   margin: 0;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 1px;
 }
 
 .gloss-hero1__info-desc {
@@ -514,7 +518,7 @@
   transform: scale(1.05);
 }
 
-/* ---- Right Column: Stamp Card (como glosario1) ---- */
+/* ---- Right Column: Redesigned Stamp Carousel ---- */
 
 .gloss-hero1__stamp-wrapper {
   flex: 1;
@@ -522,8 +526,10 @@
   max-width: 550px;
   margin: 0 auto;
   position: relative;
-  overflow: hidden;
-  min-height: 750px;
+  min-height: 600px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   filter: drop-shadow(0 20px 60px rgba(0, 0, 0, 0.25));
 }
 
@@ -533,163 +539,267 @@
   }
 }
 
-/* Orange stamp SVG background (como glosario1) */
-.gloss-hero1__stamp-bg {
+@media (max-width: 640px) {
+  .gloss-hero1__stamp-wrapper {
+    max-width: 360px;
+    min-height: 500px;
+  }
+}
+
+/* Scalloped stamp border SVG */
+.gloss-hero1__stamp-border-svg {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  inset: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
   z-index: 1;
 }
 
-.gloss-hero1__stamp-bg img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-/* Card stack animation – absolute positioning (como glosario1) */
-.gloss-hero1__card-stack {
+/* Inner area — ahora con Group 143726149.png de fondo */
+.gloss-hero1__stamp-inner {
   position: absolute;
-  top: 5%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 461px;
-  height: 569px;
-  z-index: 2;
-}
-
-.gloss-hero1__card {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 461px;
-  height: 569px;
-}
-
-.gloss-hero1__card-inner {
-  position: absolute;
-  inset: 0;
-  background-size: cover;
+  inset: 4px;
+  background-image: url("/assets/glosario/Group 143726149.png");
+  background-size: 100% 100%;
   background-position: center;
   background-repeat: no-repeat;
-  border-radius: 34px;
+  border-radius: 2px;
+  display: flex;
+  flex-direction: column;
+  z-index: 2;
   overflow: hidden;
 }
 
-.gloss-hero1__card-inner--verde {
-  background-image: url("/assets/glosario/20fd5b503f6b79dff07b513f3bc7604deafa7331.png");
+/* Card stage – stacking area */
+.gloss-hero1__card-stage {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 16px;
+  perspective: 1000px;
 }
 
-.gloss-hero1__card-inner--morado {
-  background-image: url("/assets/glosario/c56c8963ea54ddce3fb1dd22c4276099b158fec3.png");
+@media (max-width: 640px) {
+  .gloss-hero1__card-stage {
+    margin: 12px;
+  }
 }
 
-/* Colored overlay with gold border (from glosario1) */
-.gloss-hero1__card-overlay {
+/* Card base */
+.gloss-hero1__card {
   position: absolute;
-  inset: 4.13% 4.29%;
-  border-radius: 34px;
-  border: 3.7px solid #e8981b;
-  z-index: 3;
+  width: 280px;
+  height: 360px;
+  transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.gloss-hero1__card-inner--verde .gloss-hero1__card-overlay {
-  background: rgba(70, 76, 51, 0.78);
+@media (min-width: 768px) {
+  .gloss-hero1__card {
+    width: 320px;
+    height: 400px;
+  }
 }
 
-.gloss-hero1__card-inner--morado .gloss-hero1__card-overlay {
-  background: rgba(86, 78, 135, 0.78);
+/* Card position states — abiertas como baraja */
+.gloss-hero1__card--active {
+  transform: translateX(0) translateY(0) rotate(0deg) scale(1);
+  opacity: 1;
+  z-index: 30;
 }
 
-.gloss-hero1__card-content {
+.gloss-hero1__card--behind-1 {
+  transform: translateX(24px) translateY(12px) rotate(4deg) scale(0.96);
+  opacity: 0.95;
+  z-index: 20;
+}
+
+.gloss-hero1__card--behind-2 {
+  transform: translateX(48px) translateY(24px) rotate(8deg) scale(0.91);
+  opacity: 0.9;
+  z-index: 10;
+}
+
+@media (max-width: 640px) {
+  .gloss-hero1__card--behind-1 {
+    transform: translateX(16px) translateY(8px) rotate(3deg) scale(0.96);
+  }
+  .gloss-hero1__card--behind-2 {
+    transform: translateX(32px) translateY(16px) rotate(6deg) scale(0.91);
+  }
+}
+
+.gloss-hero1__card--exit-left {
+  transform: translateX(-120px) rotate(-12deg) scale(0.85);
+  opacity: 0;
+  z-index: 40;
+}
+
+.gloss-hero1__card--hidden {
+  opacity: 0;
+  z-index: -1;
+  transform: scale(0.85);
+}
+
+/* Jagged layer base */
+.gloss-hero1__jagged {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.gloss-hero1__jagged--1 {
+  transform: scale(1.08) rotate(-4deg);
+  opacity: 0.8;
+}
+
+.gloss-hero1__jagged--2 {
+  transform: scale(1.05) rotate(3deg);
+}
+
+.gloss-hero1__jagged--3 {
+  transform: scale(1.02) rotate(-1deg);
+}
+
+/* Main card body – base (sin fondo propio) */
+.gloss-hero1__card-body {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Variante verde – Estampa Verde.png */
+.gloss-hero1__card-body--green {
+  background-image: url("/assets/glosario/Estampa Verde.png");
+}
+
+/* Variante morada – Estampa Morada.png */
+.gloss-hero1__card-body--purple {
+  background-image: url("/assets/glosario/Estampa Morada.png");
+}
+
+/* Card content inner – arreglado interlineado */
+.gloss-hero1__card-content-inner {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 16% 10% 8%;
-  z-index: 5;
-}
-
-.gloss-hero1__card-word-wrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 15%;
+  padding: 20px 16px;
   width: 100%;
-  margin-top: 4%;
+  height: 100%;
+  justify-content: center;
+  gap: 8px;
+  transition: opacity 0.3s ease 0.2s;
+  overflow-y: auto;
 }
 
+@media (min-width: 768px) {
+  .gloss-hero1__card-content-inner {
+    padding: 28px 24px;
+    gap: 12px;
+  }
+}
+
+.gloss-hero1__card-fade-in {
+  opacity: 1;
+}
+
+.gloss-hero1__card-fade-out {
+  opacity: 0;
+}
+
+/* Card word */
 .gloss-hero1__card-word {
   color: #fffce6;
   font-family: var(--font-trattatello);
-  font-size: clamp(32px, 6vw, 58px);
+  font-size: clamp(24px, 4vw, 44px);
   font-style: normal;
   font-weight: 400;
-  letter-spacing: 2.3px;
-  line-height: 1;
+  letter-spacing: 2px;
+  line-height: 1.1;
   margin: 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  flex-shrink: 0;
+  max-width: 100%;
+  overflow-wrap: break-word;
 }
 
+/* Card meaning label */
 .gloss-hero1__card-meaning-label {
-  color: #fffce6;
+  color: rgba(255, 252, 230, 0.9);
   font-family: var(--font-outfit);
-  font-size: clamp(18px, 3vw, 29px);
-  font-style: normal;
-  font-weight: 400;
-  margin: 8% 0 2%;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  display: block;
+  flex-shrink: 0;
+}
+
+/* Card meaning text */
+.gloss-hero1__card-meaning {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 0 4px;
+  flex: 1;
+  min-height: 0;
+  justify-content: center;
 }
 
 .gloss-hero1__card-meaning-text {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  padding: 0 5%;
-}
-
-.gloss-hero1__card-meaning-text p {
   color: #fffce6;
   font-family: var(--font-outfit);
-  font-size: clamp(14px, 2.5vw, 26px);
+  font-size: clamp(11px, 1.8vw, 15px);
   font-style: normal;
   font-weight: 400;
-  line-height: 1.15;
+  line-height: 1.35;
   margin: 0;
+  max-width: 100%;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+  overflow-wrap: break-word;
 }
 
+/* Card type */
 .gloss-hero1__card-type {
-  color: rgba(255, 252, 230, 0.75);
+  color: rgba(255, 252, 230, 0.8);
   font-family: var(--font-trattatello);
-  font-size: clamp(24px, 4vw, 39px);
+  font-size: clamp(16px, 2.5vw, 24px);
   font-style: normal;
   font-weight: 400;
-  letter-spacing: 1.5px;
-  margin: 6% 0 0;
+  letter-spacing: 1.2px;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+  flex-shrink: 0;
 }
 
 /* Navigation buttons inside stamp */
 .gloss-hero1__stamp-nav {
-  position: absolute;
-  bottom: 80px;
-  left: 0;
-  width: 100%;
   display: flex;
   justify-content: center;
-  gap: 80px;
-  padding: 0 40px;
+  gap: 48px;
+  padding: 8px 24px 20px;
   z-index: 20;
 }
 
-@media (min-width: 640px) {
+@media (max-width: 640px) {
   .gloss-hero1__stamp-nav {
-    padding: 0 48px;
+    gap: 32px;
+    padding: 4px 16px 16px;
   }
 }
 
@@ -698,8 +808,8 @@
   color: #fffce6;
   border: none;
   border-radius: 6px;
-  padding: 0 30px;
-  min-height: 75px;
+  padding: 10px 32px;
+  min-height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -707,17 +817,27 @@
   transition: background 0.2s, transform 0.2s;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   font-family: var(--font-heritage);
-  font-size: clamp(32px, 5vw, 48px);
+  font-size: clamp(22px, 3vw, 32px);
   font-style: normal;
   font-weight: 400;
   line-height: 1;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  flex: 1;
+  max-width: 160px;
 }
 
 .gloss-hero1__stamp-btn:hover {
   background: #a03d10;
   transform: translateY(-2px);
+}
+
+@media (max-width: 640px) {
+  .gloss-hero1__stamp-btn {
+    padding: 8px 20px;
+    min-height: 42px;
+    font-size: clamp(18px, 4vw, 24px);
+  }
 }
 
 /* =========================================================
@@ -730,6 +850,7 @@
   flex-direction: column;
   align-items: center;
   padding: 64px 0;
+  scroll-margin-top: 80px;
   background: var(--glos-bg-cats);
   background-image: url("/assets/glosario/fondo2.png");
   background-size: cover;
@@ -768,26 +889,42 @@
   max-width: 900px;
   margin-bottom: 40px;
   text-align: center;
-  padding: 0 20px;
+  padding: 40px 30px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  background-image: url("/assets/glosario/Marco rectangular.svg");
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 @media (min-width: 1025px) {
-  .gloss-categories__header { margin-bottom: 64px; }
+  .gloss-categories__header {
+    margin-bottom: 64px;
+    padding: 60px 50px;
+    min-height: 260px;
+  }
 }
 
 .gloss-categories__title {
   font-family: var(--font-heritage);
-  font-size: 36px;
+  font-size: 52px;
   font-style: normal;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.02em;
-  color: #BB4C18;
+  color: #fff;
   margin: 0 0 12px;
+  position: relative;
+  z-index: 2;
 }
 
 @media (min-width: 1025px) {
-  .gloss-categories__title { font-size: 48px; }
+  .gloss-categories__title { font-size: 72px; }
 }
 
 .gloss-categories__desc {
@@ -795,9 +932,11 @@
   font-size: 18px;
   font-style: normal;
   font-weight: 500;
-  color: #000;
+  color: #fff;
   margin: 0;
   line-height: 1.3;
+  position: relative;
+  z-index: 2;
 }
 
 @media (min-width: 1025px) {
@@ -1162,6 +1301,7 @@
 
 .gloss-sugerir__title {
   display: flex;
+  flex-direction: column;
   padding: 10px;
   justify-content: center;
   align-items: center;
@@ -1173,9 +1313,17 @@
   font-size: 95px;
   font-style: normal;
   font-weight: 400;
-  line-height: 66px;
+  line-height: 1.15;
   letter-spacing: 8.55px;
   margin: 0;
+}
+
+@media (max-width: 640px) {
+  .gloss-sugerir__title {
+    font-size: 56px;
+    line-height: 1.2;
+    letter-spacing: 5px;
+  }
 }
 
 .gloss-sugerir__subtitle {
@@ -1456,6 +1604,160 @@
   .gloss-cat-popup__back {
     font-size: 1.5rem;
     margin-right: 12px;
+  }
+}
+
+/* =========================================================
+   WORD STAMP OVERLAY – Full-screen stamp card
+   ========================================================= */
+
+@keyframes gloss-overlay-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes gloss-overlay-card-in {
+  0% { opacity: 0; transform: scale(0.7) rotate(-8deg); }
+  60% { transform: scale(1.05) rotate(2deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+.gloss-stamp-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: gloss-overlay-fade 0.3s ease-out;
+}
+
+.gloss-stamp-overlay__close {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 10;
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.gloss-stamp-overlay__close:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.1);
+}
+
+.gloss-stamp-overlay__card-wrapper {
+  max-width: 500px;
+  width: 100%;
+  animation: gloss-overlay-card-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.gloss-stamp-overlay__card {
+  width: 100%;
+  min-height: 500px;
+  border-radius: 24px;
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
+  position: relative;
+}
+
+.gloss-stamp-overlay__card--green {
+  background-image: url("/assets/glosario/Estampa Verde.png");
+}
+
+.gloss-stamp-overlay__card--purple {
+  background-image: url("/assets/glosario/Estampa Morada.png");
+}
+
+.gloss-stamp-overlay__card-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px 32px;
+  width: 100%;
+  min-height: 500px;
+  gap: 16px;
+  color: #fff;
+}
+
+.gloss-stamp-overlay__label {
+  font-family: var(--font-outfit);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.gloss-stamp-overlay__word {
+  font-family: var(--font-trattatello);
+  font-size: clamp(40px, 8vw, 72px);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  margin: 0;
+  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  line-height: 1.1;
+}
+
+.gloss-stamp-overlay__divider {
+  width: 60px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  margin: 4px 0;
+}
+
+.gloss-stamp-overlay__meaning {
+  font-family: var(--font-outfit);
+  font-size: clamp(16px, 3vw, 22px);
+  line-height: 1.4;
+  margin: 0;
+  max-width: 400px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.gloss-stamp-overlay__category {
+  font-family: var(--font-trattatello);
+  font-size: clamp(18px, 3vw, 28px);
+  letter-spacing: 0.03em;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+}
+
+@media (max-width: 640px) {
+  .gloss-stamp-overlay__card {
+    min-height: 400px;
+  }
+  .gloss-stamp-overlay__card-inner {
+    min-height: 400px;
+    padding: 32px 20px;
+    gap: 12px;
+  }
+  .gloss-stamp-overlay__close {
+    top: 16px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
   }
 }
 

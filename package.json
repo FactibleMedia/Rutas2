@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "node ./node_modules/vite/bin/vite.js",
     "build": "node ./node_modules/vite/bin/vite.js build",
-    "preview": "node ./node_modules/vite/bin/vite.js preview"
+    "preview": "node ./node_modules/vite/bin/vite.js preview",
+    "spell:check": "cspell \"src/**/*.{jsx,js,css}\""
   },
   "engines": {
     "node": ">=20.19.0"
@@ -23,7 +24,9 @@
     "reicon": "^1.1.1"
   },
   "devDependencies": {
+    "@cspell/dict-es-es": "^3.0.8",
     "@vitejs/plugin-react": "^6.0.2",
+    "cspell": "^10.0.1",
     "vite": "^8.0.14"
   }
 }

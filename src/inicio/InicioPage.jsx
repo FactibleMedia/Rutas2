@@ -1,7 +1,11 @@
 import { useEffect, useId, useRef, useState } from "react";
-import mapPat from "../assets/mcp/mapa_pat.png";
-import mapMis from "../assets/mcp/mapa_mis.png";
-import mapGas from "../assets/mcp/mapa_gas.png";
+import { useNavigate } from "react-router-dom";
+import logoVerde from "../assets/mcp/Logo Color Verde.png";
+import logoBlanco from "../assets/mcp/Logo blanco.png";
+import mapaDefault from "../assets/mcp/mapa generalll 1.png";
+import mapaGastronomico from "../assets/mcp/mapa generalll 2.png";
+import mapaPatrimonial from "../assets/mcp/mapa generalll 3.png";
+import mapaMistico from "../assets/mcp/mapa generalll 4.png";
 import gal1 from "../assets/mcp/gal_slide1.png";
 import gal2 from "../assets/mcp/gal_slide2.png";
 import gal3 from "../assets/mcp/gal_slide3.png";
@@ -29,7 +33,7 @@ const glossaryCards = [
   },
   {
     id: "cantaro",
-    title: "Cantaro",
+    title: "Cántaro",
     type: "Objeto",
     meaning: "Vasija de metal que se utilizaba para llevar y conservar la leche.",
     color: "#575288",
@@ -133,7 +137,7 @@ const gallerySlides = [
     img: gal1,
     titleSlide: "Guardianes del saber",
     accentColor: "#bb4c18",
-    subtitle: "Entrevistas a sabedores de tradicion",
+    subtitle: "Entrevistas a sabedores de tradición",
     sub2: "Voces que mantienen viva la identidad cultural y patrimonial vallenata",
     hasPlay: true,
   },
@@ -141,7 +145,7 @@ const gallerySlides = [
     img: gal2,
     titleSlide: "Guardianes del saber",
     accentColor: "#627c50",
-    subtitle: "Museo del Acordeon Beto Murgas",
+    subtitle: "Museo del Acordeón Beto Murgas",
     sub2: "Beto Murgas",
     hasPlay: false,
   },
@@ -155,86 +159,160 @@ const gallerySlides = [
   },
 ];
 
-function Maps() {
-  const [selectedRoute, setSelectedRoute] = useState(null);
+// ── Configuración de rutas ──
+const routesConfig = [
+  {
+    id: "patrimonial",
+    label: "Patrimonial",
+    subtitle: "Lugares históricos, arquitectura, plazas, esculturas, iglesias, etc.",
+    btnColor: "#4B5940",
+    btnHover: "#3A4630",
+  },
+  {
+    id: "gastronomico",
+    label: "Gastronómico",
+    subtitle: "Sabores y platos típicos de la región.",
+    btnColor: "#C76725",
+    btnHover: "#A8551E",
+  },
+  {
+    id: "mistico",
+    label: "Místico",
+    subtitle: "Historias orales, personajes míticos y tradiciones populares.",
+    btnColor: "#5B5180",
+    btnHover: "#484066",
+  },
+];
 
-  const routes = [
-    {
-      id: 0,
-      title: "RUTA PATRIMONIAL",
-      subtitle: "LUGARES HISTÓRICOS, ARQUITECTURA, PLAZAS, ESCULTURAS, IGLESIAS, ETC.",
-      activeColor: "#6a8759",
-      mutedColor: "#d0ddc7",
-      image: mapPat,
-    },
-    {
-      id: 1,
-      title: "RUTA MÍSTICA",
-      subtitle: "HISTORIAS ORALES, PERSONAJES MÍTICOS Y TRADICIONES POPULARES.",
-      activeColor: "#4a3e75",
-      mutedColor: "#c6c2d6",
-      image: mapMis,
-    },
-    {
-      id: 2,
-      title: "RUTA GASTRONÓMICA",
-      subtitle: "SABORES Y PLATOS TÍPICOS DE LA REGIÓN.",
-      activeColor: "#c46c33",
-      mutedColor: "#eed0be",
-      image: mapGas,
-    },
-  ];
+const getTheme = (routeId) => {
+  switch (routeId) {
+    case "patrimonial": return { bg: "#566549", text: "#F9F8F3" };
+    case "gastronomico": return { bg: "#D1702C", text: "#F9F8F3" };
+    case "mistico": return { bg: "#665B8F", text: "#F9F8F3" };
+    default: return { bg: "#FAF8F0", text: "#2D2A26" };
+  }
+};
+
+const getBgImage = (routeId) => {
+  switch (routeId) {
+    case "patrimonial": return mapaPatrimonial;
+    case "gastronomico": return mapaGastronomico;
+    case "mistico": return mapaMistico;
+    default: return mapaDefault;
+  }
+};
+
+const routeMapToInteractivas = {
+  patrimonial: "patrimoniales",
+  gastronomico: "gastronomica",
+  mistico: "mistica",
+};
+
+function Maps() {
+  const navigate = useNavigate();
+  const [activeRoute, setActiveRoute] = useState(null);
+  const [selectedRouteId, setSelectedRouteId] = useState(null);
+  const [prevImage, setPrevImage] = useState(null);
+  const [currentImage, setCurrentImage] = useState(getBgImage(null));
+  const currentRoute = activeRoute || selectedRouteId;
+  const theme = getTheme(currentRoute);
+
+  // Crossfade: when bgImage changes, move current to prev and set new
+  useEffect(() => {
+    const newImg = getBgImage(currentRoute);
+    if (newImg !== currentImage) {
+      setPrevImage(currentImage);
+      // Small delay to let prev image start fading before showing new
+      const id = setTimeout(() => setCurrentImage(newImg), 50);
+      return () => clearTimeout(id);
+    }
+  }, [currentRoute]);
+
+  const handleRouteClick = (routeId) => {
+    setSelectedRouteId((prev) => (prev === routeId ? null : routeId));
+  };
+
+  const showOverlay = selectedRouteId !== null;
 
   return (
-    <section id="mapas" className="maps reveal">
-      <h2 className="maps__title">Mapas</h2>
-      <div className="maps__inner">
-        <div className={`maps__text-block ${selectedRoute === null ? "maps__text-block--initial" : "maps__text-block--active"}`}>
-          <div className="maps__intro">
-            <p>
-              Explora las rutas del viejo Valle y descubre cómo cada camino cambia el mapa,
-              las historias y los colores del territorio.
-            </p>
-          </div>
+    <section
+      id="mapas"
+      className="maps-section reveal"
+      style={{ backgroundColor: theme.bg, color: theme.text }}
+    >
+      {/* Background image — fondo completo, sin frame ni bordes */}
+      <div className="maps-section__bg">
+        {prevImage && (
+          <img
+            src={prevImage}
+            alt=""
+            className="maps-section__bg-img maps-section__bg-img--prev"
+          />
+        )}
+        <img
+          src={currentImage}
+          alt=""
+          className="maps-section__bg-img maps-section__bg-img--current"
+        />
+        <div className={`maps-section__bg-overlay ${showOverlay ? "maps-section__bg-overlay--visible" : ""}`} />
+      </div>
 
-          <div className="maps__route-list">
-            {routes.map((route) => {
-              const isActive = selectedRoute === route.id;
-              const isInitial = selectedRoute === null;
-
-              return (
-                <div
-                  key={route.id}
-                  className="maps__route-item"
-                  onClick={() => setSelectedRoute(route.id)}
-                  style={{ cursor: "pointer" }}
-                >
-                  <h3
-                    className={`maps__route-title ${isInitial ? "maps__route-title--initial" : isActive ? "maps__route-title--active" : "maps__route-title--inactive"}`}
-                    style={{
-                      color: isInitial ? route.mutedColor : isActive ? route.activeColor : route.mutedColor,
-                    }}
-                  >
-                    {route.title}
-                  </h3>
-                  <p className={`maps__route-subtitle ${isActive ? "active" : ""}`}>
-                    {route.subtitle}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
+      {/* Content */}
+      <div className="maps-section__content">
+        {/* Logo: verde en default, blanco con ruta seleccionada */}
+        <div className="maps-section__header">
+          <img
+            src={selectedRouteId ? logoBlanco : logoVerde}
+            alt="Rutas de Valledupar"
+            className="maps-section__logo"
+          />
         </div>
 
-        <div className={`maps__visual ${selectedRoute === null ? "maps__visual--hidden" : "maps__visual--visible"}`}>
-          <div className="maps__map-display">
-            {routes.map((route) => (
-              <div key={route.id} className={`maps__map-slide ${selectedRoute === route.id ? "active" : ""}`}>
-                <img src={route.image} alt={route.title} loading="lazy" decoding="async" />
-              </div>
-            ))}
-          </div>
-          <button className="maps__cta">EXPLORA EL MAPA</button>
+        {/* Route Pills */}
+        <div className="maps-section__pills">
+          {routesConfig.map((route) => (
+            <button
+              key={route.id}
+              onMouseEnter={() => setActiveRoute(route.id)}
+              onMouseLeave={() => setActiveRoute(null)}
+              onClick={() => handleRouteClick(route.id)}
+              className={`maps-section__pill ${selectedRouteId === route.id ? "maps-section__pill--active" : ""}`}
+              style={{
+                backgroundColor: selectedRouteId === route.id ? route.btnColor : "rgba(255,255,255,0.85)",
+                color: selectedRouteId === route.id ? "#fff" : "#2D2A26",
+              }}
+            >
+              {route.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Route subtitle */}
+        {selectedRouteId && (
+          <p className="maps-section__subtitle">
+            {routesConfig.find((r) => r.id === selectedRouteId)?.subtitle}
+          </p>
+        )}
+
+        {/* CTA Button */}
+        <button
+          className="maps-section__cta"
+          onClick={() => {
+            const targetRoute = selectedRouteId
+              ? routeMapToInteractivas[selectedRouteId]
+              : null;
+            const search = targetRoute ? `?ruta=${targetRoute}` : "";
+            navigate(`/rutas-interactivas${search}`);
+          }}
+        >
+          Explora el mapa
+        </button>
+
+        {/* Footer description */}
+        <div className="maps-section__footer">
+          <p>
+            Bienvenido a recorrer las rutas del viejo Valle, aquí mantenemos la herencia viva de un patrimonio que todavía se conserva.
+          </p>
         </div>
       </div>
     </section>
@@ -245,9 +323,9 @@ function Glossary() {
   return (
     <section id="glosario" className="glossary reveal">
       <div className="glossary__heading">
-        <h2>Aqui la cultura se siente desde la palabras</h2>
+        <h2>Aquí la cultura se siente desde las palabras</h2>
         <p>
-          Por eso en este Glosario encontraras mas de 200 palabras que te ayudaran a entender el hablao de los Valduparenses.
+          Por eso en este Glosario encontrarás más de 200 palabras que te ayudarán a entender el hablao de los vallenatos.
         </p>
       </div>
       <div className="glossary__grid">
@@ -264,7 +342,7 @@ function Glossary() {
         ))}
       </div>
       <div className="glossary__cta-wrap">
-        <button className="glossary__cta">Conoce mas palabras</button>
+        <button className="glossary__cta">Conoce más palabras</button>
       </div>
     </section>
   );
@@ -291,8 +369,7 @@ function Gallery() {
   return (
     <section id="galeria" className="gallery-section reveal">
       <div className="gallery-section__heading">
-        <h2>Este espacio es especial para escuchar la voz del viejo Valle</h2>
-        <p>Aqui estan personas que hacen parte de esa herencia que sigue viva.</p>
+        <h2>Este espacio es especial para escuchar la voz del viejo Valle</h2>          <p>Aquí están personas que hacen parte de esa herencia que sigue viva.</p>
       </div>
       <div className="gallery-carousel" onMouseEnter={() => clearInterval(galleryTimerRef.current)} onMouseLeave={startGalleryAutoplay}>
         {gallerySlides.map((slide, index) => (
@@ -329,8 +406,7 @@ function Gallery() {
 function CTASection() {
   return (
     <section className="cta-section reveal">
-      <img src={ctaBgIcon} alt="" className="cta-section__bg-icon" loading="lazy" />
-      <h2>Listo para explorar Valledupar?</h2>
+      <img src={ctaBgIcon} alt="" className="cta-section__bg-icon" loading="lazy" />        <h2>¿Listo para explorar Valledupar?</h2>
       <p>Planifica tu ruta ahora mismo desde el mapa interactivo</p>
       <button className="cta-section__btn">Ver el mapa interactivo</button>
     </section>
@@ -392,8 +468,8 @@ export default function InicioPage() {
 
   return (
     <div className="page-shell">
-      <TopBar activeSection={activeSection} isAuthenticated={isRegistered} user={{ name: "Usuario Valido", initials: "UV" }} onSectionChange={handleSectionChange} />
-      <InitialSlider />
+      <TopBar activeSection={activeSection} isAuthenticated={isRegistered} user={{ name: "Usuario Válido", initials: "UV" }} onSectionChange={handleSectionChange} />
+      <InitialSlider onNavigate={handleSectionChange} />
       <Maps />
       <Glossary />
       <Gallery />

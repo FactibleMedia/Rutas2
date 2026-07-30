@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import TopBar from "../TopBar";
 import Footer from "../Footer";
 import InteractiveMap from "./InteractiveMap";
@@ -52,7 +53,8 @@ const routeOptions = [
 ];
 
 export default function RutasInteractivas() {
-  const [selectedRoute, setSelectedRoute] = useState(null);
+  const [searchParams] = useSearchParams();
+  const [selectedRoute, setSelectedRoute] = useState(searchParams.get("ruta") || null);
   const [hoveredRoute, setHoveredRoute] = useState(null);
   const [highlightedPoint, setHighlightedPoint] = useState(null);
   const [pointsData, setPointsData] = useState([]);
