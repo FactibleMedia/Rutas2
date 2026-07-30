@@ -223,70 +223,133 @@ export default function RutasInteractivas() {
       <TopBar activeSection="rutas-interactivas" />
 
       <main className="rutas-interactivas__main">
-        {/* Hero */}
-        <section className="rutas-interactivas__hero">
-          <div className="rutas-interactivas__hero-bg" />
-          <div className="rutas-interactivas__hero-inner">
-            <span className="rutas-interactivas__hero-eyebrow">
+        {/* ✨ Modern Accordion Section */}
+        <section className="rutas-interactivas__accordion">
+          <div className="rutas-interactivas__accordion-header">
+            <span className="rutas-interactivas__accordion-eyebrow">
               Explora Valledupar
             </span>
-            <h1 className="rutas-interactivas__hero-title">
+            <h1 className="rutas-interactivas__accordion-title">
               Elige tu ruta
             </h1>
-            <p className="rutas-interactivas__hero-subtitle">
+            <p className="rutas-interactivas__accordion-subtitle">
               Cada camino tiene una historia por contar. Selecciona una ruta y
               descubre los tesoros ocultos de nuestra tierra.
             </p>
           </div>
-        </section>
 
-        {/* Route Cards */}
-        <section className="rutas-interactivas__routes">
-          <div className="rutas-interactivas__routes-grid">
+          <div className="rutas-interactivas__accordion-track">
             {routeOptions.map((route) => {
-              const isHovered = hoveredRoute === route.id;
+              const isActive = hoveredRoute === route.id;
               return (
                 <button
                   key={route.id}
-                  className={`rutas-interactivas__route-card${
-                    isHovered ? " rutas-interactivas__route-card--hovered" : ""
+                  className={`rutas-interactivas__accordion-card${
+                    isActive ? " rutas-interactivas__accordion-card--active" : ""
                   }`}
                   onClick={() => setSelectedRoute(route.id)}
                   onMouseEnter={() => setHoveredRoute(route.id)}
                   onMouseLeave={() => setHoveredRoute(null)}
-                  style={{ "--card-accent": route.color }}
+                  style={{ "--card-color": route.color }}
                 >
-                  <div className="rutas-interactivas__route-card-bg">
+                  {/* Background image */}
+                  <div className="rutas-interactivas__accordion-bg">
                     <img
                       src={route.image}
                       alt={route.title}
                       loading="lazy"
                     />
                   </div>
+
+                  {/* Color gradient overlay */}
+                  <div
+                    className="rutas-interactivas__accordion-gradient"
+                    style={{
+                      background: `linear-gradient(135deg, ${route.color}E6, ${route.color}99)`,
+                    }}
+                  />
+
+                  {/* Dark overlay */}
+                  <div
+                    className={`rutas-interactivas__accordion-darken${
+                      isActive ? " rutas-interactivas__accordion-darken--light" : ""
+                    }`}
+                  />
+
+                  {/* Content */}
+                  <div className="rutas-interactivas__accordion-content">
+                    <div className="rutas-interactivas__accordion-text">
+                      <div
+                        className={`rutas-interactivas__accordion-icon${
+                          isActive
+                            ? " rutas-interactivas__accordion-icon--visible"
+                            : ""
+                        }`}
+                      >
+                        <svg
+                          width="28"
+                          height="28"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                          <circle cx="12" cy="10" r="3" />
+                        </svg>
+                      </div>
+                      <h3
+                        className={`rutas-interactivas__accordion-name${
+                          isActive
+                            ? " rutas-interactivas__accordion-name--visible"
+                            : ""
+                        }`}
+                      >
+                        {route.title}
+                      </h3>
+                    </div>
+                    <p
+                      className={`rutas-interactivas__accordion-desc${
+                        isActive
+                          ? " rutas-interactivas__accordion-desc--visible"
+                          : ""
+                      }`}
+                    >
+                      {route.description}
+                    </p>
+                    <span
+                      className={`rutas-interactivas__accordion-arrow${
+                        isActive
+                          ? " rutas-interactivas__accordion-arrow--visible"
+                          : ""
+                      }`}
+                    >
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M5 12h14" />
+                        <polyline points="12 5 19 12 12 19" />
+                      </svg>
+                    </span>
+                  </div>
                 </button>
               );
             })}
           </div>
-        </section>
 
-        {/* Bottom decoration */}
-        <section className="rutas-interactivas__bottom">
-          <div className="rutas-interactivas__bottom-divider">
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <path d="M2 12h20" />
-              <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
-            </svg>
-          </div>
+          {/* Subtle hint */}
+          <p className="rutas-interactivas__accordion-hint">
+            Pasa el cursor o toca para explorar
+          </p>
         </section>
       </main>
 

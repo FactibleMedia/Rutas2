@@ -53,7 +53,7 @@ export const DEFAULT_MAP_LOCATIONS = [
   {
     id: "mercado-popular",
     routeId: "gastronomica",
-    categoryLabel: "Gastronomica",
+    categoryLabel: "Gastronómica",
     name: "Mercado Popular",
     subtitle: "Parada clásica de cocina local.",
     description: "Punto de sabores tradicionales para descubrir recetas y productos típicos.",
