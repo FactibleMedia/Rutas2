@@ -311,7 +311,7 @@ body {
   overflow: hidden;
   transition: background-color 700ms ease;
   font-family: "Roboto", Arial, sans-serif;
-  padding-top: 40px;
+  padding-top: 112px; /* 72px TopBar fija + 40px de aire */
 }
 
 /* ── Background image — ocupa todo el contenedor ── */
@@ -488,7 +488,7 @@ body {
 /* Responsive */
 @media (max-width: 900px) {
   .maps-section {
-    padding-top: 20px;
+    padding-top: 92px; /* 72px TopBar + 20px de aire */
   }
 
   .maps-section__content {
@@ -511,6 +511,10 @@ body {
 }
 
 @media (max-width: 600px) {
+  .maps-section {
+    padding-top: 84px; /* 64px TopBar + 20px de aire */
+  }
+
   .maps-section__content {
     padding: 16px 14px 30px;
     gap: 16px;

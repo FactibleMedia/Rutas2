@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { clearAdminSession, getAdminProfile, hasAdminSession, setAdminSession } from "./adminAuth";
 import { supabase, isSupabaseReady, getSupabaseStatus } from "../supabaseClient";
 import logoAdmin from "../assets/mcp/logo_admin.png";
@@ -48,6 +48,8 @@ async function authenticateAdmin(correo, password) {
 
 export default function AdminLogin() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const sessionExpired = Boolean(location.state?.expired);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -133,6 +135,37 @@ export default function AdminLogin() {
             >
               Iniciar Sesión
             </h2>
+
+            {sessionExpired && (
+              <div
+                role="alert"
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 10,
+                  padding: "12px 14px",
+                  borderRadius: "var(--radius-lg)",
+                  marginBottom: 20,
+                  fontSize: 13,
+                  fontWeight: 500,
+                  lineHeight: 1.45,
+                  background: "rgba(232, 152, 27, 0.1)",
+                  color: "#8a6a00",
+                  border: "1px solid rgba(232, 152, 27, 0.25)",
+                }}
+              >
+                <span
+                  className="material-symbols-outlined"
+                  style={{ fontSize: 18, flexShrink: 0 }}
+                >
+                  info
+                </span>
+                <span>
+                  Tu sesión expiró. Inicia sesión nuevamente para poder guardar
+                  los cambios en el panel.
+                </span>
+              </div>
+            )}
 
             <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: 24 }}>
               {/* Email */}
