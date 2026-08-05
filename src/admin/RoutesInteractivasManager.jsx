@@ -314,6 +314,14 @@ export default function RoutesInteractivasManager() {
   const handleSaveAll = async () => {
     setSaving(true);
     try {
+      // Verificar que la sesión de Supabase siga activa (evita el error
+      // "new row violates row-level security policy" con token expirado).
+      // getUser() valida el token contra el servidor.
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error("Tu sesión expiró. Vuelve a iniciar sesión en el panel para guardar los cambios.");
+      }
+
       for (const point of points) {
         const payload = {
           categoria_slug: activeCategory,
@@ -344,7 +352,14 @@ export default function RoutesInteractivasManager() {
       showMessage("success", `${points.length} punto(s) guardados correctamente.`);
       loadData();
     } catch (err) {
-      showMessage("error", `Error al guardar: ${err.message}`);
+      const isRlsError =
+        err?.code === "42501" || /row-level security|row level security/i.test(err?.message || "");
+      showMessage(
+        "error",
+        isRlsError
+          ? "Error de permisos al guardar. Si tu sesión sigue activa, ejecuta el script fix_rls_rutas_interactivas.sql en Supabase; si no, cierra sesión y vuelve a iniciarla en el panel."
+          : `Error al guardar: ${err.message}`
+      );
     } finally {
       setSaving(false);
     }

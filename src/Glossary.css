@@ -1021,43 +1021,46 @@
 .gloss-categories__item-content {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  gap: 10px;
   z-index: 10;
   font-family: var(--font-trattatello);
   font-weight: 400;
+  /* El bloque de texto siempre centrado y dentro de la placa del marco */
+  width: 100%;
+  max-width: 100%;
+  padding: 0 10px;
+  box-sizing: border-box;
+  text-align: center;
 }
 
 @media (min-width: 768px) {
-  .gloss-categories__item-content { gap: 16px; }
+  .gloss-categories__item-content { gap: 12px; }
+}
+
+@media (min-width: 1025px) {
+  .gloss-categories__item-content { gap: 14px; }
 }
 
 .gloss-categories__item-name {
-  font-size: 22px;
+  /* Tamaño fluido: nombres largos ("Para referirse") caben en la tarjeta */
+  font-size: clamp(18px, 2.6vw, 30px);
   letter-spacing: 0.02em;
   color: var(--glos-cream);
   margin: 0;
-}
-
-@media (min-width: 768px) {
-  .gloss-categories__item-name { font-size: 26px; }
-}
-
-@media (min-width: 1025px) {
-  .gloss-categories__item-name { font-size: 32px; }
+  line-height: 1.1;
+  max-width: 80%;
+  /* Si no cabe en una línea, salta de línea centrado (nunca se recorta) */
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
 .gloss-categories__item-count {
-  font-size: 16px;
+  font-size: clamp(14px, 1.5vw, 18px);
   color: rgba(255, 252, 230, 0.8);
   margin: 0;
-}
-
-@media (min-width: 768px) {
-  .gloss-categories__item-count { font-size: 18px; }
-}
-
-@media (min-width: 1025px) {
-  .gloss-categories__item-count { font-size: 22px; }
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 /* =========================================================

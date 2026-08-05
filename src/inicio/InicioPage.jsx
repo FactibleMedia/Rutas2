@@ -13,7 +13,6 @@ import ctaBgIcon from "../assets/mcp/icon_bg_cta.png";
 import TopBar from "../TopBar";
 import Footer from "../Footer";
 import glossFrameGreen from "../assets/mcp/gloss_frame_green.png";
-import InitialSlider from "../InitialSlider";
 import glossBgLucas from "../assets/mcp/gloss_bg_lucas.png";
 import glossBgMotetes from "../assets/mcp/gloss_bg_motetes.png";
 import glossBgCantaro from "../assets/mcp/gloss_bg_cantaro.png";
@@ -531,13 +530,13 @@ function useScrollReveal() {
 }
 
 export default function InicioPage() {
-  const [activeSection, setActiveSection] = useState("inicio");
+  const [activeSection, setActiveSection] = useState("mapas");
   const [isRegistered, setIsRegistered] = useState(false);
 
   useScrollReveal();
 
   useEffect(() => {
-    const sectionIds = ["inicio", "mapas", "galeria", "glosario", "footer"];
+    const sectionIds = ["mapas", "galeria", "glosario", "footer"];
     const sectionNodes = sectionIds.map((id) => document.getElementById(id)).filter(Boolean);
 
     const observer = new IntersectionObserver(
@@ -568,7 +567,6 @@ export default function InicioPage() {
   return (
     <div className="page-shell">
       <TopBar activeSection={activeSection} isAuthenticated={isRegistered} user={{ name: "Usuario Válido", initials: "UV" }} onSectionChange={handleSectionChange} />
-      <InitialSlider onNavigate={handleSectionChange} />
       <Maps />
       <Gallery />
       <Glossary />
