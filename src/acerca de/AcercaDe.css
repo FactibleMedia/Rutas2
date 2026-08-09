@@ -28,6 +28,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
 }
 
 /* =========================================================
@@ -47,33 +48,6 @@
 }
 
 /* Patrones de fondo: izquierdo ocupa mitad izquierda, derecho la mitad derecha */
-.acerca-hero__bg-left {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 50%;
-  height: 100%;
-  background-image: url("/assets/acerca/Patron izquierdo1.png");
-  background-repeat: repeat;
-  background-position: center center;
-  background-size: auto;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.acerca-hero__bg-right {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 50%;
-  height: 100%;
-  background-image: url("/assets/acerca/Patron derecho.png");
-  background-repeat: repeat;
-  background-position: center center;
-  background-size: auto;
-  pointer-events: none;
-  z-index: 1;
-}
 
 .acerca-hero__inner {
   position: relative;
@@ -165,7 +139,7 @@
 
 @media (min-width: 1024px) {
   .acerca-hero-image__frame {
-    height: 500px;
+    height: 700px;
   }
 }
 
@@ -259,15 +233,15 @@
 .acerca-intro__text {
   flex: 1;
   text-align: center;
-  max-width: 780px;
+  max-width: 1080px;
 }
 
 .acerca-intro__quote {
   color: #000;
   font-family: var(--font-trattatello), "Trattatello", fantasy;
-  font-size: 48px;
+  font-size: 38px;
   font-style: normal;
-  font-weight: 400;
+  font-weight: 200;
   line-height: 69px;
   margin: 0;
 }
@@ -307,20 +281,13 @@
 
 .acerca-manifesto {
   width: 100%;
-  max-width: 1920px;
   margin: 0 auto 160px;
-  padding: 0 24px;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-}
-
-@media (min-width: 1200px) {
-  .acerca-manifesto {
-    padding-left: 0;
-    padding-right: 171px;
-  }
+  position: relative;
 }
 
 @media (min-width: 768px) {
@@ -329,21 +296,27 @@
   }
 }
 
-/* Left: Manifiesto */
+@media (min-width: 1200px) {
+  .acerca-manifesto__parchment {
+    padding: 100px 12% 100px 8%;
+  }
+}
+
+/* Left: Manifiesto - Full width background */
 .acerca-manifesto__parchment {
   width: 100%;
   position: relative;
-  padding: 32px 28px 48px;
+  padding: 60px 40px;
   background-image: url("/assets/acerca/manifiesto.png");
   background-size: cover;
-  background-position: left top;
+  background-position: center center;
   background-repeat: no-repeat;
   z-index: 2;
 }
 
 @media (min-width: 768px) {
   .acerca-manifesto__parchment {
-    width: 78%;
+    padding: 80px 20% 80px 8%;
   }
 }
 
@@ -363,10 +336,10 @@
 
 .acerca-manifesto__title {
   font-family: "Heritage Sans", serif;
-  font-size: 43.719px;
+  font-size: clamp(48px, 6vw, 82px);
   font-style: normal;
   font-weight: 400;
-  line-height: 90.001px;
+  line-height: 1.2;
   letter-spacing: 0.874px;
   color: #000;
   margin: 0;
@@ -374,12 +347,14 @@
 
 .acerca-manifesto__copy {
   font-family: "Inter", sans-serif;
-  font-size: clamp(16px, 1.8vw, 22px);
-  line-height: 1.7;
+  font-size: clamp(18px, 2vw, 24px);
+  line-height: 1.5;
   color: #3b362f;
-  margin: 0 0 16px;
+  margin: 0 0 24px;
   font-weight: 400;
   font-style: italic;
+  max-width: 1200px;
+  padding-right: 80px;
 }
 
 .acerca-manifesto__footnote {
@@ -391,24 +366,29 @@
   margin: 24px 0 0;
 }
 
-/* Right: Portrait */
+/* Right: Portrait - Positioned absolutely on the right */
 .acerca-manifesto__portrait {
-  width: 280px;
+  width: 340px;
   margin-top: 32px;
+  position: relative;
+  z-index: 3;
 }
 
 @media (min-width: 768px) {
   .acerca-manifesto__portrait {
-    width: 35%;
+    position: absolute;
+    right: 5%;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 380px;
     margin-top: 0;
-    margin-left: -48px;
   }
 }
 
 .acerca-manifesto__portrait-frame {
   position: relative;
   width: 100%;
-  height: 350px;
+  height: 420px;
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.25);
   transform: rotate(2deg);
   overflow: hidden;
@@ -419,7 +399,7 @@
 
 @media (min-width: 768px) {
   .acerca-manifesto__portrait-frame {
-    height: 450px;
+    height: 480px;
   }
 }
 
@@ -822,25 +802,25 @@
 }
 
 .acerca-contact__title {
-  font-family: "Bebas Neue", sans-serif;
-  font-size: clamp(40px, 5vw, 60px);
+  font-family: "Trattatello", fantasy;
+  font-size: clamp(48px, 6vw, 80px);
   color: var(--acerca-dark);
   letter-spacing: 0.02em;
   margin: 0 0 8px;
 }
 
 .acerca-contact__subtitle {
-  font-family: "Inter", sans-serif;
-  font-weight: 700;
-  font-size: clamp(20px, 2vw, 28px);
+  font-family: "Heritage Sans", serif;
+  font-weight: 400;
+  font-size: clamp(24px, 3vw, 36px);
   color: var(--acerca-dark);
   letter-spacing: 0.08em;
   margin: 0 0 24px;
 }
 
 .acerca-contact__description {
-  font-family: "Inter", sans-serif;
-  font-size: 14px;
+  font-family: "Heritage Sans", serif;
+  font-size: 16px;
   line-height: 1.7;
   color: var(--acerca-muted);
   max-width: 440px;
@@ -877,9 +857,9 @@
 }
 
 .acerca-contact__form-note {
-  font-family: "Inter", sans-serif;
-  font-size: 12px;
-  font-weight: 700;
+  font-family: "Heritage Sans", serif;
+  font-size: 13px;
+  font-weight: 400;
   color: #554a34;
   margin: 0 0 12px;
   line-height: 1.5;
@@ -931,8 +911,8 @@
   border-radius: 4px;
   border: 1px solid #e0d8c3;
   background: #fff;
-  font-family: "Inter", sans-serif;
-  font-size: 14px;
+  font-family: "Heritage Sans", serif;
+  font-size: 15px;
   color: #333;
   outline: none;
   transition: border-color 0.2s;
@@ -974,9 +954,9 @@
   margin-top: 8px;
   background: #c85c27;
   color: #fff;
-  font-family: "Inter", sans-serif;
-  font-weight: 700;
-  font-size: 12px;
+  font-family: "Heritage Sans", serif;
+  font-weight: 400;
+  font-size: 14px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   padding: 12px 32px;
@@ -992,7 +972,7 @@
 }
 
 .acerca-contact__success {
-  font-family: "Inter", sans-serif;
+  font-family: "Heritage Sans", serif;
   color: var(--green, #4a7c3f);
   font-size: 14px;
   text-align: center;
@@ -1023,21 +1003,22 @@
   }
 
   .acerca-manifesto {
-    padding: 0 16px;
     margin-bottom: 100px;
   }
 
   .acerca-manifesto__parchment {
-    padding: 24px 16px 36px;
+    padding: 40px 20px;
   }
 
   .acerca-manifesto__portrait {
-    width: 240px;
+    width: 280px;
     margin-top: 24px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .acerca-manifesto__portrait-frame {
-    height: 300px;
+    height: 350px;
   }
 
   .acerca-transition {
