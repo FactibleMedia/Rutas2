@@ -71,10 +71,10 @@ export default function CategoryList() {
                     alt="" 
                     className="absolute max-w-none pointer-events-none" 
                     style={{ 
-                      width: "110%", 
-                      height: "250%", 
-                      left: "-5%", 
-                      top: "-75%",
+                      width: "120%", 
+                      height: "300%", 
+                      left: "-10%", 
+                      top: "-100%",
                       objectFit: "contain"
                     }}
                     src={cat.color === "verde" ? imgMarcoDelgadoVerde1 : imgMarcoDelgadoMorado1} 
@@ -82,11 +82,11 @@ export default function CategoryList() {
                </div>
             </div>
 
-            <div className="flex items-center gap-4 z-10 font-trattatello">
-              <p className="text-[#fffce6] text-[32px] tracking-wide">
+            <div className="flex flex-col items-center justify-center gap-0.5 z-10 font-trattatello relative" style={{ top: '12px' }}>
+              <p className="text-[#fffce6] text-[34px] tracking-wide m-0 leading-tight">
                 {cat.name}
               </p>
-              <p className="text-[rgba(255,252,230,0.8)] text-[22px]">
+              <p className="text-[rgba(255,252,230,0.85)] text-[20px] m-0 font-heritage tracking-wide">
                 ({cat.count})
               </p>
             </div>

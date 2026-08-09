@@ -1010,19 +1010,20 @@
 
 .gloss-categories__item-frame-img {
   position: absolute;
-  width: 110%;
-  height: 250%;
-  left: -5%;
-  top: -75%;
+  width: 120%;
+  height: 300%;
+  left: -10%;
+  top: -100%;
   object-fit: contain;
   pointer-events: none;
 }
 
 .gloss-categories__item-content {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 2px;
   z-index: 10;
   font-family: var(--font-trattatello);
   font-weight: 400;
@@ -1032,35 +1033,30 @@
   padding: 0 10px;
   box-sizing: border-box;
   text-align: center;
-}
-
-@media (min-width: 768px) {
-  .gloss-categories__item-content { gap: 12px; }
-}
-
-@media (min-width: 1025px) {
-  .gloss-categories__item-content { gap: 14px; }
+  position: relative;
+  top: 12px;
 }
 
 .gloss-categories__item-name {
   /* Tamaño fluido: nombres largos ("Para referirse") caben en la tarjeta */
-  font-size: clamp(18px, 2.6vw, 30px);
+  font-size: clamp(20px, 2.8vw, 32px);
   letter-spacing: 0.02em;
   color: var(--glos-cream);
   margin: 0;
   line-height: 1.1;
-  max-width: 80%;
+  max-width: 90%;
   /* Si no cabe en una línea, salta de línea centrado (nunca se recorta) */
   white-space: normal;
   overflow-wrap: break-word;
 }
 
 .gloss-categories__item-count {
-  font-size: clamp(14px, 1.5vw, 18px);
-  color: rgba(255, 252, 230, 0.8);
+  font-size: clamp(14px, 1.6vw, 20px);
+  color: rgba(255, 252, 230, 0.85);
   margin: 0;
-  flex-shrink: 0;
   white-space: nowrap;
+  font-family: var(--font-heritage);
+  letter-spacing: 0.02em;
 }
 
 /* =========================================================
@@ -1313,19 +1309,20 @@
   color: #BB4C18;
   text-align: center;
   font-family: var(--font-trattatello);
-  font-size: 95px;
+  font-size: clamp(48px, 8vw, 95px);
   font-style: normal;
   font-weight: 400;
   line-height: 1.15;
-  letter-spacing: 8.55px;
+  letter-spacing: 4px;
   margin: 0;
+  white-space: nowrap;
 }
 
 @media (max-width: 640px) {
   .gloss-sugerir__title {
-    font-size: 56px;
+    font-size: clamp(32px, 10vw, 56px);
     line-height: 1.2;
-    letter-spacing: 5px;
+    letter-spacing: 2px;
   }
 }
 

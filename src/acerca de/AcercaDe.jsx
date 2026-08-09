@@ -144,11 +144,9 @@ function ManifestoSection() {
           />
         </div>
         <p className="acerca-manifesto__copy">
-          En Rutas de Valledupar, viajar no significa desplazarse; significa reencontrarse.
-          Cada ruta es un ritual que reconecta a las personas con el territorio, la memoria
-          y los saberes que los sostienen. Hemos emprendido esta aventura no en un sentido
-          convencional, sino un trabajo sensible que despliega las voces que habitan en los
-          colores, los ríos, los valles y las canciones.
+          En Rutas de Valledupar, viajar no significa desplazarse; significa reencontrarse. Cada ruta es un ritual que reconecta a las personas con el territorio, la memoria
+          y los saberes que los sostienen. Hemos emprendido esta aventura no en un sentido convencional, sino un trabajo sensible que despliega las voces que habitan en los
+          colores, los ríos, los valles y las canciones. 
         </p>
         <p className="acerca-manifesto__copy">
           Al reinterpretar el territorio nos narramos: Las cortezas nos guardaron, la leyenda
