@@ -4,8 +4,12 @@ import mapboxgl from "mapbox-gl";
 import TopBar from "./TopBar";
 import NavMap from "./NavMap";
 import { getRouteCounts, useMapLocations } from "./mapLocationsStore";
+import MapLegend from "./mapas/MapLegend";
+import RouteDetailsPanel from "./mapas/RouteDetailsPanel";
+import RouteSelector from "./mapas/RouteSelector";
 import "mapbox-gl/dist/mapbox-gl.css";
 import "./Mapas.css";
+import "./mapas/mapas-ui.css";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
@@ -35,39 +39,7 @@ const MAP_PITCH = 0;
 const MAP_BEARING = 0;
 const MOBILE_USER_AGENT_REGEX = /Android|iPhone|iPad|iPod/i;
 
-// Warm pastel sand background for the entire map
-const MAP_BACKGROUND = "#f0e4cc";
 
-// Color palettes that change based on the selected route
-const ROUTE_PALETTES = {
-  patrimonial: {
-    label: "Patrimonial",
-    roads: "#2463eb",
-    water: "#c5d9f2",
-    park: "#dce6f5",
-    building: "#f0f4fa",
-    background: MAP_BACKGROUND,
-    accent: "#2463eb",
-  },
-  gastronomica: {
-    label: "Gastronómica",
-    roads: "#e8871a",
-    water: "#f5e6cc",
-    park: "#f5eddc",
-    building: "#faf4ea",
-    background: MAP_BACKGROUND,
-    accent: "#e8871a",
-  },
-  mitos: {
-    label: "Mitos y Leyendas",
-    roads: "#5b2fb3",
-    water: "#e0d6f2",
-    park: "#ede6f5",
-    building: "#f5f0fa",
-    background: MAP_BACKGROUND,
-    accent: "#5b2fb3",
-  },
-};
 
 function normalizeText(value) {
   return value
@@ -95,7 +67,7 @@ export default function Mapas() {
 
   const [searchText, setSearchText] = useState("");
   const [selectedRouteId, setSelectedRouteId] = useState("patrimonial");
-  const [isRouteExpanded, setIsRouteExpanded] = useState(false);
+  const [isRoutePanelOpen, setIsRoutePanelOpen] = useState(false);
   const [selectedPlaceId, setSelectedPlaceId] = useState(locations[0]?.id || "");
   const [activePlace, setActivePlace] = useState(locations[0] ?? null);
   const [isPlacePopupOpen, setIsPlacePopupOpen] = useState(false);
@@ -145,7 +117,6 @@ export default function Mapas() {
   const deviceHeadingRef = useRef(0);
   const alertedStepsRef = useRef(new Set());
   const [proximityAlert, setProximityAlert] = useState(null);
-  const routeSwitchTimerRef = useRef(null);
   const rerouteThrottleRef = useRef(0); // timestamp of last re-route
   const routePlanRef = useRef(null); // ref to latest plan for GPS callback closure
   const [upcomingSteps, setUpcomingSteps] = useState([]);
@@ -270,33 +241,7 @@ export default function Mapas() {
     return (brng + 360) % 360;
   };
 
-  // Apply or re-apply route-based colors to the map
-  const applyRouteColors = useCallback((map, routeId) => {
-    const palette = ROUTE_PALETTES[routeId] || ROUTE_PALETTES.patrimonial;
-    if (!map || !map.getStyle()) return;
 
-    const layers = map.getStyle().layers;
-    layers.forEach((layer) => {
-      try {
-        const id = layer.id;
-        if (layer.type === "line" && (id.includes("road") || id.includes("bridge") || id.includes("tunnel"))) {
-          map.setPaintProperty(id, "line-color", palette.roads);
-        } else if (layer.type === "fill") {
-          if (id === "water" || id === "waterway") {
-            map.setPaintProperty(id, "fill-color", palette.water);
-          } else if (id.includes("park") || id.includes("grass") || id.includes("forest")) {
-            map.setPaintProperty(id, "fill-color", palette.park);
-          } else if (id === "building" || id.includes("building")) {
-            map.setPaintProperty(id, "fill-color", palette.building);
-          } else if (id === "background" || id === "land") {
-            map.setPaintProperty(id, "background-color", palette.background);
-          }
-        }
-      } catch {
-        // Silently skip layers that can't be modified
-      }
-    });
-  }, []);
 
   const isMobileDevice = typeof navigator !== "undefined" && MOBILE_USER_AGENT_REGEX.test(navigator.userAgent);
   const routeStats = useMemo(() => getRouteCounts(locations), [locations]);
@@ -375,10 +320,22 @@ export default function Mapas() {
     mapboxgl.accessToken = MAPBOX_TOKEN;
 
     let map;
+    let mapStyle = "mapbox://styles/mapbox/standard";
+    let mapConfig = {
+      basemap: {
+        theme: "monochrome",
+        lightPreset: "day",
+        show3dObjects: false,
+        showPedestrianRoads: true,
+        showTransitLabels: false,
+      },
+    };
+
     try {
       map = new mapboxgl.Map({
         container: mapContainerRef.current,
-        style: "mapbox://styles/mapbox/light-v11",
+        style: mapStyle,
+        config: mapConfig,
         center: MAP_CENTER,
         zoom: MAP_ZOOM,
         pitch: MAP_PITCH,
@@ -386,17 +343,32 @@ export default function Mapas() {
         attributionControl: true,
       });
     } catch {
-      setLoadError("No se pudo inicializar el mapa. Revisa VITE_MAPBOX_TOKEN.");
-      return undefined;
+      // Fallback to light style if standard fails
+      try {
+        map = new mapboxgl.Map({
+          container: mapContainerRef.current,
+          style: "mapbox://styles/mapbox/light-v11",
+          center: MAP_CENTER,
+          zoom: MAP_ZOOM,
+          pitch: MAP_PITCH,
+          bearing: MAP_BEARING,
+          attributionControl: true,
+        });
+      } catch {
+        setLoadError("No se pudo inicializar el mapa. Revisa VITE_MAPBOX_TOKEN.");
+        return undefined;
+      }
     }
 
     mapRef.current = map;
     map.addControl(new mapboxgl.NavigationControl(), "top-left");
     map.on("load", () => {
       setIsMapReady(true);
-      // Route colors are applied via the useEffect below when isMapReady becomes true
     });
-    map.on("error", () => setLoadError("Error al cargar mapa. Verifica el token."));
+    map.on("error", (e) => {
+      console.warn("Mapbox error:", e.error?.message || e);
+      // Don't show error for style loading issues - map may still work
+    });
 
     return () => {
       markersRef.current.forEach(({ marker }) => marker.remove());
@@ -1354,20 +1326,20 @@ export default function Mapas() {
         },
       });
     } else {
-      // Fallback: solid lime green
+      // Fallback: orange dotted line
       mapRef.current.addLayer({
         id: "capa-ruta-base",
         type: "line",
         source: "ruta-activa",
         layout: { "line-join": "round", "line-cap": "round" },
-        paint: { "line-color": "#32CD32", "line-width": 14, "line-opacity": 0.25, "line-blur": 3 },
+        paint: { "line-color": "#E87A2A", "line-width": 14, "line-opacity": 0.2, "line-blur": 4 },
       });
       mapRef.current.addLayer({
         id: "capa-ruta",
         type: "line",
         source: "ruta-activa",
         layout: { "line-join": "round", "line-cap": "round" },
-        paint: { "line-color": "#32CD32", "line-width": 5, "line-opacity": 0.98 },
+        paint: { "line-color": "#E87A2A", "line-width": 5, "line-opacity": 0.95, "line-dasharray": [2, 2] },
       });
     }
 
@@ -1409,15 +1381,15 @@ export default function Mapas() {
     el.style.cssText = `
       width: 44px; height: 44px;
       border-radius: 50%;
-      border: 3px solid #32CD32;
+      border: 3px solid #E87A2A;
       background: url('${place.image}') center/cover no-repeat;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 0 0 4px rgba(50,205,50,0.25);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 0 0 4px rgba(232,122,42,0.25);
       cursor: pointer;
       display: block;
     `;
     // Fallback icon if no image
     if (!place.image) {
-      el.style.background = "#32CD32";
+      el.style.background = "#E87A2A";
       el.style.display = "flex";
       el.style.alignItems = "center";
       el.style.justifyContent = "center";
@@ -1488,11 +1460,7 @@ export default function Mapas() {
     }
   }, [searchParams, locations, isMapReady]);
 
-  // Apply route colors when selected route changes
-  useEffect(() => {
-    if (!mapRef.current || !isMapReady) return;
-    applyRouteColors(mapRef.current, selectedRouteId);
-  }, [selectedRouteId, isMapReady, applyRouteColors]);
+
 
   return (
     <div className="mapas-page">
@@ -1501,6 +1469,33 @@ export default function Mapas() {
       <main className="mapas-main">
         <section id="inicio" className="mapas-stage" aria-label="Mapa interactivo">
           <div ref={mapContainerRef} id="mapas" className="mapas-container" />
+
+          {/* New UI Components */}
+          {!isRoutePanelOpen && !isNavigationOpen && (
+            <MapLegend isVisible={true} />
+          )}
+          {!isRoutePanelOpen && !isNavigationOpen && (
+            <RouteSelector
+              activeRouteId={selectedRouteId}
+              onRouteSelect={(routeId) => {
+                setSelectedRouteId(routeId);
+                setIsRoutePanelOpen(true);
+              }}
+              locations={locations}
+            />
+          )}
+          {isRoutePanelOpen && (
+            <RouteDetailsPanel
+              route={{ id: selectedRouteId, name: locations.find(l => l.routeId === selectedRouteId)?.categoryLabel || selectedRouteId }}
+              locations={locations}
+              selectedPlaceId={selectedPlaceId}
+              onClose={() => setIsRoutePanelOpen(false)}
+              onSelectPlace={(place) => {
+                setIsRoutePanelOpen(false);
+                handleSelectPlace(place);
+              }}
+            />
+          )}
 
           <div className="mapas-ui-layer">
             {/* Restore navigation banner */}
@@ -1815,82 +1810,6 @@ export default function Mapas() {
                     )}
                   </div>
                 </div>
-              </div>
-            )}
-
-            {/* Animated sites panel above bottom bar — appears when a route is active */}
-            {!isNavigating && (
-              <div className={`mapas-route-places${isRouteExpanded ? " visible" : ""}`}>
-                <div className="mapas-route-places__inner">
-                  <div className="mapas-route-places__header">
-                    <span className="mapas-route-places__name">
-                      {routeStats.find((r) => r.id === selectedRouteId)?.name ?? "Ruta"}
-                    </span>
-                    <span className="mapas-route-places__count">
-                      {filteredPlaces.length} sitios
-                    </span>
-                    <button
-                      type="button"
-                      className="mapas-route-places__close"
-                      onClick={() => setIsRouteExpanded(false)}
-                      aria-label="Cerrar lista"
-                    >&times;</button>
-                  </div>
-                  <div className="mapas-route-places__list">
-                    {filteredPlaces.length > 0 ? (
-                      filteredPlaces.map((place) => (
-                        <button
-                          type="button"
-                          key={place.id}
-                          className={`mapas-route-places__item${selectedPlaceId === place.id ? " active" : ""}`}
-                          onClick={() => handleSelectPlace(place)}
-                        >
-                          <span className="mapas-route-places__dot" />
-                          <span className="mapas-route-places__label">{place.name}</span>
-                        </button>
-                      ))
-                    ) : (
-                      <p className="mapas-route-places__empty">No hay lugares en esta ruta.</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Route cards as floating bottom bar — ALL devices */}
-            {!isNavigating && (
-              <div className="mapas-bottom-routes">
-                {routeStats.map((route) => (
-                  <button
-                    type="button"
-                    key={route.id}
-                    className={`mapas-route-card${route.id === selectedRouteId ? " mapas-route-card--active" : ""}`}
-                    onClick={() => {
-                      if (route.id !== selectedRouteId) {
-                        // Clear any pending switch timer to avoid race conditions
-                        if (routeSwitchTimerRef.current) {
-                          clearTimeout(routeSwitchTimerRef.current);
-                        }
-                        // First collapse, then switch route with animation
-                        setIsRouteExpanded(false);
-                        setIsNavigationOpen(false);
-                        clearRouteLayer();
-                        const timerId = setTimeout(() => {
-                          setSelectedRouteId(route.id);
-                          setIsRouteExpanded(true);
-                          routeSwitchTimerRef.current = null;
-                        }, 180);
-                        routeSwitchTimerRef.current = timerId;
-                      } else {
-                        // Toggle the sites panel when clicking the same route
-                        setIsRouteExpanded((prev) => !prev);
-                      }
-                    }}
-                  >
-                    <p className="mapas-route-card-title">{route.name}</p>
-                    <p className="mapas-route-card-count">{route.count} sitios</p>
-                  </button>
-                ))}
               </div>
             )}
 
