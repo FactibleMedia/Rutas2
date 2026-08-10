@@ -168,7 +168,7 @@ function Hero1Section() {
     setCurrentIndex((prev) => (prev - 1 + totalCards) % totalCards);
   };
 
-  // Helper to determine card position/visibility
+  // Helper to determine card position/visibility - deck style
   const getCardStyles = (index) => {
     let diff = index - currentIndex;
     if (diff < 0) diff += totalCards;
@@ -180,28 +180,28 @@ function Hero1Section() {
         content: 'gloss-hero1__card-fade-out',
       };
     }
-    // Active card (front)
+    // Active card (front) - comes from right with flip
     if (diff === 0) {
       return {
         wrapper: 'gloss-hero1__card--active',
         content: 'gloss-hero1__card-fade-in',
       };
     }
-    // Card right behind
+    // Card right behind - fanned to the right
     if (diff === 1) {
       return {
         wrapper: 'gloss-hero1__card--behind-1',
         content: 'gloss-hero1__card-fade-out',
       };
     }
-    // Card two steps behind
+    // Card two steps behind - fanned further right
     if (diff === 2) {
       return {
         wrapper: 'gloss-hero1__card--behind-2',
         content: 'gloss-hero1__card-fade-out',
       };
     }
-    // Hidden
+    // Hidden - stacked behind
     return {
       wrapper: 'gloss-hero1__card--hidden',
       content: 'gloss-hero1__card-fade-out',
@@ -239,23 +239,15 @@ function Hero1Section() {
                 const styles = getCardStyles(index);
                 const isInteractive = index === currentIndex;
                 const isGreen = item.bg === 'green';
-                const jaggedColors = isGreen
-                  ? { layer1: '#5A7A4E', layer2: '#464C33', layer3: '#F4B333' }
-                  : { layer1: '#86749C', layer2: '#564E87', layer3: '#F4B333' };
-
                 const cardTheme = isGreen ? 'gloss-hero1__card-body--green' : 'gloss-hero1__card-body--purple';
 
-                return (                    <div
+                return (
+                  <div
                     key={item.id}
                     className={`gloss-hero1__card ${styles.wrapper}`}
                     style={{ pointerEvents: isInteractive ? 'auto' : 'none' }}
                   >
-                    {/* Decorative Jagged Layers behind card */}
-                    <JaggedLayer color={jaggedColors.layer1} className="gloss-hero1__jagged--1" />
-                    <JaggedLayer color={jaggedColors.layer2} className="gloss-hero1__jagged--2" />
-                    <JaggedLayer color={jaggedColors.layer3} className="gloss-hero1__jagged--3" />
-
-                    {/* Main card body */}
+                    {/* Main card body - clean postal stamp design */}
                     <div className={`gloss-hero1__card-body ${cardTheme}`}>
                       <div className={`gloss-hero1__card-content-inner ${styles.content}`}>
                         <h3 className="gloss-hero1__card-word">{item.word}</h3>
