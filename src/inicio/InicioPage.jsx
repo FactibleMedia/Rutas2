@@ -12,7 +12,7 @@ import gal3 from "../assets/mcp/gal_slide3.png";
 import ctaBgIcon from "../assets/mcp/icon_bg_cta.png";
 import TopBar from "../TopBar";
 import Footer from "../Footer";
-import RouteSelector from "../components/RouteSelector";
+
 import glossFrameGreen from "../assets/mcp/gloss_frame_green.png";
 import glossBgLucas from "../assets/mcp/gloss_bg_lucas.png";
 import glossBgMotetes from "../assets/mcp/gloss_bg_motetes.png";
@@ -206,7 +206,114 @@ const routeMapToInteractivas = {
 };
 
 function Maps() {
-  return <RouteSelector />;
+  const navigate = useNavigate();
+  const [activeRoute, setActiveRoute] = useState(null);
+  const [selectedRouteId, setSelectedRouteId] = useState(null);
+  const [prevImage, setPrevImage] = useState(null);
+  const [currentImage, setCurrentImage] = useState(getBgImage(null));
+  const currentRoute = activeRoute || selectedRouteId;
+  const theme = getTheme(currentRoute);
+
+  // Crossfade: when bgImage changes, move current to prev and set new
+  useEffect(() => {
+    const newImg = getBgImage(currentRoute);
+    if (newImg !== currentImage) {
+      setPrevImage(currentImage);
+      // Small delay to let prev image start fading before showing new
+      const id = setTimeout(() => setCurrentImage(newImg), 50);
+      return () => clearTimeout(id);
+    }
+  }, [currentRoute]);
+
+  const handleRouteClick = (routeId) => {
+    setSelectedRouteId((prev) => (prev === routeId ? null : routeId));
+  };
+
+  const showOverlay = selectedRouteId !== null;
+
+  return (
+    <section
+      id="mapas"
+      className="maps-section reveal"
+      style={{ backgroundColor: theme.bg, color: theme.text }}
+    >
+      {/* Background image — fondo completo, sin frame ni bordes */}
+      <div className="maps-section__bg">
+        {prevImage && (
+          <img
+            src={prevImage}
+            alt=""
+            className="maps-section__bg-img maps-section__bg-img--prev"
+          />
+        )}
+        <img
+          src={currentImage}
+          alt=""
+          className="maps-section__bg-img maps-section__bg-img--current"
+        />
+        <div className={`maps-section__bg-overlay ${showOverlay ? "maps-section__bg-overlay--visible" : ""}`} />
+      </div>
+
+      {/* Content */}
+      <div className="maps-section__content">
+        {/* Logo: verde en default, blanco con ruta seleccionada */}
+        <div className="maps-section__header">
+          <img
+            src={selectedRouteId ? logoBlanco : logoVerde}
+            alt="Rutas de Valledupar"
+            className="maps-section__logo"
+          />
+        </div>
+
+        {/* Route Pills */}
+        <div className="maps-section__pills">
+          {routesConfig.map((route) => (
+            <button
+              key={route.id}
+              onMouseEnter={() => setActiveRoute(route.id)}
+              onMouseLeave={() => setActiveRoute(null)}
+              onClick={() => handleRouteClick(route.id)}
+              className={`maps-section__pill ${selectedRouteId === route.id ? "maps-section__pill--active" : ""}`}
+              style={{
+                backgroundColor: selectedRouteId === route.id ? route.btnColor : "rgba(255,255,255,0.85)",
+                color: selectedRouteId === route.id ? "#fff" : "#2D2A26",
+              }}
+            >
+              {route.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Route subtitle */}
+        {selectedRouteId && (
+          <p className="maps-section__subtitle">
+            {routesConfig.find((r) => r.id === selectedRouteId)?.subtitle}
+          </p>
+        )}
+
+        {/* CTA Button */}
+        <button
+          className="maps-section__cta"
+          onClick={() => {
+            const targetRoute = selectedRouteId
+              ? routeMapToInteractivas[selectedRouteId]
+              : null;
+            const search = targetRoute ? `?ruta=${targetRoute}` : "";
+            navigate(`/rutas-interactivas${search}`);
+          }}
+        >
+          Explora el mapa
+        </button>
+
+        {/* Footer description */}
+        <div className="maps-section__footer">
+          <p>
+            Bienvenido a recorrer las rutas del viejo Valle, aquí mantenemos la herencia viva de un patrimonio que todavía se conserva.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
 }
 
 function Glossary() {
@@ -461,9 +568,7 @@ export default function InicioPage() {
   return (
     <div className="page-shell">
       <TopBar activeSection={activeSection} isAuthenticated={isRegistered} user={{ name: "Usuario Válido", initials: "UV" }} onSectionChange={handleSectionChange} />
-      <section id="mapas">
-        <Maps />
-      </section>
+      <Maps />
       <Gallery />
       <Glossary />
       <CTASection />

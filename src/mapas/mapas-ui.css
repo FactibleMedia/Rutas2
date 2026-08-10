@@ -1,0 +1,140 @@
+/* Mapas UI Components - Earth Tone Theme */
+
+/* Animations */
+@keyframes mapas-fade-in-up-centered {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 40px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes mapas-fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mapas-fade-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes mapas-pop-in-centered {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -45%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes mapas-slide-up-mobile {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hide scrollbar */
+.mapas-hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.mapas-hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Panel Scrollbar */
+.mapas-panel-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+
+.mapas-panel-scroll::-webkit-scrollbar-track {
+  background: rgba(228, 219, 197, 0.4);
+  border-radius: 10px;
+}
+
+.mapas-panel-scroll::-webkit-scrollbar-thumb {
+  background: #CBAF82;
+  border-radius: 10px;
+}
+
+.mapas-panel-scroll::-webkit-scrollbar-thumb:hover {
+  background: #B95D28;
+}
+
+/* Responsive Styles */
+@media (min-width: 768px) {
+  .mapas-route-panel {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    bottom: auto !important;
+    transform: translate(-50%, -50%) !important;
+    width: 90% !important;
+    max-width: 450px !important;
+    max-height: 80vh !important;
+    border-radius: 24px !important;
+    animation: mapas-pop-in-centered 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  }
+
+  .mapas-panel-drag-handle {
+    display: none !important;
+  }
+}
+
+/* Legend responsive */
+@media (max-width: 640px) {
+  .mapas-legend {
+    top: 80px !important;
+    left: 12px !important;
+    padding: 12px !important;
+    width: auto !important;
+    min-width: 140px !important;
+  }
+
+  .mapas-legend h3 {
+    font-size: 14px !important;
+  }
+
+  .mapas-legend span {
+    font-size: 12px !important;
+  }
+}
+
+/* Route Selector responsive */
+@media (max-width: 640px) {
+  .mapas-route-selector {
+    bottom: 12px !important;
+    padding: 4px !important;
+    border-radius: 16px !important;
+  }
+
+  .mapas-route-selector button {
+    padding: 8px 12px !important;
+    border-radius: 12px !important;
+    font-size: 12px !important;
+  }
+}

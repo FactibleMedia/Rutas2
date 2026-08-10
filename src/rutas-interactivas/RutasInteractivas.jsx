@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { MapPin, Utensils, Sparkles, Map, ArrowRight } from "lucide-react";
 import TopBar from "../TopBar";
 import Footer from "../Footer";
 import InteractiveMap from "./InteractiveMap";
@@ -17,37 +18,45 @@ const routeOptions = [
   {
     id: "patrimoniales",
     title: "Rutas Patrimoniales",
-    subtitle: "Patrimonio",
     description:
-      "Recorre los sitios históricos y emblemáticos que cuentan la historia viva de Valledupar.",
-    image: "/assets/rutas/rutapatri.png",
+      "Recorre los sitios históricos y emblemáticos que cuentan la historia viva de Valledupar. Un viaje a través de la arquitectura y la tradición.",
+    image: "/assets/rutas/gran.png",
+    icon: MapPin,
+    gradient: "from-amber-900/90 via-amber-900/40 to-transparent",
+    accentColor: "bg-amber-600",
     color: "#8B6B4A",
   },
   {
     id: "gastronomica",
     title: "Ruta Gastronómica",
-    subtitle: "Gastronomía",
     description:
-      "Descubre los sabores auténticos del Valle de Upar a través de sus platos tradicionales.",
-    image: "/assets/rutas/rutagastro.png",
+      "Descubre los sabores auténticos de nuestra tierra. Desde arepas de queso hasta los mejores platos tradicionales de la región.",
+    image: "/assets/rutas/Gastro.png",
+    icon: Utensils,
+    gradient: "from-orange-900/90 via-orange-900/40 to-transparent",
+    accentColor: "bg-orange-600",
     color: "#C07536",
   },
   {
     id: "mistica",
     title: "Ruta Mística",
-    subtitle: "Mística",
     description:
-      "Sumérgete en los paisajes espirituales y naturales que inspiran la magia vallenata.",
-    image: "/assets/rutas/rutamis.png",
+      "Adéntrate en las leyendas y mitos que envuelven la ciudad. Conoce las historias de las sirenas del río Guatapurí y mucho más.",
+    image: "/assets/rutas/Sirena1.png",
+    icon: Sparkles,
+    gradient: "from-emerald-900/90 via-emerald-900/40 to-transparent",
+    accentColor: "bg-emerald-600",
     color: "#4A6B5D",
   },
   {
     id: "general",
-    title: "Gran Mapa General",
-    subtitle: "Completo",
+    title: "Ver todas las rutas en el mapa",
     description:
-      "Explora todos los puntos de todas las rutas en un solo mapa. Cada ruta se muestra con su color distintivo.",
-    image: "/assets/rutas/granmapa.png",
+      "Una vista panorámica de todas las rutas y puntos de interés. Planifica tu viaje completo desde un solo lugar interactivo.",
+    image: "/assets/rutas/patri.png",
+    icon: Map,
+    gradient: "from-stone-900/90 via-stone-900/40 to-transparent",
+    accentColor: "bg-stone-600",
     color: "#5d4037",
   },
 ];
@@ -61,6 +70,7 @@ export default function RutasInteractivas() {
   const [connectionsData, setConnectionsData] = useState([]);
   const [routeLegend, setRouteLegend] = useState([]);
   const [mapFilter, setMapFilter] = useState("none");
+  const [hoveredCardId, setHoveredCardId] = useState(null);
 
   // Load points and connections from Supabase when a route is selected
   useEffect(() => {
@@ -223,133 +233,98 @@ export default function RutasInteractivas() {
       <TopBar activeSection="rutas-interactivas" />
 
       <main className="rutas-interactivas__main">
-        {/* ✨ Modern Accordion Section */}
-        <section className="rutas-interactivas__accordion">
-          <div className="rutas-interactivas__accordion-header">
-            <span className="rutas-interactivas__accordion-eyebrow">
-              Explora Valledupar
-            </span>
-            <h1 className="rutas-interactivas__accordion-title">
-              Elige tu ruta
-            </h1>
-            <p className="rutas-interactivas__accordion-subtitle">
-              Cada camino tiene una historia por contar. Selecciona una ruta y
-              descubre los tesoros ocultos de nuestra tierra.
+        {/* Card Selector Section */}
+        <section className="ri-selector">
+          {/* Header */}
+          <div className="ri-selector__header">
+            <div className="ri-selector__subtitle-line">
+              <div className="ri-selector__line"></div>
+              <span className="ri-selector__subtitle">Explora Valledupar</span>
+              <div className="ri-selector__line"></div>
+            </div>
+            <h1 className="ri-selector__title">ELIGE TU RUTA</h1>
+            <p className="ri-selector__description">
+              Cada camino tiene una historia por contar. Pasa el cursor sobre una ruta y descubre los tesoros ocultos de nuestra tierra.
             </p>
           </div>
 
-          <div className="rutas-interactivas__accordion-track">
-            {routeOptions.map((route) => {
-              const isActive = hoveredRoute === route.id;
+          {/* Cards Container */}
+          <div
+            className="ri-selector__cards"
+            onMouseLeave={() => setHoveredCardId(null)}
+          >
+            {routeOptions.map((ruta) => {
+              const isHovered = hoveredCardId === ruta.id;
+              const isAnyHovered = hoveredCardId !== null;
+              const IconComponent = ruta.icon;
+
+              const flexClass = isHovered
+                ? "ri-selector__card--expanded"
+                : isAnyHovered
+                  ? "ri-selector__card--collapsed"
+                  : "ri-selector__card--default";
+
               return (
-                <button
-                  key={route.id}
-                  className={`rutas-interactivas__accordion-card${
-                    isActive ? " rutas-interactivas__accordion-card--active" : ""
-                  }`}
-                  onClick={() => setSelectedRoute(route.id)}
-                  onMouseEnter={() => setHoveredRoute(route.id)}
-                  onMouseLeave={() => setHoveredRoute(null)}
-                  style={{ "--card-color": route.color }}
+                <div
+                  key={ruta.id}
+                  onMouseEnter={() => setHoveredCardId(ruta.id)}
+                  onClick={() => setSelectedRoute(ruta.id)}
+                  className={`ri-selector__card ${flexClass}`}
                 >
                   {/* Background image */}
-                  <div className="rutas-interactivas__accordion-bg">
-                    <img
-                      src={route.image}
-                      alt={route.title}
-                      loading="lazy"
-                    />
-                  </div>
-
-                  {/* Color gradient overlay */}
-                  <div
-                    className="rutas-interactivas__accordion-gradient"
-                    style={{
-                      background: `linear-gradient(135deg, ${route.color}E6, ${route.color}99)`,
-                    }}
+                  <img
+                    src={ruta.image}
+                    alt={ruta.title}
+                    className={`ri-selector__card-image ${isHovered ? "ri-selector__card-image--zoomed" : ""}`}
                   />
 
-                  {/* Dark overlay */}
-                  <div
-                    className={`rutas-interactivas__accordion-darken${
-                      isActive ? " rutas-interactivas__accordion-darken--light" : ""
-                    }`}
-                  />
+                  {/* Gradient overlays */}
+                  <div className="ri-selector__card-overlay" />
+                  <div className="ri-selector__card-gradient" />
+                  <div className={`ri-selector__card-dark-overlay ${isHovered ? "ri-selector__card-dark-overlay--light" : ""}`} />
 
                   {/* Content */}
-                  <div className="rutas-interactivas__accordion-content">
-                    <div className="rutas-interactivas__accordion-text">
+                  <div className="ri-selector__card-content">
+                    <div className={`ri-selector__card-content-inner ${isHovered ? "ri-selector__card-content-inner--expanded" : ""}`}>
+                      {/* Icon */}
                       <div
-                        className={`rutas-interactivas__accordion-icon${
-                          isActive
-                            ? " rutas-interactivas__accordion-icon--visible"
-                            : ""
-                        }`}
+                        className={`ri-selector__card-icon ${isHovered ? "ri-selector__card-icon--active" : ""}`}
+                        style={{ backgroundColor: isHovered ? "#c07536" : "rgba(255,255,255,0.1)" }}
                       >
-                        <svg
-                          width="28"
-                          height="28"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.8"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                          <circle cx="12" cy="10" r="3" />
-                        </svg>
+                        <IconComponent className={`ri-selector__card-icon-svg ${isHovered ? "ri-selector__card-icon-svg--white" : ""}`} />
                       </div>
-                      <h3
-                        className={`rutas-interactivas__accordion-name${
-                          isActive
-                            ? " rutas-interactivas__accordion-name--visible"
-                            : ""
-                        }`}
-                      >
-                        {route.title}
-                      </h3>
+
+                      {/* Title */}
+                      <h2 className={`ri-selector__card-title ${isHovered ? "ri-selector__card-title--expanded" : ""}`}>
+                        {ruta.title}
+                      </h2>
+
+                      {/* Description and button */}
+                      <div className={`ri-selector__card-details ${isHovered ? "ri-selector__card-details--visible" : ""}`}>
+                        <p className="ri-selector__card-text">{ruta.description}</p>
+                        <button
+                          className="ri-selector__card-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedRoute(ruta.id);
+                          }}
+                        >
+                          <span>Explorar Ruta</span>
+                          <ArrowRight className="ri-selector__card-btn-icon" />
+                        </button>
+                      </div>
                     </div>
-                    <p
-                      className={`rutas-interactivas__accordion-desc${
-                        isActive
-                          ? " rutas-interactivas__accordion-desc--visible"
-                          : ""
-                      }`}
-                    >
-                      {route.description}
-                    </p>
-                    <span
-                      className={`rutas-interactivas__accordion-arrow${
-                        isActive
-                          ? " rutas-interactivas__accordion-arrow--visible"
-                          : ""
-                      }`}
-                    >
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M5 12h14" />
-                        <polyline points="12 5 19 12 12 19" />
-                      </svg>
-                    </span>
                   </div>
-                </button>
+                </div>
               );
             })}
           </div>
 
-          {/* Subtle hint */}
-          <p className="rutas-interactivas__accordion-hint">
-            Pasa el cursor o toca para explorar
-          </p>
+          {/* Footer hint */}
+          <div className="ri-selector__footer">
+            <Sparkles className="ri-selector__footer-icon" />
+            <span>Pasa el cursor sobre las tarjetas para descubrir más</span>
+          </div>
         </section>
       </main>
 
