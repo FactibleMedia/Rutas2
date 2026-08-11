@@ -1,28 +1,39 @@
-import { Landmark, Utensils, Ghost } from "lucide-react";
-
 const ROUTE_DATA = {
+  all: {
+    id: "all",
+    name: "Ver todas",
+    color: "#B95D28",
+    icon: null,
+    iconText: "🌐",
+  },
   patrimonial: {
     id: "patrimonial",
     name: "Ruta Patrimonial",
     color: "#4B5A42",
-    icon: Landmark,
+    icon: "/assets/rutas/icon-patrimonial.png",
+    iconText: "🏛️",
   },
   gastronomica: {
     id: "gastronomica",
     name: "Ruta Gastronómica",
     color: "#C45722",
-    icon: Utensils,
+    icon: "/assets/rutas/icon-gastronomico.png",
+    iconText: "🍴",
   },
   mitos: {
     id: "mitos",
-    name: "Mitos y Leyendas",
+    name: "Místico",
     color: "#55517E",
-    icon: Ghost,
+    icon: "/assets/rutas/icon-mitico.png",
+    iconText: "👻",
   },
 };
 
 export default function RouteSelector({ activeRouteId, onRouteSelect, locations }) {
-  const getCount = (routeId) => locations.filter((loc) => loc.routeId === routeId).length;
+  const getCount = (routeId) => {
+    if (routeId === "all") return locations.length;
+    return locations.filter((loc) => loc.routeId === routeId).length;
+  };
 
   return (
     <div
@@ -45,6 +56,7 @@ export default function RouteSelector({ activeRouteId, onRouteSelect, locations 
         width: "auto",
         maxWidth: "92vw",
         overflow: "hidden",
+        transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
       }}
     >
       {/* Scrollable Container */}
@@ -63,7 +75,6 @@ export default function RouteSelector({ activeRouteId, onRouteSelect, locations 
       >
         {Object.values(ROUTE_DATA).map((route) => {
           const isActive = activeRouteId === route.id;
-          const IconComponent = route.icon;
           const count = getCount(route.id);
 
           return (
@@ -97,10 +108,23 @@ export default function RouteSelector({ activeRouteId, onRouteSelect, locations 
               onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.95)")}
               onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
             >
-              <IconComponent
-                size={18}
-                style={{ color: isActive ? "white" : route.color, flexShrink: 0 }}
-              />
+              {route.icon ? (
+                <img
+                  src={route.icon}
+                  alt={route.name}
+                  style={{
+                    width: "24px",
+                    height: "24px",
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                    flexShrink: 0,
+                  }}
+                />
+              ) : (
+                <span style={{ fontSize: "18px", flexShrink: 0 }}>
+                  {route.iconText}
+                </span>
+              )}
               <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
                 <span style={{ fontWeight: 700, fontSize: "13px", lineHeight: 1 }}>
                   {route.name}

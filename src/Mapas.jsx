@@ -38,6 +38,8 @@ const MAP_ZOOM = 14.2;
 const MAP_PITCH = 0;
 const MAP_BEARING = 0;
 const MOBILE_USER_AGENT_REGEX = /Android|iPhone|iPad|iPod/i;
+// Time (ms) without interaction after which the site popup auto-hides
+const POPUP_AUTO_HIDE_MS = 10000;
 
 
 
@@ -64,6 +66,7 @@ export default function Mapas() {
   const lastPositionTimeRef = useRef(null);
   const lastSpeedRef = useRef(0);
   const popupDragRef = useRef(null);
+  const popupHideTimerRef = useRef(null);
 
   const [searchText, setSearchText] = useState("");
   const [selectedRouteId, setSelectedRouteId] = useState("patrimonial");
@@ -274,8 +277,13 @@ export default function Mapas() {
   // Search across ALL routes, not just the active one
   const filteredPlaces = useMemo(() => {
     const normalizedQuery = normalizeText(searchText.trim());
+    const showAll = selectedRouteId === "all";
 
     if (normalizedQuery.length === 0) {
+      if (showAll) {
+        // Show all places from all routes
+        return locations;
+      }
       // No search: show only places from the selected route
       return locations.filter((place) => place.routeId === selectedRouteId);
     }
@@ -308,6 +316,11 @@ export default function Mapas() {
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
     };
+  }, []);
+
+  // Clear popup auto-hide timer on unmount
+  useEffect(() => () => {
+    if (popupHideTimerRef.current) clearTimeout(popupHideTimerRef.current);
   }, []);
 
   // Initialize map
@@ -369,6 +382,12 @@ export default function Mapas() {
       console.warn("Mapbox error:", e.error?.message || e);
       // Don't show error for style loading issues - map may still work
     });
+    // Clicking on the map itself (not on a marker) hides the floating popup
+    map.on("click", (e) => {
+      // Only hide if click was on the map itself, not on a marker
+      if (e.originalEvent?.target?.closest('.mapas-custom-marker')) return;
+      hidePlacePopup();
+    });
 
     return () => {
       markersRef.current.forEach(({ marker }) => marker.remove());
@@ -408,7 +427,9 @@ export default function Mapas() {
       }
       markerElement.appendChild(markerDot);
 
-      const openPlace = () => {
+      const openPlace = (event) => {
+        // Stop propagation to prevent map click from hiding popup immediately
+        if (event) event.stopPropagation();
         setSelectedRouteId(place.routeId);
         setSelectedPlaceId(place.id);
         setActivePlace(place);
@@ -416,6 +437,7 @@ export default function Mapas() {
         setIsPlacePopupOpen(true);
         setIsPlacePopupCollapsed(false);
         setPlacePopupPosition({ x: 24, y: 96 });
+        schedulePopupAutoHide();
         setRoutePlans({});
         setRouteOrigin(null);
         setView("list");
@@ -429,6 +451,8 @@ export default function Mapas() {
         .addTo(mapRef.current);
 
       markerElement.addEventListener("click", openPlace);
+      // Also prevent pointerdown from reaching map to avoid map click interference
+      markerElement.addEventListener("pointerdown", (e) => e.stopPropagation());
 
       return { place, marker, markerElement };
     });
@@ -452,26 +476,50 @@ export default function Mapas() {
     if (current && current.id !== activePlace?.id) setActivePlace(current);
   }, [locations, selectedPlaceId, activePlace?.id]);
 
-  // Filter markers by search (all routes when searching) or navigation mode
+  // Filter markers by search, route, popup selection, or navigation mode
   useEffect(() => {
     const normalizedQuery = normalizeText(searchText.trim());
     const isNavMode = isNavigating;
+    const isPopupActive = isPlacePopupOpen || isPlacePopupCollapsed;
+    const showAll = selectedRouteId === "all";
     markersRef.current.forEach(({ place, markerElement }) => {
+      let shouldShow = false;
+      
       if (isNavMode) {
-        // Navigation mode on mobile: hide ALL normal markers, only destination + user visible
-        markerElement.style.display = "none";
+        // Navigation mode: hide ALL normal markers
+        shouldShow = false;
+      } else if (showAll) {
+        // Show all routes mode: always show all markers
+        shouldShow = true;
+      } else if (isPopupActive && selectedPlaceId) {
+        // Popup active (not showAll): show only the selected marker
+        shouldShow = place.id === selectedPlaceId;
       } else if (normalizedQuery.length > 0) {
         // Search mode: show ALL matching markers across all routes
-        const searchMatches =
+        shouldShow =
           normalizeText(place.name).includes(normalizedQuery) ||
           normalizeText(place.subtitle).includes(normalizedQuery);
-        markerElement.style.display = searchMatches ? "block" : "none";
       } else {
         // Normal mode: only show markers from the selected route
-        markerElement.style.display = place.routeId === selectedRouteId ? "block" : "none";
+        shouldShow = place.routeId === selectedRouteId;
+      }
+      
+      // Apply visibility with smooth transition
+      if (shouldShow) {
+        markerElement.style.opacity = "1";
+        markerElement.style.transform = markerElement.style.transform || "";
+        markerElement.style.display = "block";
+      } else {
+        markerElement.style.opacity = "0";
+        // Delay display:none to allow fade-out animation
+        setTimeout(() => {
+          if (markerElement.style.opacity === "0") {
+            markerElement.style.display = "none";
+          }
+        }, 300);
       }
     });
-  }, [searchText, selectedRouteId, view, isMobileDevice]);
+  }, [searchText, selectedRouteId, view, isMobileDevice, isPlacePopupOpen, isPlacePopupCollapsed, selectedPlaceId]);
 
   // Mobile location prompt
   useEffect(() => {
@@ -554,6 +602,7 @@ export default function Mapas() {
     setIsPlacePopupOpen(true);
     setIsPlacePopupCollapsed(false);
     setPlacePopupPosition({ x: 24, y: 96 });
+    schedulePopupAutoHide();
     setIsNavigationOpen(false);
     setRoutePlans({});
     setRouteOrigin(null);
@@ -590,7 +639,30 @@ export default function Mapas() {
     }
   };
 
+  const hidePlacePopup = useCallback(() => {
+    if (popupHideTimerRef.current) {
+      clearTimeout(popupHideTimerRef.current);
+      popupHideTimerRef.current = null;
+    }
+    setIsPlacePopupOpen(false);
+    setIsPlacePopupCollapsed(false);
+  }, []);
+
+  // Auto-hide the popup after a period without interaction (not being used)
+  const schedulePopupAutoHide = useCallback((delay = POPUP_AUTO_HIDE_MS) => {
+    if (popupHideTimerRef.current) clearTimeout(popupHideTimerRef.current);
+    popupHideTimerRef.current = setTimeout(() => {
+      popupHideTimerRef.current = null;
+      hidePlacePopup();
+    }, delay);
+  }, [hidePlacePopup]);
+
   const collapsePlacePopup = () => {
+    // User intentionally minimized: cancel auto-hide so the chip stays
+    if (popupHideTimerRef.current) {
+      clearTimeout(popupHideTimerRef.current);
+      popupHideTimerRef.current = null;
+    }
     setIsPlacePopupOpen(false);
     setIsPlacePopupCollapsed(true);
   };
@@ -598,6 +670,7 @@ export default function Mapas() {
   const expandPlacePopup = () => {
     setIsPlacePopupCollapsed(false);
     setIsPlacePopupOpen(true);
+    schedulePopupAutoHide();
   };
 
   const handlePopupPointerDown = (event) => {
@@ -1343,25 +1416,30 @@ export default function Mapas() {
       });
     }
 
-    let step = 0;
-    const framesPerStep = Math.max(1, Math.floor(routeCoordinates.length / 120));
+    // Immediately set all coordinates so the route is visible right away
+    routeSourceRef.current.geometry.coordinates = routeCoordinates;
+    if (mapRef.current.getSource("ruta-activa")) {
+      mapRef.current.getSource("ruta-activa").setData(routeSourceRef.current);
+    }
 
-    const animate = () => {
-      if (!routeSourceRef.current || !mapRef.current) return;
-      if (step < routeCoordinates.length) {
-        routeSourceRef.current.geometry.coordinates.push(routeCoordinates[step]);
-        mapRef.current.getSource("ruta-activa").setData(routeSourceRef.current);
-        step += framesPerStep;
-        if (step >= routeCoordinates.length &&
-            routeSourceRef.current.geometry.coordinates[routeSourceRef.current.geometry.coordinates.length - 1] !==
-              routeCoordinates[routeCoordinates.length - 1]) {
-          routeSourceRef.current.geometry.coordinates.push(routeCoordinates[routeCoordinates.length - 1]);
-          mapRef.current.getSource("ruta-activa").setData(routeSourceRef.current);
+    // Animate the line opacity for a smooth visual entrance
+    let opacity = 0;
+    const animateOpacity = () => {
+      if (!mapRef.current) return;
+      opacity = Math.min(opacity + 0.05, 1);
+      try {
+        if (mapRef.current.getLayer("capa-ruta")) {
+          mapRef.current.setPaintProperty("capa-ruta", "line-opacity", hasCongestion ? 0.98 : 0.95);
         }
-        routeAnimationRef.current = requestAnimationFrame(animate);
+        if (mapRef.current.getLayer("capa-ruta-base")) {
+          mapRef.current.setPaintProperty("capa-ruta-base", "line-opacity", hasCongestion ? 0.35 : 0.2);
+        }
+      } catch { /* ignore paint errors */ }
+      if (opacity < 1) {
+        routeAnimationRef.current = requestAnimationFrame(animateOpacity);
       }
     };
-    routeAnimationRef.current = requestAnimationFrame(animate);
+    routeAnimationRef.current = requestAnimationFrame(animateOpacity);
   };
 
   // Ref to store the destination marker (thumbnail) on the map
@@ -1470,16 +1548,28 @@ export default function Mapas() {
         <section id="inicio" className="mapas-stage" aria-label="Mapa interactivo">
           <div ref={mapContainerRef} id="mapas" className="mapas-container" />
 
-          {/* New UI Components */}
-          {!isRoutePanelOpen && !isNavigationOpen && (
-            <MapLegend isVisible={true} />
+          {/* New UI Components — hidden when detail panels are open */}
+          {!isRoutePanelOpen && !isNavigationOpen && !isPlacePopupOpen && view !== "expanded" && (
+            <MapLegend 
+              isVisible={true} 
+              position={isPlacePopupCollapsed ? "bottom-left" : "top-left"} 
+            />
           )}
-          {!isRoutePanelOpen && !isNavigationOpen && (
+          {!isRoutePanelOpen && !isNavigationOpen && !isPlacePopupOpen && view !== "expanded" && (
             <RouteSelector
               activeRouteId={selectedRouteId}
               onRouteSelect={(routeId) => {
                 setSelectedRouteId(routeId);
-                setIsRoutePanelOpen(true);
+                // Only open the route panel if a specific route is selected (not "all")
+                if (routeId !== "all") {
+                  setIsRoutePanelOpen(true);
+                } else {
+                  // Close any open panels when "Ver todas" is selected
+                  setIsRoutePanelOpen(false);
+                  setIsPlacePopupOpen(false);
+                  setIsPlacePopupCollapsed(false);
+                }
+                hidePlacePopup();
               }}
               locations={locations}
             />
@@ -1598,6 +1688,9 @@ export default function Mapas() {
                 className="mapas-floating-popup"
                 style={{ left: `${placePopupPosition.x}px`, top: `${placePopupPosition.y}px` }}
                 aria-label={`Resumen de ${activePlace.name}`}
+                onPointerDown={() => schedulePopupAutoHide()}
+                onClick={() => schedulePopupAutoHide()}
+                onKeyDown={() => schedulePopupAutoHide()}
               >
                 <button type="button" className="mapas-floating-popup__drag" onPointerDown={handlePopupPointerDown} aria-label="Mover popup">
                   <span /><span /><span />
@@ -1641,8 +1734,14 @@ export default function Mapas() {
                 style={{ left: `${placePopupPosition.x}px`, top: `${placePopupPosition.y}px` }}
                 onClick={expandPlacePopup}
               >
-                <span className="mapas-floating-popup-minimized__badge">{activePlace.categoryLabel}</span>
-                <strong>{activePlace.name}</strong>
+                <div className="mapas-floating-popup-minimized__info">
+                  <span className="mapas-floating-popup-minimized__badge">{activePlace.categoryLabel}</span>
+                  <strong>{activePlace.name}</strong>
+                  <small>Toca para ver detalles</small>
+                </div>
+                <div className="mapas-floating-popup-minimized__expand-icon">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                </div>
                 <small>Abrir opciones</small>
               </button>
             )}

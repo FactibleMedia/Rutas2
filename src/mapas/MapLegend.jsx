@@ -3,33 +3,42 @@ import { Info, Landmark, Utensils, Ghost } from "lucide-react";
 const ROUTE_COLORS = {
   patrimonial: { color: "#4B5A42", label: "Patrimonial" },
   gastronomica: { color: "#C45722", label: "Gastronómica" },
-  mitos: { color: "#55517E", label: "Mitos y Leyendas" },
+  mitos: { color: "#55517E", label: "Místico" },
 };
 
-export default function MapLegend({ isVisible = true }) {
-  if (!isVisible) return null;
-
+export default function MapLegend({ isVisible = true, position = "top-left" }) {
+  // Position can be "top-left" (normal) or "bottom-left" (when popup is collapsed)
+  const isAtBottom = position === "bottom-left";
+  
   return (
     <div
       className="mapas-legend"
       style={{
         position: "absolute",
-        top: "16px",
+        top: isAtBottom ? "auto" : "16px",
+        bottom: isAtBottom ? "16px" : "auto",
         left: "16px",
         background: "#FDF9ED",
         borderRadius: "16px",
-        padding: "16px",
-        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.12)",
-        border: "1px solid rgba(185, 145, 85, 0.2)",
+        padding: isVisible ? "16px" : "0",
+        boxShadow: isVisible ? "0 4px 20px rgba(0, 0, 0, 0.12)" : "none",
+        border: isVisible ? "1px solid rgba(185, 145, 85, 0.2)" : "1px solid transparent",
         display: "flex",
         flexDirection: "column",
-        gap: "12px",
+        gap: isVisible ? "12px" : "0",
         zIndex: 100,
         fontFamily: "'Inter', sans-serif",
         color: "#4A3319",
-        width: "auto",
-        minWidth: "180px",
-        animation: "mapas-fade-in-left 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        width: isVisible ? "auto" : "0",
+        minWidth: isVisible ? "180px" : "0",
+        height: isVisible ? "auto" : "0",
+        overflow: "hidden",
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible 
+          ? (isAtBottom ? "translateY(0) scale(1)" : "translateX(0) scale(1)") 
+          : (isAtBottom ? "translateY(20px) scale(0.95)" : "translateX(-20px) scale(0.95)"),
+        transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+        pointerEvents: isVisible ? "auto" : "none",
       }}
     >
       {/* Header */}
