@@ -1,7 +1,9 @@
 {
   "version": "0.2",
   "language": "en,es",
-  "import": ["@cspell/dict-es-es/cspell-ext.json"],
+  "import": [
+    "@cspell/dict-es-es/cspell-ext.json"
+  ],
   "ignorePaths": [
     "node_modules",
     "dist",
@@ -305,65 +307,143 @@
     "mapLocationsStore",
     "notifications",
     "Gallery2",
-    "Glossary"
+    "Glossary",
+    "CEPPEP",
+    "reconecta",
+    "contáctanos",
+    "Adéntrate",
+    "Guatapurí",
+    "patri"
   ],
   "allowCompoundWords": true,
   "overrides": [
     {
       "filename": "src/admin/GalleryManager.jsx",
-      "words": ["Fotografia", "Ilustracion", "Historico", "imagenes", "ubicacion"]
+      "words": [
+        "Fotografia",
+        "Ilustracion",
+        "Historico",
+        "imagenes",
+        "ubicacion"
+      ]
     },
     {
       "filename": "src/admin/AdminPanel.jsx",
-      "words": ["configuracion", "notif"]
+      "words": [
+        "configuracion",
+        "notif"
+      ]
     },
     {
       "filename": "src/admin/Dashboard.jsx",
-      "words": ["creacion", "edicion", "eliminacion", "configuracion"]
+      "words": [
+        "creacion",
+        "edicion",
+        "eliminacion",
+        "configuracion"
+      ]
     },
     {
       "filename": "src/acerca de/AcercaDe.jsx",
-      "words": ["razon"]
+      "words": [
+        "razon"
+      ]
     },
     {
       "filename": "src/ProfileModal.jsx",
-      "words": ["ubicacion", "biografia"]
+      "words": [
+        "ubicacion",
+        "biografia"
+      ]
     },
     {
       "filename": "src/Mapas.jsx",
-      "words": ["navegaci", "Duraci", "dont"]
+      "words": [
+        "navegaci",
+        "Duraci",
+        "dont"
+      ]
     },
     {
       "filename": "src/admin/RoutesInteractivasManager.jsx",
-      "words": ["edicion", "conex", "pidx"]
+      "words": [
+        "edicion",
+        "conex",
+        "pidx"
+      ]
     },
     {
       "filename": "src/rutas-interactivas/RutasInteractivas.jsx",
-      "words": ["rutapatri", "rutagastro", "conex"]
+      "words": [
+        "rutapatri",
+        "rutagastro",
+        "conex"
+      ]
     },
     {
       "filename": "src/rutas-interactivas/InteractiveMap.jsx",
-      "words": ["rimap"]
+      "words": [
+        "rimap"
+      ]
     },
     {
       "filename": "src/rutas-interactivas/RutasInteractivas.css",
-      "words": ["rimap"]
+      "words": [
+        "rimap"
+      ]
     },
     {
       "filename": "src/NavMap.jsx",
-      "words": ["speedo", "uturn"]
+      "words": [
+        "speedo",
+        "uturn"
+      ]
     },
     {
       "filename": "src/NavMap.css",
-      "words": ["speedo", "Speedo"]
+      "words": [
+        "speedo",
+        "Speedo"
+      ]
     },
     {
       "filename": "src/Glossary.css",
-      "words": ["glos"]
+      "words": [
+        "glos"
+      ]
     },
     {
       "filename": "src/Glossary.jsx",
-      "words": ["glos", "arepa", "canahuate", "Achantao", "Bacan", "Bacano", "Cachaco", "Embejucarse", "Guachafita", "Icotea", "jagueyes", "Vironda", "Perrenque", "Fundingue", "Foquiao", "Apalastrao", "ombe", "Avispao", "Monda", "Nojoda", "Yeyo", "Quillero", "golpiza", "multifuncional", "hablao", "valduparense", "Valduparenses", "escribelo"]
+      "words": [
+        "glos",
+        "arepa",
+        "canahuate",
+        "Achantao",
+        "Bacan",
+        "Bacano",
+        "Cachaco",
+        "Embejucarse",
+        "Guachafita",
+        "Icotea",
+        "jagueyes",
+        "Vironda",
+        "Perrenque",
+        "Fundingue",
+        "Foquiao",
+        "Apalastrao",
+        "ombe",
+        "Avispao",
+        "Monda",
+        "Nojoda",
+        "Yeyo",
+        "Quillero",
+        "golpiza",
+        "multifuncional",
+        "hablao",
+        "valduparense",
+        "Valduparenses",
+        "escribelo"
+      ]
     }
   ]
 }
