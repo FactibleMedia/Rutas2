@@ -2,7 +2,17 @@
 
 ESLint was introduced during the repo cleanup. The project had **no JavaScript linting at all** before this (the only static analysis was Spanish spell-check via cspell).
 
-The first run surfaced **95 findings: 51 errors, 44 warnings.**
+The first run surfaced **95 findings: 51 errors, 44 warnings.** The numbers below (§ Baseline inventory) are that original snapshot, kept as a historical record.
+
+**Current state: 65 findings, 0 errors** (all rules pass at their original severity; the categories below remain downgraded to `warn` only because clearing every remaining instance needs individual review, not because new violations are allowed). A design-system and dead-code pass fixed real instances along the way:
+
+| Rule | Original | Current |
+|---|---|---|
+| `no-unused-vars` | 31 | 5 |
+| `react-hooks/exhaustive-deps` | 13 | 12 |
+| everything else | 51 (all errors) | 48 (still counted, still downgraded) |
+
+The `no-unused-vars` drop is real dead-code removal (see the repo's `chore: remove dead code...` commit). The other categories are unchanged in substance — `Mapas.jsx` still accounts for roughly half of them and is still the highest-value refactor target described below.
 
 Failing CI on all of them immediately would have blocked every future PR, so the rule categories that were already violated are downgraded to `warn` in `eslint.config.js`. They are **not** suppressed — they print on every run, and every rule *not* on that list still fails the build. New regressions in other categories are blocked from day one.
 
