@@ -9,10 +9,20 @@
 /* These two local fonts were declared identically (byte-for-byte, apart from
    the family name) in 5 different files: styles.css, Glossary.css,
    GalleryPage.css, AuthModal.css, rutas-interactivas/RutasInteractivas.css.
-   Hoisted here once. */
+   Hoisted here once, and now serve WOFF2 first (converted with fontTools,
+   no subsetting -- every glyph the originals had is still present):
+
+     Heritage-Sans   48.5 KB -> 22.4 KB woff2  (-53%)
+     Trattatello    1160.0 KB -> 270.0 KB woff2 (-76%)
+
+   The original .otf/.ttf stay as a fallback src for any browser that
+   doesn't support woff2 (none in practice today, but the fallback costs
+   nothing since only one format is ever actually downloaded). */
 @font-face {
   font-family: "Heritage Sans";
-  src: url("/fonts/Heritage-Sans.otf") format("opentype");
+  src:
+    url("/fonts/Heritage-Sans.woff2") format("woff2"),
+    url("/fonts/Heritage-Sans.otf") format("opentype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -20,7 +30,9 @@
 
 @font-face {
   font-family: "Trattatello";
-  src: url("/fonts/Trattatello.ttf") format("truetype");
+  src:
+    url("/fonts/Trattatello.woff2") format("woff2"),
+    url("/fonts/Trattatello.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
