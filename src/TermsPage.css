@@ -1,8 +1,7 @@
 /* =========================================================
    TERMS & CONDITIONS FULL PAGE
+   Fonts (Special Elite, Inter) now imported once in src/styles/fonts.css.
    ========================================================= */
-
-@import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Inter:wght@400;500;600;700&display=swap');
 
 @keyframes terms-page-float {
   0% { transform: translateY(0px) rotate(0deg); }

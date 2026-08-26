@@ -1,17 +1,10 @@
 /* =========================================================
    AUTH MODAL STYLES
+   Font (@font-face) now lives in src/styles/fonts.css.
    ========================================================= */
 
-@font-face {
-  font-family: "Trattatello";
-  src: url("/fonts/Trattatello.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
 :root {
-  --font-trattatello: "Trattatello", fantasy;
+  --font-trattatello: var(--ds-font-display);
 }
 
 .auth-modal__overlay {
