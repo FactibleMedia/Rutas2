@@ -52,7 +52,7 @@ const MARKER_ICONS = {
   postres_cena: "/assets/rutas/icon-postres_cena.png",
 };
 
-const MAP_IMAGE = "/assets/mapa-general.png";
+const MAP_IMAGE = "/assets/mapa-general.webp";
 const ZOOM_MIN = 1;
 const ZOOM_MAX = 4;
 const ZOOM_STEP = 0.3;

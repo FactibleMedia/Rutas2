@@ -70,7 +70,7 @@ function HeroImageSection() {
       <div className="acerca-hero-image__frame">
         {/* Imagen central */}
         <img
-          src="/assets/acerca/Imagen central.png"
+          src="/assets/acerca/Imagen central.webp"
           alt="Equipo de Rutas de Valledupar"
           className="acerca-hero-image__img"
         />

@@ -20,7 +20,7 @@
    distinct, not duplicates: the ~15-shade orange family used across
    different surfaces (Terms/Submit orange #b84a12 vs Gallery2's #c2622a vs
    GalleryPage's #c56238 vs admin's #9d3d1c...), the 182 distinct
-   box-shadow declarations (only the ~8 recognisable families below are
+   box-shadow declarations (only the ~8 recognizable families below are
    tokenized), Mapas' own 8-shade green ramp, and the ~150 hex literals that
    appear in only one file.
    ========================================================================== */
@@ -67,7 +67,7 @@
   --ds-duration-base: 200ms;
   --ds-duration-slow: 300ms;
 
-  /* ---- Shadow families: the ~8 recognisable groups out of 182 distinct
+  /* ---- Shadow families: the ~8 recognizable groups out of 182 distinct
      box-shadow declarations found in the codebase. Everything else stays a
      literal -- with no real scale behind it, tokenizing would just rename
      one-off values rather than unify them. ---- */

@@ -40,7 +40,7 @@
   justify-content: center;
   padding-top: 72px;
   background-color: #F5F2E6;
-  background-image: url("/assets/glosario/Textura 1.png");
+  background-image: url("/assets/glosario/Textura 1.webp");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -858,7 +858,7 @@
   padding: 64px 0;
   scroll-margin-top: 80px;
   background: var(--glos-bg-cats);
-  background-image: url("/assets/glosario/fondo2.png");
+  background-image: url("/assets/glosario/fondo2.webp");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -1416,7 +1416,7 @@
   inset: 0;
   z-index: 9999;
   background: #fff;
-  background-image: url("/assets/glosario/textura 2.png");
+  background-image: url("/assets/glosario/textura 2.webp");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

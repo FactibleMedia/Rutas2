@@ -29,6 +29,11 @@ jobs:
       - name: Spell check (es/en)
         run: npm run spell:check
 
+      # public/ paths are runtime URL strings -- a rename or typo 404s
+      # silently in the browser with no other build-time signal.
+      - name: Check /assets/ references resolve
+        run: npm run check:assets
+
       # Build needs the VITE_* vars present or import.meta.env reads are empty.
       # These are client-side public values; set them as repo secrets.
       - name: Build

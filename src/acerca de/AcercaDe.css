@@ -16,7 +16,7 @@
    ========================================================= */
 
 .acerca-page {
-  background-image: url("/assets/acerca/Frame 143726283.png");
+  background-image: url("/assets/acerca/Frame 143726283.webp");
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
@@ -305,7 +305,7 @@
   width: 100%;
   position: relative;
   padding: 60px 40px;
-  background-image: url("/assets/acerca/manifiesto.png");
+  background-image: url("/assets/acerca/manifiesto.webp");
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;

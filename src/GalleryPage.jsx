@@ -9,8 +9,8 @@ import "./GalleryPage.css";
    Image Assets from /assets/gallery/
    ========================================================= */
 
-const imgPostal3 = "/assets/gallery/postal3.png";
-const imgPostalPlazaMarco = "/assets/gallery/Postal_Plaza_CON MARCO 1.png";
+const imgPostal3 = "/assets/gallery/postal3.webp";
+const imgPostalPlazaMarco = "/assets/gallery/Postal_Plaza_CON MARCO 1.webp";
 
 /* =========================================================
    Helper: Extract embed URL (YouTube & Google Drive)
