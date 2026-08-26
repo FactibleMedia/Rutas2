@@ -673,44 +673,6 @@
   }
 }
 
-/* ---- Ver más button ---- */
-
-.gallery-multimedia__more-wrap {
-  text-align: center;
-  margin-top: 48px;
-  padding: 0 16px;
-}
-
-.gallery-multimedia__more-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-family: var(--font-trattatello);
-  font-size: clamp(28px, 4vw, 42px);
-  color: #c56238;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px 24px;
-  transition: all 0.3s ease;
-  letter-spacing: 0.04em;
-}
-
-.gallery-multimedia__more-btn:hover {
-  color: #a64320;
-  transform: translateY(-2px);
-}
-
-.gallery-multimedia__more-btn svg {
-  width: 24px;
-  height: 24px;
-  transition: transform 0.3s ease;
-}
-
-.gallery-multimedia__more-btn:hover svg {
-  transform: translateY(4px);
-}
-
 /* ---- Media type badge (video / photo indicator) ---- */
 
 .gallery-multimedia__media-badge {

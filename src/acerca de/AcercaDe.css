@@ -47,8 +47,6 @@
   min-height: 381px;
 }
 
-/* Patrones de fondo: izquierdo ocupa mitad izquierda, derecho la mitad derecha */
-
 .acerca-hero__inner {
   position: relative;
   z-index: 3;

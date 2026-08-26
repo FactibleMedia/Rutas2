@@ -11,7 +11,6 @@ import InicioPage from "./inicio/InicioPage";
 const Mapas = lazy(() => import("./Mapas"));
 const Glossary = lazy(() => import("./Glossary"));
 const GalleryPage = lazy(() => import("./GalleryPage"));
-const Gallery2 = lazy(() => import("./Gallery2"));
 const MisAportes = lazy(() => import("./MisAportes"));
 const AcercaDe = lazy(() => import("./acerca de/AcercaDe"));
 const TermsPage = lazy(() => import("./TermsPage"));
@@ -35,7 +34,6 @@ export default function App() {
           <Route path="/mapas" element={<Mapas />} />
           <Route path="/glosario" element={<Glossary />} />
           <Route path="/galeria" element={<GalleryPage />} />
-          <Route path="/galeria2" element={<Gallery2 />} />
           <Route path="/mis-aportes" element={<MisAportes />} />
           <Route path="/acerca-de" element={<AcercaDe />} />
           <Route path="/terminos-y-condiciones" element={<TermsPage />} />

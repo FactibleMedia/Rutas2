@@ -532,15 +532,6 @@ function MultimediaGallery() {
             </div>
           ))}
           </div>
-          {/* Ver más button - always visible */}
-          <div className="gallery-multimedia__more-wrap">
-            <button className="gallery-multimedia__more-btn" onClick={() => navigate("/galeria2")}>
-              Ver más
-              <svg viewBox="0 0 24 24">
-                <path d="M19 15l-7 7-7-7" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-          </div>
         </>
       )}
 
@@ -663,13 +654,7 @@ function MultimediaGallery() {
 
                 <button
                   className="gallery-multimedia__modal-explore"
-                  onClick={() => {
-                    const lng = parseFloat(selectedItem.longitud);
-                    const lat = parseFloat(selectedItem.latitud);
-                    const hasValidCoords = !isNaN(lng) && !isNaN(lat) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
-
-                    navigate("/mapas");
-                  }}
+                  onClick={() => navigate("/mapas")}
                 >
                   <span>Explorar más en el mapa</span>
                   <svg viewBox="0 0 24 24">

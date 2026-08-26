@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getRouteCounts, useMapLocations } from "../mapLocationsStore";
 import { supabase } from "../supabaseClient";
 
@@ -109,17 +109,6 @@ export default function Dashboard({ profile }) {
   }, [locations.length]);
 
   const chartMax = Math.max(...chartHeights);
-
-  const getActivityIcon = (type) => {
-    switch (type) {
-      case "creacion": return "add_circle";
-      case "edicion": return "edit";
-      case "eliminacion": return "delete";
-      case "login": return "login";
-      case "configuracion": return "settings";
-      default: return "circle";
-    }
-  };
 
   const getActivityColor = (type) => {
     switch (type) {

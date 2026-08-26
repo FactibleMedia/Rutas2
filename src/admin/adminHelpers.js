@@ -33,13 +33,6 @@ export function isNetworkError(err) {
 }
 
 /**
- * Detecta si el navegador está offline
- */
-export function isOnline() {
-  return navigator.onLine;
-}
-
-/**
  * Obtiene un mensaje amigable según el tipo de error
  */
 export function getUserFriendlyError(err) {
@@ -70,74 +63,4 @@ export function getUserFriendlyError(err) {
 
   // Mensaje genérico
   return err.message || "Ocurrió un error inesperado. Intenta de nuevo.";
-}
-
-/**
- * Función fetch con reintentos automáticos para errores de red
- * @param {Function} fn - Función async que hace la petición
- * @param {Object} options
- * @param {number} options.maxRetries - Máximo de reintentos (default: 3)
- * @param {number} options.retryDelay - Espera inicial en ms (default: 1000)
- * @param {Function} options.onRetry - Callback en cada reintento
- */
-export async function withRetry(fn, options = {}) {
-  const { maxRetries = 3, retryDelay = 1000, onRetry } = options;
-
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      return await fn();
-    } catch (err) {
-      const isLastAttempt = attempt === maxRetries;
-
-      if (isLastAttempt || !isNetworkError(err)) {
-        throw err;
-      }
-
-      // Esperar con backoff exponencial
-      const delay = retryDelay * Math.pow(2, attempt);
-      if (onRetry) onRetry(attempt + 1, maxRetries, delay);
-
-      await new Promise((resolve) => setTimeout(resolve, delay));
-    }
-  }
-}
-
-/**
- * Hook para monitorear el estado de la red
- * Retorna { isOnline, wasOffline } y reinicia cuando vuelve la conexión
- */
-export function createNetworkMonitor() {
-  const listeners = new Set();
-
-  function handleOnline() {
-    listeners.forEach((cb) => cb(true));
-  }
-
-  function handleOffline() {
-    listeners.forEach((cb) => cb(false));
-  }
-
-  if (typeof window !== "undefined") {
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
-  }
-
-  return {
-    subscribe(cb) {
-      listeners.add(cb);
-      return () => {
-        listeners.delete(cb);
-        if (listeners.size === 0) {
-          window.removeEventListener("online", handleOnline);
-          window.removeEventListener("offline", handleOffline);
-        }
-      };
-    },
-    isOnline: () => navigator.onLine,
-    destroy() {
-      listeners.clear();
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
-    },
-  };
 }

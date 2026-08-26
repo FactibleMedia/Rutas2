@@ -6,14 +6,10 @@ import mapaDefault from "../assets/mcp/mapa generalll 1.png";
 import mapaGastronomico from "../assets/mcp/mapa generalll 2.png";
 import mapaPatrimonial from "../assets/mcp/mapa generalll 3.png";
 import mapaMistico from "../assets/mcp/mapa generalll 4.png";
-import gal1 from "../assets/mcp/gal_slide1.webp";
-import gal2 from "../assets/mcp/gal_slide2.webp";
-import gal3 from "../assets/mcp/gal_slide3.webp";
 import ctaBgIcon from "../assets/mcp/icon_bg_cta.png";
 import TopBar from "../TopBar";
 import Footer from "../Footer";
 
-import glossFrameGreen from "../assets/mcp/gloss_frame_green.png";
 import glossBgLucas from "../assets/mcp/gloss_bg_lucas.png";
 import glossBgMotetes from "../assets/mcp/gloss_bg_motetes.png";
 import glossBgCantaro from "../assets/mcp/gloss_bg_cantaro.png";
@@ -532,7 +528,7 @@ function useScrollReveal() {
 
 export default function InicioPage() {
   const [activeSection, setActiveSection] = useState("mapas");
-  const [isRegistered, setIsRegistered] = useState(false);
+  const [isRegistered] = useState(false);
 
   useScrollReveal();
 

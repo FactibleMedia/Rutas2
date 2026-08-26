@@ -3,30 +3,15 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { supabase } from "../supabaseClient";
 import { upsertMapLocation } from "../mapLocationsStore";
-import { FoodTray, MapPoint, History, VideoPlay } from "reicon";
-
-/**
- * React wrapper for reicon icons.
- * reicon icons are plain functions returning real DOM SVG elements,
- * not React components. This wrapper renders them safely.
- */
-function Reicon({ icon, size = 24, color = "currentColor", className, style }) {
-  const svgMarkup = icon.toSvg({ size, color, className });
-  return (
-    <span
-      dangerouslySetInnerHTML={{ __html: svgMarkup }}
-      style={{ display: "inline-flex", alignItems: "center", ...style }}
-    />
-  );
-}
+import { Utensils, MapPin, History, CirclePlay } from "lucide-react";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const STORAGE_BUCKET = "media-rutas";
 const VALLEDUPAR = [-73.2532, 10.4631];
 
 const ROUTE_TYPES = [
-  { id: "patrimonial", label: "Patrimonial", icon: MapPoint },
-  { id: "gastronomica", label: "Gastronómica", icon: FoodTray },
+  { id: "patrimonial", label: "Patrimonial", icon: MapPin },
+  { id: "gastronomica", label: "Gastronómica", icon: Utensils },
   { id: "mitos", label: "Mitos y Leyendas", icon: History },
 ];
 
@@ -262,7 +247,7 @@ export default function RouteForm({ location = null, onSave, onCancel }) {
         const ext = file.name.split(".").pop();
         const fileName = `rutas/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-        const { data, error } = await supabase.storage
+        const { error } = await supabase.storage
           .from(STORAGE_BUCKET)
           .upload(fileName, file, {
             cacheControl: "3600",
@@ -434,7 +419,7 @@ export default function RouteForm({ location = null, onSave, onCancel }) {
                       textAlign: "center",
                     }}
                   >
-                    <Reicon icon={Icon} size={24} color={form.routeId === rt.id ? "var(--primary)" : "var(--on-surface-variant)"} />
+                    <Icon size={24} color={form.routeId === rt.id ? "var(--primary)" : "var(--on-surface-variant)"} />
                     {rt.label}
                   </button>
                 );
@@ -853,7 +838,7 @@ export default function RouteForm({ location = null, onSave, onCancel }) {
                   onClick={handleAddVideo}
                   style={{ whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 8 }}
                 >
-                  <Reicon icon={VideoPlay} size={18} />
+                  <CirclePlay size={18} />
                   Agregar video
                 </button>
               </div>
@@ -872,7 +857,7 @@ export default function RouteForm({ location = null, onSave, onCancel }) {
                       }}
                     >
                       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <Reicon icon={VideoPlay} size={18} />
+                        <CirclePlay size={18} />
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: 13, fontWeight: 700, color: "var(--on-surface)" }}>{getVideoLabel(url)}</div>
                           <div style={{ fontSize: 12, color: "var(--on-surface-variant)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>

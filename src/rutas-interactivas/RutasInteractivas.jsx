@@ -64,7 +64,6 @@ const routeOptions = [
 export default function RutasInteractivas() {
   const [searchParams] = useSearchParams();
   const [selectedRoute, setSelectedRoute] = useState(searchParams.get("ruta") || null);
-  const [hoveredRoute, setHoveredRoute] = useState(null);
   const [highlightedPoint, setHighlightedPoint] = useState(null);
   const [pointsData, setPointsData] = useState([]);
   const [connectionsData, setConnectionsData] = useState([]);

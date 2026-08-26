@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import mapboxgl from "mapbox-gl";
 import TopBar from "./TopBar";
 import NavMap from "./NavMap";
-import { getRouteCounts, useMapLocations } from "./mapLocationsStore";
+import { useMapLocations } from "./mapLocationsStore";
 import MapLegend from "./mapas/MapLegend";
 import RouteDetailsPanel from "./mapas/RouteDetailsPanel";
 import RouteSelector from "./mapas/RouteSelector";
@@ -113,7 +113,6 @@ export default function Mapas() {
     } catch { return null; }
   });
   const lastInstructionRef = useRef('');
-  const speechSynthRef = useRef(null);
   const voiceInitializedRef = useRef(false);
   const hasArrivedRef = useRef(false);
   const arrivalTimerRef = useRef(null);
@@ -247,7 +246,6 @@ export default function Mapas() {
 
 
   const isMobileDevice = typeof navigator !== "undefined" && MOBILE_USER_AGENT_REGEX.test(navigator.userAgent);
-  const routeStats = useMemo(() => getRouteCounts(locations), [locations]);
 
   const getYouTubeEmbedUrl = (url) => {
     if (!url) return null;
@@ -273,29 +271,6 @@ export default function Mapas() {
   const isDriveVideo = (url) => {
     return getDriveFileId(url) !== null;
   };
-
-  // Search across ALL routes, not just the active one
-  const filteredPlaces = useMemo(() => {
-    const normalizedQuery = normalizeText(searchText.trim());
-    const showAll = selectedRouteId === "all";
-
-    if (normalizedQuery.length === 0) {
-      if (showAll) {
-        // Show all places from all routes
-        return locations;
-      }
-      // No search: show only places from the selected route
-      return locations.filter((place) => place.routeId === selectedRouteId);
-    }
-
-    // Searching: show ALL matching places across all routes
-    return locations.filter((place) => {
-      return (
-        normalizeText(place.name).includes(normalizedQuery) ||
-        normalizeText(place.subtitle).includes(normalizedQuery)
-      );
-    });
-  }, [locations, searchText, selectedRouteId]);
 
   // Pointer move for draggable popup
   useEffect(() => {
@@ -790,7 +765,6 @@ export default function Mapas() {
     const now = Date.now();
     if (minDist > 50 && now - rerouteThrottleRef.current > 15000) {
       rerouteThrottleRef.current = now;
-      console.log('Off route by', Math.round(minDist), 'm — re-routing');
       setRouteMessage('Recalculando ruta...');
       
       try {
@@ -828,7 +802,6 @@ export default function Mapas() {
 
   // Select a specific route alternative (0 = primary, 1+ = alternatives)
   const selectRouteAlternative = useCallback((index) => {
-    const modeKey = travelMode === 'transit' ? 'car' : travelMode;
     setSelectedAltIndex(index);
     
     let selectedPlan;
@@ -1112,21 +1085,6 @@ export default function Mapas() {
     navigationTimerRef.current = window.setInterval(() => {
       setNavigationElapsedSeconds(Math.max(0, Math.floor((Date.now() - startedAt) / 1000)));
     }, 1000);
-  };
-
-  // Get the first real instruction from the route or fallback
-  const getCurrentInstruction = (plan, progress) => {
-    if (!plan?.steps?.length) {
-      return { text: "Sigue recto", icon: "straight", distance: plan?.distance || 0 };
-    }
-    const routeLen = plan.steps.length;
-    const stepIdx = Math.min(routeLen - 1, Math.floor((progress / 100) * routeLen));
-    const step = plan.steps[stepIdx];
-    return {
-      text: step.instruction || "Sigue recto",
-      icon: step.maneuver || "straight",
-      distance: step.distance || 0,
-    };
   };
 
   // Stable reference for fetchRoutePlan — returns array of route alternatives
