@@ -27,3 +27,32 @@
   background-size: 40px 40px;
   background-position: 0 0, 20px 20px;
 }
+
+/* Primary CTA (the terracotta "action" button): 5 separate declarations
+   across the Terms triplet and SubmitWordModal, all using the same
+   background/hover-background/font-family/border-radius/cursor/transition.
+   Only those 7 properties were byte-identical everywhere -- padding,
+   font-size, border, box-shadow, hover transform amount, and the
+   :active/:disabled states genuinely differ per button (submit-word's
+   login button has no border at all, for instance) and stay declared on
+   each file's own selector. */
+.terms-page__btn-back,
+.terms-cookies__btn-back,
+.terms-modal__btn-back,
+.submit-word__btn-submit,
+.submit-word__btn-login {
+  background: #b84a12;
+  color: #fff;
+  font-family: 'Special Elite', cursive, monospace;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.terms-page__btn-back:hover,
+.terms-cookies__btn-back:hover,
+.terms-modal__btn-back:hover,
+.submit-word__btn-submit:hover,
+.submit-word__btn-login:hover {
+  background: #9a3d0e;
+}

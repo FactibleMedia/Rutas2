@@ -238,24 +238,19 @@
   padding: 32px 0 16px;
 }
 
+/* Shared button properties (background, hover background, font-family,
+   border-radius, cursor, transition) live in src/styles/components.css */
 .terms-page__btn-back {
-  background: #b84a12;
-  color: #fff;
-  font-family: 'Special Elite', cursive, monospace;
   font-size: 14px;
   letter-spacing: 0.04em;
   padding: 14px 48px;
   border: 1px solid #8a3307;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(184, 74, 18, 0.25);
+  box-shadow: var(--ds-shadow-brand-glow);
 }
 
 .terms-page__btn-back:hover {
-  background: #9a3d0e;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(184, 74, 18, 0.35);
+  box-shadow: var(--ds-shadow-brand-glow-lg);
 }
 
 .terms-page__btn-back:active {
