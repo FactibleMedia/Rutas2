@@ -749,7 +749,7 @@
   font-size: 10px;
   font-weight: 700;
   padding: 4px 12px;
-  border-radius: 999px;
+  border-radius: var(--ds-radius-pill);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -1103,7 +1103,7 @@
   height: 4px;
   background: #e28743;
   margin-bottom: 24px;
-  border-radius: 999px;
+  border-radius: var(--ds-radius-pill);
 }
 
 .gallery-multimedia__modal-description {

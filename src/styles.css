@@ -259,7 +259,7 @@
 .hero__dot {
   width: 10px;
   height: 10px;
-  border-radius: 99px;
+  border-radius: var(--ds-radius-pill);
   border: none;
   background: rgba(255, 255, 255, 0.45);
   cursor: pointer;

@@ -41,15 +41,11 @@
   backdrop-filter: blur(3px);
 }
 
+/* Background properties shared with TermsPage/TermsCookies live in
+   src/styles/components.css */
 .terms-modal__paper-bg {
   position: absolute;
   inset: 0;
-  background-color: #f7f3e8;
-  background-image:
-    radial-gradient(#e5dec9 1px, transparent 1px),
-    radial-gradient(#e5dec9 1px, #f7f3e8 1px);
-  background-size: 40px 40px;
-  background-position: 0 0, 20px 20px;
   border-radius: 16px;
 }
 

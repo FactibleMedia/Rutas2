@@ -217,7 +217,7 @@
 .gloss-hero__search-bar {
   position: relative;
   width: 100%;
-  border-radius: 9999px;
+  border-radius: var(--ds-radius-pill);
   background: #E8981B;
   border: 2px solid #D67D0F;
   box-shadow: 0 8px 32px rgba(229, 140, 23, 0.35);
@@ -252,7 +252,7 @@
   display: block;
   width: 100%;
   padding: 14px 20px 14px 48px;
-  border-radius: 9999px;
+  border-radius: var(--ds-radius-pill);
   background: transparent;
   border: none;
   color: #fff;

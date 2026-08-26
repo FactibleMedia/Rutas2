@@ -1,0 +1,29 @@
+/* ==========================================================================
+   Shared "common element" treatments, unified only where the source CSS was
+   byte-identical (or differed solely in properties that don't collide with
+   what's unified here) across the files that declared it. Each file keeps
+   its own class name and its own layout-specific properties (position,
+   z-index, border-radius, etc.) -- only the truly duplicated properties move
+   here, so nothing about the DOM structure or class names in any component
+   needs to change.
+   ========================================================================== */
+
+/* Paper-texture background: identical dot-grid treatment used by the Terms
+   page, the Terms/cookies bilingual page, and the Terms modal. The modal
+   additionally sets position:absolute + border-radius on its own class;
+   the page variants set position:fixed + pointer-events + z-index on
+   theirs. No property declared here is also declared in those per-file
+   rules, so cascade order between this file and the page CSS doesn't
+   matter for these properties. */
+.terms-page,
+.terms-cookies,
+.terms-page__paper-bg,
+.terms-cookies__paper-bg,
+.terms-modal__paper-bg {
+  background-color: #f7f3e8;
+  background-image:
+    radial-gradient(#e5dec9 1px, transparent 1px),
+    radial-gradient(#e5dec9 1px, #f7f3e8 1px);
+  background-size: 40px 40px;
+  background-position: 0 0, 20px 20px;
+}

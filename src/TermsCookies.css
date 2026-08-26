@@ -20,32 +20,23 @@
    Page Shell
    ========================================================= */
 
+/* Background properties shared with .terms-page live in
+   src/styles/components.css */
 .terms-cookies {
   position: relative;
   min-height: 100vh;
-  background-color: #f7f3e8;
-  background-image:
-    radial-gradient(#e5dec9 1px, transparent 1px),
-    radial-gradient(#e5dec9 1px, #f7f3e8 1px);
-  background-size: 40px 40px;
-  background-position: 0 0, 20px 20px;
   display: flex;
   flex-direction: column;
   animation: terms-cookies-fade-in 0.5s ease both;
 }
 
-/* Paper texture overlay */
+/* Paper texture overlay -- background properties shared with
+   TermsPage/TermsModal live in src/styles/components.css */
 .terms-cookies__paper-bg {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  background-color: #f7f3e8;
-  background-image:
-    radial-gradient(#e5dec9 1px, transparent 1px),
-    radial-gradient(#e5dec9 1px, #f7f3e8 1px);
-  background-size: 40px 40px;
-  background-position: 0 0, 20px 20px;
 }
 
 /* Floating decorative SVGs */

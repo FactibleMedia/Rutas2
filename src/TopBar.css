@@ -126,7 +126,7 @@
   bottom: -3px;
   width: 9px;
   height: 2.5px;
-  border-radius: 999px;
+  border-radius: var(--ds-radius-pill);
   background: #fffce6;
   transform: rotate(45deg);
   transform-origin: center;
@@ -200,7 +200,7 @@
 .topbar__menu-line {
   width: 18px;
   height: 2px;
-  border-radius: 99px;
+  border-radius: var(--ds-radius-pill);
   background: #fffce6;
   display: block;
   margin: 3px 0;
@@ -235,7 +235,7 @@
   width: 20px;
   height: 2px;
   background: #fffce6;
-  border-radius: 99px;
+  border-radius: var(--ds-radius-pill);
   transition: transform 220ms ease, opacity 220ms ease;
   transform-origin: center;
 }

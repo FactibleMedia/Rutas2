@@ -315,7 +315,7 @@
 .ma-filter-chip {
   padding: 6px 14px;
   border: 1px solid #d4c8b4;
-  border-radius: 999px;
+  border-radius: var(--ds-radius-pill);
   background: transparent;
   color: #6b4a2e;
   font-family: "Space Grotesk", "Inter", sans-serif;
