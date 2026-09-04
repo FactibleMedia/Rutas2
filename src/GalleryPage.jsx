@@ -9,9 +9,9 @@ import "./GalleryPage.css";
    Image Assets from /assets/gallery/
    ========================================================= */
 
-const imgHero0 = "/assets/gallery/image_00.png";
-const imgHero1 = "/assets/gallery/image_01.png";
-const imgHero2 = "/assets/gallery/image_02.png";
+const imgHero0 = "/assets/gallery/image_00.webp";
+const imgHero1 = "/assets/gallery/image_01.webp";
+const imgHero2 = "/assets/gallery/image_02.webp";
 
 /* =========================================================
    Helper: Extract embed URL (YouTube & Google Drive)

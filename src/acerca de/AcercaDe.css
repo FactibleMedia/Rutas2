@@ -994,6 +994,14 @@
 
   .acerca-manifesto {
     margin-bottom: 100px;
+    /* The base rule's 170px side padding is a desktop value; unoverridden it
+       left a 50px-wide text column on a 390px screen (one word per line, a
+       3300px-tall section) and pushed the portrait past the viewport edge. */
+    padding: 30px 16px;
+    /* contain shrank the parchment texture to a thin band across the middle
+       of that over-tall section; cover keeps it behind the whole column. */
+    background-size: cover;
+    align-items: center;
   }
 
   .acerca-manifesto__parchment {
@@ -1001,7 +1009,7 @@
   }
 
   .acerca-manifesto__portrait {
-    width: 280px;
+    width: min(280px, 100%);
     margin-top: 24px;
     margin-left: auto;
     margin-right: auto;

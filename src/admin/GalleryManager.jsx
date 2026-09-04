@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "../supabaseClient";
 import { isNetworkError, getUserFriendlyError } from "./adminHelpers";
+import { compressImage } from "../lib/compressImage";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
@@ -52,13 +53,15 @@ const EMPTY_FORM = {
    ========================================================= */
 
 async function uploadFile(file, folder = "gallery") {
-  const ext = file.name.split(".").pop();
+  const optimized = await compressImage(file);
+  const ext = optimized.name.split(".").pop();
   const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
   const { data, error } = await supabase.storage
     .from(STORAGE_BUCKET)
-    .upload(fileName, file, {
-      cacheControl: "3600",
+    .upload(fileName, optimized, {
+      // Filenames are unique per upload, so these are safe to cache forever.
+      cacheControl: "31536000",
       upsert: false,
     });
 

@@ -11,16 +11,16 @@ export default function Footer() {
     <footer id="footer" className="footer">
       <div className="footer__grid">
         <div>
-          <img src={logoFooter} alt="Rutas de Valledupar" className="footer__logo" />
+          <img src={logoFooter} alt="Rutas de Valledupar" className="footer__logo" loading="lazy" decoding="async" />
           <p className="footer__desc">
             Un proyecto turístico-cultural para explorar y preservar la identidad de Valledupar, capital mundial del vallenato.
           </p>
           <div className="footer__socials">
             <a href="https://www.instagram.com/rutasvalledupar" target="_blank" rel="noreferrer" className="footer__social-btn">
-              <img src={iconInstagram} alt="Instagram" />
+              <img src={iconInstagram} alt="Instagram" loading="lazy" decoding="async" />
             </a>
             <a href="https://www.youtube.com/@RutasValledupar" target="_blank" rel="noreferrer" className="footer__social-btn">
-              <img src={iconYoutube} alt="YouTube" />
+              <img src={iconYoutube} alt="YouTube" loading="lazy" decoding="async" />
             </a>
           </div>
         </div>
@@ -57,11 +57,11 @@ export default function Footer() {
         <div>
           <h3 className="footer__col-title">Contacto</h3>
           <div className="footer__contact-item">
-            <img src={iconLocation} alt="Ubicación" />
+            <img src={iconLocation} alt="Ubicación" loading="lazy" decoding="async" />
             <span>Valledupar, Cesar, Colombia</span>
           </div>
           <div className="footer__contact-item">
-            <img src={iconMail} alt="Email" />
+            <img src={iconMail} alt="Email" loading="lazy" decoding="async" />
             <span>rutasvalledupar@gmail.com</span>
           </div>
         </div>

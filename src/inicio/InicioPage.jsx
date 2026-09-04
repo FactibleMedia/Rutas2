@@ -424,13 +424,32 @@ function Gallery() {
         <p>Aquí están personas que hacen parte de esa herencia que sigue viva.</p>
       </div>
       <div className="gallery-carousel" onMouseEnter={() => clearInterval(galleryTimerRef.current)} onMouseLeave={startGalleryAutoplay}>
-        {slides.map((slide, index) => (
+        {slides.map((slide, index) => {
+          // Every slide is stacked in the same box, so all of them count as
+          // "in viewport" and loading="lazy" alone still fetches the lot. The
+          // gallery images come straight from Supabase at full upload size, so
+          // only the current slide and its neighbours get a real src; the rest
+          // stay empty until the carousel reaches them.
+          const distance = Math.min(
+            Math.abs(index - current),
+            slides.length - Math.abs(index - current)
+          );
+          const shouldLoad = distance <= 1;
+          return (
           <div
             key={slide.id}
             className={`gallery-slide${index === current ? " active" : ""} gallery-slide--clickable`}
             onClick={() => handleSlideClick(slide)}
           >
-            <img src={slide.img} alt={slide.subtitle} className="gallery-slide__img" loading="lazy" decoding="async" />
+            {shouldLoad && (
+              <img
+                src={slide.img}
+                alt={slide.subtitle}
+                className="gallery-slide__img"
+                loading={index === current ? "eager" : "lazy"}
+                decoding="async"
+              />
+            )}
             <div className="gallery-slide__gradient" />
             <div className="gallery-slide__bar" style={{ backgroundColor: slide.accentColor }}>
               <div className="gallery-slide__info">
@@ -440,7 +459,8 @@ function Gallery() {
               {slide.hasPlay ? <button className="gallery-play-btn">&#9658;</button> : null}
             </div>
           </div>
-        ))}
+          );
+        })}
 
         <div className="gallery-title" key={activeSlide.id}>
           {activeSlide.titleSlide}

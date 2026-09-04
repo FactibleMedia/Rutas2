@@ -3,6 +3,7 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { supabase } from "../supabaseClient";
 import { upsertMapLocation } from "../mapLocationsStore";
+import { compressImage } from "../lib/compressImage";
 import { Utensils, MapPin, History, CirclePlay } from "lucide-react";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -244,13 +245,15 @@ export default function RouteForm({ location = null, onSave, onCancel }) {
       const uploadedUrls = [];
 
       for (const file of files) {
-        const ext = file.name.split(".").pop();
+        const optimized = await compressImage(file);
+        const ext = optimized.name.split(".").pop();
         const fileName = `rutas/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
         const { error } = await supabase.storage
           .from(STORAGE_BUCKET)
-          .upload(fileName, file, {
-            cacheControl: "3600",
+          .upload(fileName, optimized, {
+            // Filenames are unique per upload, so these are safe to cache forever.
+            cacheControl: "31536000",
             upsert: false,
           });
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import TopBar from "../TopBar";
 import Footer from "../Footer";
 import CTASection from "../CTASection";
@@ -94,9 +94,9 @@ function IntroQuoteSection() {
     <section className="acerca-intro">
       {/* Decoración lateral izquierda: val1, val2, val3 */}
       <div className="acerca-intro__deco">
-        <img src="/assets/acerca/val1.png" alt="" className="acerca-intro__deco-img" />
-        <img src="/assets/acerca/val2.png" alt="" className="acerca-intro__deco-img" />
-        <img src="/assets/acerca/val3.png" alt="" className="acerca-intro__deco-img" />
+        <img src="/assets/acerca/val1.png" alt="" className="acerca-intro__deco-img" loading="lazy" decoding="async" />
+        <img src="/assets/acerca/val2.png" alt="" className="acerca-intro__deco-img" loading="lazy" decoding="async" />
+        <img src="/assets/acerca/val3.png" alt="" className="acerca-intro__deco-img" loading="lazy" decoding="async" />
       </div>
 
       <div className="acerca-intro__text">
@@ -110,9 +110,9 @@ function IntroQuoteSection() {
 
       {/* Decoración lateral derecha: val1, val2, val3 */}
       <div className="acerca-intro__deco">
-        <img src="/assets/acerca/val1.png" alt="" className="acerca-intro__deco-img" />
-        <img src="/assets/acerca/val2.png" alt="" className="acerca-intro__deco-img" />
-        <img src="/assets/acerca/val3.png" alt="" className="acerca-intro__deco-img" />
+        <img src="/assets/acerca/val1.png" alt="" className="acerca-intro__deco-img" loading="lazy" decoding="async" />
+        <img src="/assets/acerca/val2.png" alt="" className="acerca-intro__deco-img" loading="lazy" decoding="async" />
+        <img src="/assets/acerca/val3.png" alt="" className="acerca-intro__deco-img" loading="lazy" decoding="async" />
       </div>
     </section>
   );
@@ -123,6 +123,34 @@ function IntroQuoteSection() {
    ========================================================= */
 
 function ManifestoSection() {
+  const videoRef = useRef(null);
+  // The manifesto sits well below the fold, so the clip only starts
+  // downloading once it is close to the viewport -- the poster carries the
+  // frame until then. Without this the browser fetches the whole file on
+  // page load just because the element is autoplay.
+  const [videoInView, setVideoInView] = useState(false);
+
+  useEffect(() => {
+    const node = videoRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setVideoInView(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "300px" }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  // A <source> added after mount is ignored until load() is called.
+  useEffect(() => {
+    if (videoInView && videoRef.current) videoRef.current.load();
+  }, [videoInView]);
+
   return (
     <section className="acerca-manifesto">
       {/* Left: Manifiesto background image + text */}
@@ -158,14 +186,18 @@ function ManifestoSection() {
       <div className="acerca-manifesto__portrait">
         <div className="acerca-manifesto__portrait-frame">
           <video
+            ref={videoRef}
             className="acerca-manifesto__portrait-video"
+            poster="/assets/acerca/video-rutas-poster.webp"
+            preload="none"
             autoPlay
             muted
             loop
             playsInline
           >
-            <source src="/assets/acerca/video-rutas.mp4" type="video/mp4" />
-            <source src="/assets/acerca/video-rutas.mov" type="video/quicktime" />
+            {videoInView && (
+              <source src="/assets/acerca/video-rutas-web.mp4" type="video/mp4" />
+            )}
           </video>
           <div className="acerca-manifesto__border-top" />
           <div className="acerca-manifesto__border-bottom" />
@@ -296,6 +328,8 @@ function TeamSection() {
                   src={member.image}
                   alt={member.name}
                   className={`acerca-team__slide-img ${styles.img}`}
+                  loading="lazy"
+                  decoding="async"
                 />
               </div>
 
@@ -373,10 +407,10 @@ function ContactSection() {
             </p>
             <div className="acerca-contact__social-mini">
               <a href="mailto:rutasvalledupar@gmail.com" className="acerca-contact__social-icon" aria-label="Email">
-                <img src={iconMail} alt="Correo" />
+                <img src={iconMail} alt="Correo" loading="lazy" decoding="async" />
               </a>
               <a href="https://www.instagram.com/rutasvalledupar" target="_blank" rel="noreferrer" className="acerca-contact__social-icon" aria-label="Instagram">
-                <img src={iconInstagram} alt="Instagram" />
+                <img src={iconInstagram} alt="Instagram" loading="lazy" decoding="async" />
               </a>
             </div>
             <p className="acerca-contact__form-note">O contáctanos por medio del siguiente formulario:</p>

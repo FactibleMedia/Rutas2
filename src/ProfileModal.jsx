@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "./supabaseClient";
+import { compressImage } from "./lib/compressImage";
 import "./ProfileModal.css";
 
 /* =========================================================
@@ -135,14 +136,16 @@ export default function ProfileModal({ onClose, onProfileUpdate }) {
     setSuccess("");
 
     try {
-      const ext = file.name.split(".").pop() || "png";
+      // Avatars render at ~120px, so cap them well below the shared default.
+      const optimized = await compressImage(file, { maxEdge: 512 });
+      const ext = optimized.name.split(".").pop() || "png";
       const filePath = `${userId}/${Date.now()}.${ext}`;
 
       // Upload to storage
       const { error: uploadError } = await supabase.storage
         .from(AVATARS_BUCKET)
-        .upload(filePath, file, {
-          cacheControl: "3600",
+        .upload(filePath, optimized, {
+          cacheControl: "31536000",
           upsert: true,
         });
 

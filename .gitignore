@@ -33,3 +33,16 @@ supabase/.branches
 
 # Design sources are kept outside the repo — see docs/ASSETS.md
 # (rutas1/, glosario1/, glosario/, diseños glosario/, diseño galeria/, recursos/)
+
+# Camera-original manifesto footage (67MB mp4 / 77MB mov). The web build ships
+# public/assets/acerca/video-rutas-web.mp4 (5MB, 540x960) instead; the originals
+# stay on disk locally but must not be committed or deployed again.
+public/assets/acerca/video-rutas.mp4
+public/assets/acerca/video-rutas.mov
+
+# Superseded by WebP equivalents (see the imagery-optimization pass)
+public/assets/gallery/shadows.png
+public/assets/gallery/image_0*.png
+public/assets/gallery/postal3.webp
+public/assets/gallery/Postal_Plaza_CON MARCO 1.webp
+public/favicon.png
