@@ -7,11 +7,11 @@ import heroMapMistico from "../assets/mcp/hero_map_mistico.webp";
 import heroTitleDefault from "../assets/mcp/hero_title_default.svg";
 import heroTitleCream from "../assets/mcp/hero_title_cream.svg";
 import heroTitlePatrimonial from "../assets/mcp/hero_title_patrimonial.svg";
-import ctaBgIcon from "../assets/mcp/icon_bg_cta.svg";
 import chevronIcon from "../assets/mcp/icon_chevron_scroll.svg";
 import chevronIconCream from "../assets/mcp/icon_chevron_scroll_cream.svg";
 import TopBar from "../TopBar";
 import Footer from "../Footer";
+import CTASection from "../CTASection";
 
 import glossBgLucas from "../assets/mcp/gloss_bg_lucas.webp";
 import glossBgMotetes from "../assets/mcp/gloss_bg_motetes.png";
@@ -455,23 +455,6 @@ function Gallery() {
           </button>
         </div>
       </div>
-    </section>
-  );
-}
-
-function CTASection() {
-  const navigate = useNavigate();
-  return (
-    <section className="cta-section reveal">
-      <div className="cta-section__bg-map" aria-hidden="true">
-        <img src={ctaBgMap} alt="" loading="lazy" />
-      </div>
-      <img src={ctaBgIcon} alt="" className="cta-section__bg-icon" loading="lazy" />
-      <h2>¿Listo para explorar Valledupar?</h2>
-      <p>Planifica tu ruta ahora mismo desde el mapa interactivo</p>
-      <button className="cta-section__btn" onClick={() => navigate("/mapas")}>
-        Ver el mapa interactivo
-      </button>
     </section>
   );
 }

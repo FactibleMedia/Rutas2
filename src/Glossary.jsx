@@ -3,6 +3,7 @@ import { Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import TopBar from './TopBar';
 import Footer from './Footer';
+import CTASection from './CTASection';
 import SubmitWordModal from './SubmitWordModal';
 import { supabase } from './supabaseClient';
 import './Glossary.css';
@@ -13,14 +14,23 @@ const imgMarcoMorado = "/assets/glosario/d94620b583929c8d0a6fb5418d8c875b924f8c6
 const imgRecurso1Postal3 = "/assets/glosario/20fd5b503f6b79dff07b513f3bc7604deafa7331.png";
 const imgRecurso3PostalMorado1 = "/assets/glosario/c56c8963ea54ddce3fb1dd22c4276099b158fec3.png";
 
-// Imágenes del diseño rotatorio desde "diseños glosario"
+// Imágenes del diseño rotatorio desde "diseños glosario". Order matches the
+// angular arrangement in Figma's own animation states for this component
+// (node 392:10596, "Animación glosario diseño" -- variants "Diseño"/
+// "Diseño 2"/3/4/5): each illustration's angle from the hero's center was
+// measured across two of those states, and the ranking is identical in
+// both (trinitarias -> mango2 -> mango1 -> arepa1 -> poporos -> arepa2 ->
+// boli), confirming a stable clockwise spatial order -- this array follows
+// that same order so the orbit sweeps through them the way Figma arranged
+// them, not an arbitrary sequence.
 const orbitImages = [
+  "/assets/glosario/trinitarias 1.png",
+  "/assets/glosario/mango y cañahuate 2.png",
+  "/assets/glosario/mango y cañahuate 1.png",
   "/assets/glosario/arepa y caldero 1.png",
+  "/assets/glosario/poporos y armadillo 1.png",
   "/assets/glosario/arepa y caldero 2.png",
   "/assets/glosario/boli y pescado 1.png",
-  "/assets/glosario/mango y cañahuate 2.png",
-  "/assets/glosario/poporos y armadillo 1.png",
-  "/assets/glosario/trinitarias 1.png",
 ];
 
 const CATEGORIES_LIST = ["Objeto","Transporte","Material","Bebida","Alimento","Animal","Planta","Gesto","Expresión","Cuerpo","Para referirse","Vestimenta","Accesorio","Fantasía","Juego"];
@@ -75,6 +85,7 @@ const orbitShapesConfig = [
   { img: orbitImages[3], sizeLarge: "130px", sizeSmall: "100px", delay: 2 },
   { img: orbitImages[4], sizeLarge: "140px", sizeSmall: "110px", delay: 4 },
   { img: orbitImages[5], sizeLarge: "120px", sizeSmall: "90px", delay: 1 },
+  { img: orbitImages[6], sizeLarge: "130px", sizeSmall: "100px", delay: 3 },
 ];
 
 // ========= SVG Components for Stamp Design =========
@@ -454,7 +465,25 @@ function SugerirSeccion({ onOpenSubmitModal }) {
   return (
     <section className="gloss-sugerir">
 
-      {/* LEFT COLUMN: Falling stamp cards */}
+      {/* LEFT COLUMN: Text content */}
+      <div className="gloss-sugerir__content">
+        <div className="gloss-sugerir__content-inner">
+          <h2 className="gloss-sugerir__title">
+            ¿Falta alguna vaina?
+          </h2>
+          <h4 className="gloss-sugerir__subtitle">
+            ¡NO TE QUEDES CON LA PALABRA EN LA BOCA!
+          </h4>
+          <p className="gloss-sugerir__desc">
+            Si te sabes un término bien valduparense que no aparece aquí, escríbelo ya mismo con su significado. ¡Haz que tu palabra sea parte del patrimonio del Valle!
+          </p>
+          <button className="gloss-sugerir__btn" onClick={onOpenSubmitModal}>
+            Escribe tu palabra
+          </button>
+        </div>
+      </div>
+
+      {/* RIGHT COLUMN: Falling stamp cards (animation) */}
       <div className="gloss-sugerir__cards">
         {/* Track 1 */}
         <div className="gloss-sugerir__track">
@@ -474,24 +503,6 @@ function SugerirSeccion({ onOpenSubmitModal }) {
         </div>
       </div>
 
-      {/* RIGHT COLUMN: Text content */}
-      <div className="gloss-sugerir__content">
-        <div className="gloss-sugerir__content-inner">
-          <h2 className="gloss-sugerir__title">
-            ¿Falta alguna vaina?
-          </h2>
-          <h4 className="gloss-sugerir__subtitle">
-            ¡NO TE QUEDES CON LA PALABRA EN LA BOCA!
-          </h4>
-          <p className="gloss-sugerir__desc">
-            Si te sabes un término bien valduparense que no aparece aquí, escríbelo ya mismo con su significado. ¡Haz que tu palabra sea parte del patrimonio del Valle!
-          </p>
-          <button className="gloss-sugerir__btn" onClick={onOpenSubmitModal}>
-            Escribe tu palabra
-          </button>
-        </div>
-      </div>
-
     </section>
   );
 }
@@ -501,6 +512,7 @@ function SugerirSeccion({ onOpenSubmitModal }) {
 export default function Glossary() {
   const [searchTerm, setSearchTerm] = useState("");
   const [rotation, setRotation] = useState(0);
+  const [orbitStep, setOrbitStep] = useState(0);
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [glossaryData, setGlossaryData] = useState([]);
@@ -552,16 +564,27 @@ export default function Glossary() {
     fetchWords();
   }, [fetchWords]);
 
-  // Continuous rotation animation for orbiting shapes
+  // Continuous rotation animation for orbiting shapes. Figma's own
+  // keyframes for this component (node 392:10596) change each sticker's
+  // size at the same moment its position steps -- not on an independent
+  // timer -- so size and position are driven from this single tick
+  // (orbitStep advances alongside rotation) rather than a separate CSS
+  // animation loop.
   useEffect(() => {
     let lastStepTime = Date.now();
     let currentRotation = 0;
+    let currentStep = 0;
 
     const animate = () => {
       const now = Date.now();
       if (now - lastStepTime > 2000) {
-        currentRotation = (currentRotation + 20) % 360;
+        // Subtract (not add) so the orbit turns counterclockwise: left/top
+        // are driven by cos/sin in screen coordinates (Y grows downward),
+        // where an increasing angle reads as clockwise motion.
+        currentRotation = (currentRotation - 20 + 360) % 360;
+        currentStep += 1;
         setRotation(currentRotation);
+        setOrbitStep(currentStep);
         lastStepTime = now;
       }
       requestAnimationFrame(animate);
@@ -611,7 +634,13 @@ export default function Glossary() {
 
         {/* Orbiting Shapes */}
         <div className="gloss-hero__orbit-area">
-          {orbitShapesConfig.map((shape, index) => (
+          {orbitShapesConfig.map((shape, index) => {
+            // Each shape's own delay offsets which orbit steps it grows on,
+            // so they don't all pulse in lockstep -- but the toggle itself
+            // only advances on the same 2s tick that moves the orbit
+            // (matches Figma: size changes at each rotation step).
+            const isBig = (orbitStep + shape.delay) % 2 === 0;
+            return (
             <div
               key={index}
               className="gloss-hero__orbit-shape"
@@ -620,15 +649,16 @@ export default function Glossary() {
               <div
                 className="gloss-hero__orbit-shape-inner"
                 style={{
-                  '--shape-delay': `${shape.delay * 0.5}s`,
                   '--shape-lg': shape.sizeLarge,
                   '--shape-sm': shape.sizeSmall,
+                  transform: isBig ? 'scale(1.35) translateY(-22px)' : 'scale(1) translateY(0)',
                 }}
               >
                 <img src={shape.img} alt="" className="gloss-hero__orbit-img" />
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Hero Content */}
@@ -690,6 +720,9 @@ export default function Glossary() {
 
       {/* ===== SUGERIR PALABRA ===== */}
       <SugerirSeccion onOpenSubmitModal={() => setShowSubmitModal(true)} />
+
+      {/* ===== CTA ===== */}
+      <CTASection />
 
       {/* ===== FOOTER ===== */}
       <Footer />

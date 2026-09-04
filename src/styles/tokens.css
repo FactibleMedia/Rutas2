@@ -41,6 +41,7 @@
   --ds-font-display: "Trattatello", fantasy;   /* decorative headings */
   --ds-font-serif: "Heritage Sans", Georgia, serif; /* body/serif accents */
   --ds-font-body: "Inter", sans-serif;
+  --ds-font-outfit: "Outfit", sans-serif;      /* loaded in src/styles/fonts.css, not yet used by any component -- available for whoever needs it */
 
   /* ---- Radius: the four pill spellings found in the codebase (999px,
      9999px, 100px, 99px) all render identically -- one token. ---- */

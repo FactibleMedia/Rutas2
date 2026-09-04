@@ -61,6 +61,7 @@
   -webkit-backdrop-filter: blur(8px);
   pointer-events: none;
   z-index: 3;
+  display: none;
 }
 
 @media (max-width: 640px) {
@@ -97,8 +98,10 @@
 
 .gloss-hero__orbit-shape-inner {
   width: var(--shape-sm);
-  animation: gloss-bounce 3s infinite ease-in-out;
-  animation-delay: var(--shape-delay, 0s);
+  /* Scale is applied inline per shape (Glossary.jsx), toggled on the same
+     2s tick that advances the orbit -- not an independent animation loop --
+     so the transition here just smooths that step-to-step change. */
+  transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @media (min-width: 768px) {
@@ -113,11 +116,6 @@
   height: auto;
   border-radius: 16px;
   object-fit: contain;
-}
-
-@keyframes gloss-bounce {
-  0%, 100% { transform: scale(1) translateY(0); }
-  50% { transform: scale(1.15) translateY(-15px); }
 }
 
 @media (max-width: 760px) {
@@ -169,7 +167,7 @@
 .gloss-hero__title--global {
   color: #2C1A0E;
   font-family: var(--font-trattatello);
-  font-size: 96px;
+  font-size: 76px;
   font-style: normal;
   font-weight: 400;
   line-height: 57px;
@@ -178,7 +176,7 @@
 .gloss-hero__title--local {
   color: #E8981B;
   font-family: var(--font-trattatello);
-  font-size: 96px;
+  font-size: 76px;
   font-style: normal;
   font-weight: 400;
   line-height: 57px;
@@ -189,11 +187,11 @@
   text-align: center;
   max-width: 672px;
   margin: 16px auto 0;
-  font-family: var(--font-roboto);
-  font-size: 25px;
+  font-family: var(--ds-font-body);
+  font-size: 16px;
   font-style: normal;
   font-weight: 400;
-  line-height: 40px;
+  /* line-height: 40px; */
 }
 
 .gloss-hero__desc-br { display: none; }
@@ -355,8 +353,8 @@
 
 .gloss-hero1 {
   width: 100%;
-  min-height: 100vh;
-  background: #FBDC89;
+  /* min-height: 100vh; */
+  background: #ffdd89;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -368,6 +366,7 @@
 /* White blur fade at the bottom of Hero1 */
 .gloss-hero1::after {
   content: '';
+  display: none;
   position: absolute;
   bottom: 0;
   left: 0;
@@ -436,10 +435,10 @@
 .gloss-hero1__info-subtitle {
   color: #bb4c18;
   font-family: var(--font-heritage);
-  font-size: 48px;
+  font-size: 28px;
   font-style: normal;
   font-weight: 400;
-  line-height: 61px;
+  line-height: 36px;
   margin: 0 0 4px;
 }
 
@@ -454,9 +453,9 @@
 .gloss-hero1__info-title {
   color: #000;
   font-family: var(--font-heritage);
-  font-size: 64px;
+  font-size: 56px;
   font-style: normal;
-  font-weight: 700;
+  font-weight: 100;
   line-height: 40px;
   margin: 0;
   text-transform: uppercase;
@@ -465,11 +464,11 @@
 
 .gloss-hero1__info-desc {
   color: #000;
-  font-family: var(--font-outfit);
-  font-size: 26px;
+  font-family: var(--font-ds-body);
+  font-size: 16px;
   font-style: normal;
-  font-weight: 500;
-  line-height: 33px;
+  font-weight: 100;
+  /* line-height: 33px; */
   margin: 0 0 32px;
   width: 100%;
   max-width: 691px;
@@ -483,10 +482,10 @@
   color: #fffce6;
   border: none;
   border-radius: 6px;
-  padding: 5px 11px;
-  min-height: 67px;
+  padding: 8px 16px;
+  min-height: 48px;
   font-family: var(--font-trattatello);
-  font-size: 24px;
+  font-size: 20px;
   font-style: normal;
   font-weight: 400;
   line-height: 38px;
@@ -662,7 +661,7 @@
 
 /* Card content inner – arreglado interlineado */
 .gloss-hero1__card-content-inner {
-  display: flex;
+  display: grid;
   flex-direction: column;
   align-items: center;
   text-align: center;
@@ -747,12 +746,12 @@
 /* Card meaning label */
 .gloss-hero1__card-meaning-label {
   color: rgba(255, 252, 230, 0.9);
-  font-family: var(--font-outfit);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
+  font-family: var(--ds-font-outfit);
+  font-size: 20px;
+  letter-spacing: 0.5px;
   display: block;
   flex-shrink: 0;
+  font-weight: 100;
 }
 
 /* Card meaning text */
@@ -770,14 +769,13 @@
 
 .gloss-hero1__card-meaning-text {
   color: #fffce6;
-  font-family: var(--font-outfit);
-  font-size: clamp(11px, 1.8vw, 15px);
+  font-family: var(--ds-font-outfit);
+  font-size: clamp(11px, 1.8vw, 18px);
   font-style: normal;
-  font-weight: 400;
-  line-height: 1.35;
+  font-weight: 100;
+  /* line-height: 1.35; */
   margin: 0;
   max-width: 100%;
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
   overflow-wrap: break-word;
 }
 
@@ -870,6 +868,7 @@
 .gloss-categories::after {
   content: '';
   position: absolute;
+  display: none;
   bottom: 0;
   left: 0;
   width: 100%;
@@ -1074,10 +1073,19 @@
   100% { transform: translateY(0%); }
 }
 
+@keyframes gloss-fall-up {
+  0% { transform: translateY(0%); }
+  100% { transform: translateY(-50%); }
+}
+
 .gloss-sugerir {
   width: 100%;
   min-height: 100vh;
-  background: #FBDC89;
+  background-color: #FBDC89;
+  background-image: url("/assets/glosario/Textura 1.webp"); /* same texture as .gloss-hero */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   position: relative;
   overflow: hidden;
   display: flex;
@@ -1088,6 +1096,7 @@
 /* White blur fade at the bottom of Sugerir */
 .gloss-sugerir::after {
   content: '';
+  display: none;
   position: absolute;
   bottom: 0;
   left: 0;
@@ -1160,11 +1169,12 @@
 }
 
 .gloss-sugerir__track-inner--1 {
-  animation-duration: 15s;
+  animation-name: gloss-fall-up;
+  animation-duration: 10s;
 }
 
 .gloss-sugerir__track-inner--2 {
-  animation-duration: 20s;
+  animation-duration: 17s;
 }
 
 /* ---- Stamp Card ---- */
@@ -1299,55 +1309,55 @@
 
 @media (min-width: 1024px) {
   .gloss-sugerir__content-inner {
-    align-items: flex-start;
-    text-align: left;
+    /* align-items: flex-start; */
+    /* text-align: left; */
   }
 }
 
 .gloss-sugerir__title {
-  display: flex;
-  flex-direction: column;
-  padding: 10px;
+  /* display: flex; */
+  /* flex-direction: column; */
+  /* padding: 10px; */
   justify-content: center;
   align-items: center;
-  gap: 10px;
+  /* gap: 10px; */
   align-self: stretch;
   color: #BB4C18;
   text-align: center;
   font-family: var(--font-trattatello);
-  font-size: clamp(48px, 8vw, 95px);
-  font-style: normal;
-  font-weight: 400;
-  line-height: 1.15;
-  letter-spacing: 4px;
+  font-size: clamp(48px, 8vw,58px);
+  /* font-style: normal; */
+  font-weight: 100;
+  /* line-height: 1.15; */
+  letter-spacing: 1px;
   margin: 0;
   white-space: nowrap;
 }
 
 @media (max-width: 640px) {
   .gloss-sugerir__title {
-    font-size: clamp(32px, 10vw, 56px);
-    line-height: 1.2;
-    letter-spacing: 2px;
+    font-size: clamp(32px, 10vw, 52px);
+    /* line-height: 1.2; */
+    letter-spacing: 1px;
   }
 }
 
 .gloss-sugerir__subtitle {
-  display: flex;
-  padding: 10px;
+  /* display: flex; */
+  /* padding: 10px; */
   justify-content: center;
   align-items: center;
-  gap: 10px;
+  /* gap: 10px; */
   align-self: stretch;
   color: #464C33;
   text-align: center;
   font-family: var(--font-heritage);
-  font-size: 40px;
-  font-style: normal;
+  font-size: 26px;
+  /* font-style: normal; */
   font-weight: 400;
-  line-height: 66px;
-  letter-spacing: 3.6px;
-  text-transform: uppercase;
+  /* line-height: 66px; */
+  /* letter-spacing: 3.6px; */
+  /* text-transform: uppercase; */
   margin: 0;
 }
 
@@ -1359,34 +1369,34 @@
   align-self: stretch;
   color: #464C33;
   text-align: center;
-  font-family: var(--font-roboto);
-  font-size: 26px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 35px;
-  letter-spacing: 2.34px;
+  font-family: var(--font-ds-body);
+  font-size: 16px;
+  /* font-style: normal; */
+  font-weight: 100;
+  line-height: 24px;
+  letter-spacing: 1px;
   margin: 0;
 }
 
 .gloss-sugerir__btn {
-  display: flex;
-  padding: 16px 32px;
+  /* display: flex; */
+  padding: 12px 22px;
   justify-content: center;
   align-items: center;
-  gap: 10px;
-  align-self: stretch;
+  /* gap: 10px; */
+  /* align-self: stretch; */
   background: #B74620;
   color: #fff;
   border: none;
   border-radius: 6px;
-  font-weight: 700;
+  font-weight: 100;
   font-size: 12px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   cursor: pointer;
   transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  font-family: var(--font-outfit);
+  font-family: var(--font-trattatello);
 }
 
 @media (min-width: 640px) {
