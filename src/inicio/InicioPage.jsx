@@ -1,13 +1,15 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import logoVerde from "../assets/mcp/Logo Color Verde.png";
 import mapaDefault from "../assets/mcp/mapa generalll 1.webp";
-import mapaGastronomico from "../assets/mcp/mapa generalll 2.webp";
-import mapaPatrimonial from "../assets/mcp/mapa generalll 3.webp";
-import mapaMistico from "../assets/mcp/mapa generalll 4.webp";
 import ctaBgMap from "../assets/mcp/cta_bg_mapa_gastronomico.webp";
+import heroMapPatrimonial from "../assets/mcp/hero_map_patrimonial.webp";
+import heroMapMistico from "../assets/mcp/hero_map_mistico.webp";
+import heroTitleDefault from "../assets/mcp/hero_title_default.svg";
+import heroTitleCream from "../assets/mcp/hero_title_cream.svg";
+import heroTitlePatrimonial from "../assets/mcp/hero_title_patrimonial.svg";
 import ctaBgIcon from "../assets/mcp/icon_bg_cta.svg";
 import chevronIcon from "../assets/mcp/icon_chevron_scroll.svg";
+import chevronIconCream from "../assets/mcp/icon_chevron_scroll_cream.svg";
 import TopBar from "../TopBar";
 import Footer from "../Footer";
 
@@ -153,19 +155,61 @@ const getVideoThumbnail = (url) => {
   return null;
 };
 
-// Hero background rotation, in the same order as Figma's animation strip
-// (Predeterminada -> Gastronomica -> Patrimonial -> Mistico). Auto-advances
-// on a timer -- no pills or other UI drives it.
-const heroBackgrounds = [mapaDefault, mapaGastronomico, mapaPatrimonial, mapaMistico];
+// Hero states, in the same order as Figma's animation strip (component
+// "Inicio completo" on page "R - Inicio", variants Predeterminada ->
+// Gastronomica -> Patrimonial -> Mistico). Each state is a full color
+// change, not just a background-image swap: section background, map image
+// + opacity, title graphic (vectorized per-state in Figma, not live text),
+// intro text color, and chevron color all change together. Auto-advances
+// on a timer -- no pills or other UI drives it. Gastronomica and Mistico
+// share the same title graphic (byte-identical export from Figma).
+const HERO_STATES = [
+  {
+    id: "default",
+    map: mapaDefault,
+    mapOpacity: 0.5,
+    title: heroTitleDefault,
+    chevron: chevronIcon,
+    bg: "#fff4db",
+    introColor: "#2c1a0e",
+  },
+  {
+    id: "gastronomica",
+    map: ctaBgMap,
+    mapOpacity: 1,
+    title: heroTitleCream,
+    chevron: chevronIconCream,
+    bg: "rgb(var(--ds-orange))",
+    introColor: "rgb(var(--ds-cream))",
+  },
+  {
+    id: "patrimonial",
+    map: heroMapPatrimonial,
+    mapOpacity: 1,
+    title: heroTitlePatrimonial,
+    chevron: chevronIconCream,
+    bg: "rgb(var(--ds-forest))",
+    introColor: "rgb(var(--ds-cream))",
+  },
+  {
+    id: "mistico",
+    map: heroMapMistico,
+    mapOpacity: 1,
+    title: heroTitleCream,
+    chevron: chevronIconCream,
+    bg: "rgb(var(--ds-purple))",
+    introColor: "rgb(var(--ds-cream))",
+  },
+];
 
 function Maps() {
   const navigate = useNavigate();
-  const [bgIndex, setBgIndex] = useState(-1);
+  const [stateIndex, setStateIndex] = useState(-1);
 
   useEffect(() => {
-    const enter = setTimeout(() => setBgIndex(0), 50);
+    const enter = setTimeout(() => setStateIndex(0), 50);
     const id = setInterval(() => {
-      setBgIndex((prev) => (prev + 1) % heroBackgrounds.length);
+      setStateIndex((prev) => (prev + 1) % HERO_STATES.length);
     }, 4000);
     return () => {
       clearTimeout(enter);
@@ -173,30 +217,40 @@ function Maps() {
     };
   }, []);
 
+  const active = HERO_STATES[Math.max(stateIndex, 0)];
+
   return (
-    <section id="mapas" className="maps-section reveal">
-      {/* Map + logo — centrada, ~95% ancho, 50% opacidad (Figma base x1.3).
-          Background crossfades through heroBackgrounds every 4s (Figma's
-          "Estado=Predeterminada/Gastronomica/Patrimonial/Mistico" strip). */}
+    <section
+      id="mapas"
+      className="maps-section reveal"
+      style={{ backgroundColor: active.bg }}
+    >
+      {/* Map + logo — centrada, ~95% ancho (Figma base x1.3). Everything
+          below crossfades through HERO_STATES every 4s. */}
       <div className="maps-section__map-area">
-        {heroBackgrounds.map((src, i) => (
+        {HERO_STATES.map((state, i) => (
           <img
-            key={src}
-            src={src}
+            key={state.id}
+            src={state.map}
             alt=""
-            className={`maps-section__map-img${i === bgIndex ? " maps-section__map-img--active" : ""}`}
+            className={`maps-section__map-img${i === stateIndex ? " maps-section__map-img--active" : ""}`}
+            style={{ "--map-active-opacity": state.mapOpacity }}
           />
         ))}
-        <img
-          src={logoVerde}
-          alt="Rutas de Valledupar"
-          className="maps-section__logo"
-        />
+        {HERO_STATES.map((state, i) => (
+          <img
+            key={`title-${state.id}`}
+            src={state.title}
+            alt={i === 0 ? "Rutas de Valledupar" : ""}
+            aria-hidden={i === 0 ? undefined : true}
+            className={`maps-section__logo${i === stateIndex ? " maps-section__logo--active" : ""}`}
+          />
+        ))}
       </div>
 
       {/* Message, CTA and scroll arrow, below the map */}
       <div className="maps-section__content">
-        <p className="maps-section__intro">
+        <p className="maps-section__intro" style={{ color: active.introColor }}>
           Bienvenido a recorrer las rutas del viejo Valle, aquí mantenemos la herencia viva de un patrimonio que todavía se conserva.
         </p>
 
@@ -208,7 +262,14 @@ function Maps() {
             Explora el mapa
           </button>
           <span className="maps-section__chevron" aria-hidden="true">
-            <img src={chevronIcon} alt="" className="maps-section__chevron-icon" />
+            {HERO_STATES.map((state, i) => (
+              <img
+                key={`chevron-${state.id}`}
+                src={state.chevron}
+                alt=""
+                className={`maps-section__chevron-icon${i === stateIndex ? " maps-section__chevron-icon--active" : ""}`}
+              />
+            ))}
           </span>
         </div>
       </div>

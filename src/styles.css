@@ -284,10 +284,11 @@
   align-items: center;
   overflow: hidden;
   font-family: var(--ds-font-body);
-  background-color: #fff4db;
+  background-color: #fff4db; /* fallback; actual color driven by HERO_STATES via inline style */
   color: #2c1a0e;
   padding-top: 78px; /* 72px TopBar fija + 6px de aire */
   gap: 40px;
+  transition: background-color 900ms var(--ds-ease-standard);
 }
 
 /* ── Map + logo block — map centrada, ~95% ancho (73% x1.3), 50% opacidad
@@ -320,10 +321,16 @@
 }
 
 .maps-section__map-img--active {
-  opacity: 0.5;
+  /* Default state shows the map at 50% opacity; the three category states
+     show it at full strength (Figma: only Predeterminada's map layer has
+     the opacity-50 treatment) -- set per state via inline --map-active-opacity. */
+  opacity: var(--map-active-opacity, 0.5);
   transform: scale(1);
 }
 
+/* Title wordmark is vectorized per-state in Figma (baked-in color, not
+   live-colorable text), so each state stacks its own graphic here and
+   crossfades opacity, same technique as the map layer above. */
 .maps-section__logo {
   position: absolute;
   top: 50%;
@@ -336,6 +343,13 @@
   width: min(550px, 50vw);
   height: auto;
   object-fit: contain;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 700ms var(--ds-ease-standard);
+}
+
+.maps-section__logo--active {
+  opacity: 1;
 }
 
 /* ── Content — message, button and arrow, below the map block ── */
@@ -359,8 +373,9 @@
   line-height: 1.4;
   max-width: 483px;
   font-weight: 100;
-  color: #2c1a0e;
+  color: #2c1a0e; /* fallback; actual color driven by HERO_STATES via inline style */
   margin: 0;
+  transition: color 900ms var(--ds-ease-standard);
 }
 
 /* CTA + chevron */
@@ -398,6 +413,7 @@
 }
 
 .maps-section__chevron {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -405,11 +421,21 @@
   height: 36.77px;
 }
 
+/* Orange on the cream default state, cream on the three color states
+   (Figma: same #BB4C18/#FFFCE6 split as the map opacity and intro text) --
+   stacked and crossfaded like the map/title layers. */
 .maps-section__chevron-icon {
+  position: absolute;
   display: block;
   width: 26px;
   height: 26px;
   transform: rotate(45deg);
+  opacity: 0;
+  transition: opacity 700ms var(--ds-ease-standard);
+}
+
+.maps-section__chevron-icon--active {
+  opacity: 1;
 }
 
 /* Responsive */
