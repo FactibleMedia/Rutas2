@@ -1,5 +1,8 @@
 {
   "framework": "vite",
+  "env": {
+    "VITE_MAINTENANCE_MODE": "true"
+  },
   "rewrites": [
     { "source": "/", "destination": "/index.html" },
     { "source": "/demo", "destination": "/index.html" },
