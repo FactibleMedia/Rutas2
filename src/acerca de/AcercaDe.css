@@ -17,11 +17,11 @@
 
 .acerca-page {
   background-image: url("/assets/acerca/Frame 143726283.webp");
-  background-size: cover;
+  background-size:auto 12%;
   background-position: center center;
-  background-repeat: no-repeat;
+  background-repeat: repeat;
   color: var(--acerca-text);
-  min-height: 100vh;
+  background-opacity: 0.2;
 }
 
 .acerca-page__main {
@@ -36,15 +36,15 @@
    ========================================================= */
 
 .acerca-hero {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 80px 24px 60px;
-  position: relative;
-  overflow: hidden;
-  min-height: 381px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 120px;
+    padding: 0px 24px 50px;
+    position: relative;
+    overflow: hidden;
 }
 
 .acerca-hero__inner {
@@ -109,7 +109,7 @@
   width: 100%;
   max-width: 1920px;
   padding: 0 24px;
-  margin: 0 auto 80px;
+  margin: 0 auto 40px;
 }
 
 @media (min-width: 1200px) {
@@ -137,7 +137,7 @@
 
 @media (min-width: 1024px) {
   .acerca-hero-image__frame {
-    height: 700px;
+    height: 600px;
   }
 }
 
@@ -211,20 +211,19 @@
 
 .acerca-intro {
   width: 100%;
-  max-width: 1920px;
-  margin: 0 auto 120px;
+  max-width: 1300px;
+  margin: 60px 120px;
   padding: 0 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 32px;
-  min-height: 381px;
+  /* min-height: 381px; */
 }
 
 @media (min-width: 1200px) {
   .acerca-intro {
-    padding-left: 196px;
-    padding-right: 171px;
+    padding: 0 200px;
   }
 }
 
@@ -237,10 +236,10 @@
 .acerca-intro__quote {
   color: #000;
   font-family: var(--ds-font-display);
-  font-size: 38px;
-  font-style: normal;
-  font-weight: 200;
-  line-height: 69px;
+  font-size: 30px;
+  /* font-style: normal; */
+  font-weight: 100;
+  line-height: 50px;
   margin: 0;
 }
 
@@ -278,9 +277,12 @@
    ========================================================= */
 
 .acerca-manifesto {
+  background-image: url("/assets/acerca/manifiesto.webp");
+  background-size: contain;
+  background-position: center center;
+  background-repeat: no-repeat;
   width: 100%;
-  margin: 0 auto 160px;
-  padding: 0;
+  padding: 30px 170px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -291,12 +293,14 @@
 @media (min-width: 768px) {
   .acerca-manifesto {
     flex-direction: row;
+    align-items: center;
+    gap: 32px;
   }
 }
 
 @media (min-width: 1200px) {
   .acerca-manifesto__parchment {
-    padding: 100px 12% 100px 8%;
+    padding: 100px 8%;
   }
 }
 
@@ -304,26 +308,24 @@
 .acerca-manifesto__parchment {
   width: 100%;
   position: relative;
-  padding: 60px 40px;
-  background-image: url("/assets/acerca/manifiesto.webp");
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
+  padding: 0px 40px;
   z-index: 2;
 }
 
 @media (min-width: 768px) {
   .acerca-manifesto__parchment {
-    padding: 80px 20% 80px 8%;
+    width: 58%;
+    flex: 1 1 auto;
+    padding: 80px 0;
   }
 }
 
 .acerca-manifesto__heading {
   display: flex;
   align-items: center;
-  justify-content: center;
+  /* justify-content: center; */
   gap: 16px;
-  margin-bottom: 28px;
+  margin-bottom: 8px;
 }
 
 .acerca-manifesto__tile {
@@ -333,35 +335,25 @@
 }
 
 .acerca-manifesto__title {
-  font-family: "Heritage Sans", serif;
-  font-size: clamp(48px, 6vw, 82px);
-  font-style: normal;
-  font-weight: 400;
-  line-height: 1.2;
-  letter-spacing: 0.874px;
-  color: #000;
+  font-family: var(--ds-font-display);
+  font-size: clamp(38px, 6vw, 60px);
+  letter-spacing: 1px;
+  color: var(--acerca-accent);
   margin: 0;
 }
 
 .acerca-manifesto__copy {
-  font-family: "Inter", sans-serif;
+  font-family: var(--ds-font-display);
   font-size: clamp(18px, 2vw, 24px);
   line-height: 1.5;
   color: #3b362f;
-  margin: 0 0 24px;
-  font-weight: 400;
-  font-style: italic;
-  max-width: 1200px;
-  padding-right: 80px;
+  margin: 0 0 24px;;
 }
 
 .acerca-manifesto__footnote {
-  font-family: "Inter", sans-serif;
-  font-size: clamp(15px, 1.4vw, 18px);
+  font-family: var(--ds-font-display);
+  font-size: clamp(20px, 1.8vw, 48px);
   color: #6b6358;
-  font-style: italic;
-  text-align: center;
-  margin: 24px 0 0;
 }
 
 /* Right: Portrait - Positioned absolutely on the right */
@@ -374,11 +366,15 @@
 
 @media (min-width: 768px) {
   .acerca-manifesto__portrait {
-    position: absolute;
-    right: 5%;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 380px;
+    /* Real second column now, not floated over the parchment text --
+       previously position:absolute pulled it out of flow entirely, leaving
+       .acerca-manifesto__parchment (width:100%) to fill the whole row
+       alone with the frame just overlapping on top of it. */
+    /* min() instead of a flat 380px: at the narrow end of this range
+       (just past 768px) a fixed 380px column left too little room for the
+       parchment column and pushed the frame past the viewport edge. */
+    width: min(380px, 32vw);
+    flex-shrink: 0;
     margin-top: 0;
   }
 }
@@ -471,7 +467,7 @@
   width: 100%;
   max-width: 1920px;
   text-align: center;
-  margin: 0 auto 120px;
+  margin: 0px 120px;
   padding: 0 24px;
   display: flex;
   align-items: center;
@@ -481,8 +477,7 @@
 
 @media (min-width: 1200px) {
   .acerca-transition {
-    padding-left: 196px;
-    padding-right: 171px;
+    padding: 0px 196px;
   }
 }
 
@@ -504,7 +499,11 @@
 .acerca-team {
   width: 100%;
   background-color: #4b5a42;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.15'/%3E%3C/svg%3E");
+  background-image: url("/assets/glosario/Textura 1.webp");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-blend-mode: multiply;
   color: #e8e2cb;
   padding: 96px 24px;
   display: flex;
@@ -516,23 +515,16 @@
 
 .acerca-team__title {
   font-family: "Trattatello", fantasy;
-  font-size: 95px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 149px;
-  letter-spacing: 8.55px;
+  font-size: 60px;
+  font-weight: 100;
+  letter-spacing: 6px;
   color: #fffce6;
   text-align: center;
-  margin: 0 auto 64px;
-  max-width: 1920px;
-  width: 100%;
-  padding: 0 24px;
 }
 
 @media (min-width: 1200px) {
   .acerca-team__title {
-    padding-left: 196px;
-    padding-right: 171px;
+    padding: 0px 196px;
   }
 }
 

@@ -878,6 +878,9 @@
 }
 
 .cta-section {
+  width: 100%; /* explicit on purpose: some host pages (e.g. AcercaDe's
+    flex-column main with align-items:center) shrink a childless-width
+    section to fit its content instead of stretching it full-bleed */
   background: #c35e26; /* Figma CTA background -- paired with the soft-light
     map blend below; distinct from --ds-orange used elsewhere on the site */
   text-align: center;

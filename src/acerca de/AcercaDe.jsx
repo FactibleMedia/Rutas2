@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import TopBar from "../TopBar";
 import Footer from "../Footer";
+import CTASection from "../CTASection";
 import iconInstagram from "../assets/mcp/icon_instagram.svg";
 import iconMail from "../assets/mcp/icon_mail.svg";
 import { supabase, isSupabaseReady } from "../supabaseClient";
@@ -157,13 +158,15 @@ function ManifestoSection() {
       <div className="acerca-manifesto__portrait">
         <div className="acerca-manifesto__portrait-frame">
           <video
-            src="/assets/acerca/video.mp4"
             className="acerca-manifesto__portrait-video"
             autoPlay
             muted
             loop
             playsInline
-          />
+          >
+            <source src="/assets/acerca/video-rutas.mp4" type="video/mp4" />
+            <source src="/assets/acerca/video-rutas.mov" type="video/quicktime" />
+          </video>
           <div className="acerca-manifesto__border-top" />
           <div className="acerca-manifesto__border-bottom" />
           <div className="acerca-manifesto__border-left" />
@@ -281,7 +284,7 @@ function TeamSection() {
 
   return (
     <section className="acerca-team">
-      <h2 className="acerca-team__title">conozca al equipo</h2>
+      <h2 className="acerca-team__title">Conozca al equipo</h2>
 
       <div className="acerca-team__carousel">
         {teamMembers.map((member, idx) => {
@@ -455,6 +458,9 @@ export default function AcercaDe() {
 
         {/* SECTION 7: Contact */}
         <ContactSection />
+
+        {/* SECTION 8: CTA */}
+        <CTASection />
       </main>
 
       <Footer />
