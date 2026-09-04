@@ -555,9 +555,19 @@
     width: 110px;
   }
 
-  /* Show hamburger on mobile */
+  /* Show hamburger on mobile, moved to the right of the logo */
+  .topbar__brand {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .topbar__logo {
+    order: 1;
+  }
+
   .topbar__hamburger {
     display: flex;
+    order: 2;
   }
 
   .topbar__mobile-overlay {

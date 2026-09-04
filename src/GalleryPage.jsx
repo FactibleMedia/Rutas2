@@ -9,8 +9,9 @@ import "./GalleryPage.css";
    Image Assets from /assets/gallery/
    ========================================================= */
 
-const imgPostal3 = "/assets/gallery/postal3.webp";
-const imgPostalPlazaMarco = "/assets/gallery/Postal_Plaza_CON MARCO 1.webp";
+const imgHero0 = "/assets/gallery/image_00.png";
+const imgHero1 = "/assets/gallery/image_01.png";
+const imgHero2 = "/assets/gallery/image_02.png";
 
 /* =========================================================
    Helper: Extract embed URL (YouTube & Google Drive)
@@ -150,19 +151,19 @@ function GalleryHero() {
   const photoCards = [
     {
       id: 0,
-      imgSrc: imgPostal3,
+      imgSrc: imgHero0,
       borderClass: 'gallery-hero__photo-inner--green',
       filterClass: 'gallery-hero__photo-img--contrast-sepia',
     },
     {
       id: 1,
-      imgSrc: imgPostalPlazaMarco,
+      imgSrc: imgHero1,
       borderClass: 'gallery-hero__photo-inner--yellow',
       filterClass: 'gallery-hero__photo-img--contrast-saturate',
     },
     {
       id: 2,
-      imgSrc: imgPostalPlazaMarco,
+      imgSrc: imgHero2,
       borderClass: 'gallery-hero__photo-inner--yellow',
       filterClass: 'gallery-hero__photo-img--contrast-bright',
     },

@@ -476,8 +476,16 @@
     gap: 16px;
   }
 
+  /* Hero map block grown 30% on mobile (61% -> 79% width; logo scaled to match),
+     plus another 30% on top of that in height alone (taller box, same width --
+     map image crops via object-fit: cover instead of stretching). */
+  .maps-section__map-area {
+    width: min(1181px, 79%);
+    aspect-ratio: 1402 / 1056;
+  }
+
   .maps-section__logo {
-    width: min(308px, 50vw);
+    width: min(400px, 65vw);
   }
 
   .maps-section__cta {
