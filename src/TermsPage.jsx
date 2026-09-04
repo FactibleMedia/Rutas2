@@ -20,10 +20,7 @@ export default function TermsPage() {
 
   return (
     <>
-      <TopBar
-        activeSection="terminos"
-        onSectionChange={() => {}}
-      />
+      <TopBar />
 
       <div className="terms-page">
         <div className="terms-page__paper-bg" />

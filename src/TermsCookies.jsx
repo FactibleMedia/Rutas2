@@ -303,10 +303,7 @@ export default function TermsCookies() {
 
   return (
     <>
-      <TopBar
-        activeSection="terminos"
-        onSectionChange={() => {}}
-      />
+      <TopBar />
 
       <div className="terms-cookies">
         <div className="terms-cookies__paper-bg" />

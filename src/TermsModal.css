@@ -1,6 +1,7 @@
 /* =========================================================
    TERMS & CONDITIONS MODAL
-   Fonts (Special Elite, Inter) now imported once in src/styles/fonts.css.
+   Fonts (Trattatello, Heritage Sans, Inter) come from the shared --ds-font-*
+   tokens; the @import lives in src/styles/fonts.css.
    ========================================================= */
 
 @keyframes terms-fade-in {
@@ -216,11 +217,11 @@
 .terms-modal__tilde {
   color: #b84a12;
   font-size: 22px;
-  font-family: serif;
+  font-family: var(--ds-font-display);
 }
 
 .terms-modal__title {
-  font-family: 'Special Elite', cursive, monospace;
+  font-family: var(--ds-font-display);
   font-size: clamp(22px, 3.5vw, 36px);
   color: #2b2b2b;
   letter-spacing: 0.02em;
@@ -252,7 +253,7 @@
 }
 
 .terms-modal__section-title {
-  font-family: 'Special Elite', cursive, monospace;
+  font-family: var(--ds-font-serif);
   font-size: 17px;
   font-weight: 700;
   color: #b84a12;

@@ -28,13 +28,14 @@ npm run dev
 
 ### Environment
 
-All three are client-side (`VITE_*` values are embedded in the browser bundle — never put a secret here).
+These are client-side (`VITE_*` values are embedded in the browser bundle — never put a secret here).
 
 | Variable | Where to get it |
 |---|---|
 | `VITE_SUPABASE_URL` | Supabase → Settings → API |
 | `VITE_SUPABASE_ANON_KEY` | Supabase → Settings → API |
 | `VITE_MAPBOX_TOKEN` | Mapbox → Account → Access tokens (public `pk.*`, URL-restricted) |
+| `VITE_MAINTENANCE_MODE` | Set to `true` to gate every public route behind `src/MaintenancePage.jsx`; `/admin` and `/admin/panel` stay reachable. Defaults to off. |
 
 > `.env.local` was committed to this repo until recently. If you are working from an older clone, see [`SECURITY-ROTATION.md`](SECURITY-ROTATION.md) — those credentials are considered compromised.
 
@@ -109,3 +110,7 @@ Deliberately recorded rather than hidden:
 ## Contributing
 
 CI runs install → lint → spell → build on every push and PR. `npm ci` requires `package-lock.json` to stay in sync with `package.json` — commit both together.
+
+### Remotes
+
+`origin` is the `FactibleMedia/Rutas2` fork; `upstream` is the original `jogutierrezc/Rutas2` repo, where FactibleMedia now has write access limited in practice to a `deploy` branch (never `main`, which stays Jose's). Routine pushes go to `origin` as normal; `npm run push:both` pushes the current branch to `origin` and to `upstream:deploy` in one step. See `CLAUDE.md` for the full setup.

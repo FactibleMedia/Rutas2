@@ -1500,7 +1500,7 @@ export default function Mapas() {
 
   return (
     <div className="mapas-page">
-      <TopBar activeSection="mapas" onSectionChange={() => {}} />
+      <TopBar />
 
       <main className="mapas-main">
         <section id="inicio" className="mapas-stage" aria-label="Mapa interactivo">
@@ -1655,7 +1655,7 @@ export default function Mapas() {
                 </button>
                 <div className="mapas-floating-popup__image" style={{
                   backgroundImage: imgErrors[activePlace.id]
-                    ? `url('data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="124" viewBox="0 0 200 124"><rect width="200" height="124" fill="#eaddcb"/><text x="100" y="62" text-anchor="middle" dominant-baseline="middle" font-family="Bebas Neue, sans-serif" font-size="16" fill="#8a7a6a">SIN ILUSTRACIÓN</text></svg>')}'`
+                    ? `url('data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="124" viewBox="0 0 200 124"><rect width="200" height="124" fill="#eaddcb"/><text x="100" y="62" text-anchor="middle" dominant-baseline="middle" font-family="Heritage Sans, sans-serif" font-size="16" fill="#8a7a6a">SIN ILUSTRACIÓN</text></svg>')}'`
                     : `url('${activePlace.image}')`,
                   backgroundPosition: activePlace.imagePosition || "center",
                 }}>

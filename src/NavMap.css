@@ -45,7 +45,7 @@
 }
 
 .navmap-instruction-action {
-  font-family: "Plus Jakarta Sans", "Outfit", Arial, sans-serif;
+  font-family: var(--ds-font-body);
   font-size: 20px;
   font-weight: 800;
   line-height: 1.2;
@@ -410,7 +410,7 @@
 }
 
 .navmap-bottom-time {
-  font-family: "Plus Jakarta Sans", "Outfit", Arial, sans-serif;
+  font-family: var(--ds-font-body);
   font-size: 24px;
   font-weight: 800;
   color: #000;
@@ -624,7 +624,7 @@
 }
 
 .navmap-arrival-title {
-  font-family: "Plus Jakarta Sans", "Outfit", Arial, sans-serif;
+  font-family: var(--ds-font-body);
   font-size: 24px;
   font-weight: 800;
   color: #fff;

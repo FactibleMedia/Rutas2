@@ -122,7 +122,7 @@
 .mapas-floating-popup__kicker {
   margin: 0 0 4px;
   color: #df9730;
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--ds-font-serif);
   letter-spacing: 0.08em;
   font-size: 18px;
 }
@@ -130,7 +130,7 @@
 .mapas-floating-popup__content h3 {
   margin: 0;
   color: #243126;
-  font-family: "Playfair Display", serif;
+  font-family: var(--ds-font-serif);
   font-size: 1.45rem;
   line-height: 1.05;
 }
@@ -569,7 +569,7 @@
 }
 
 .mapas-route-places__name {
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--ds-font-serif);
   font-size: 22px;
   color: var(--mapas-green);
   letter-spacing: 0.02em;
@@ -708,7 +708,7 @@
 }
 
 .mapas-nav-panel__name {
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--ds-font-serif);
   font-size: 16px;
   color: var(--mapas-green);
   display: block;
@@ -1100,7 +1100,7 @@
   gap: 12px;
   background: #2a170c;
   color: rgba(255, 252, 230, 0.4);
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--ds-font-serif);
   font-size: 18px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1118,7 +1118,7 @@
   justify-content: center;
   background: #eaddcb;
   color: #8a7a6a;
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--ds-font-serif);
   font-size: 11px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1245,7 +1245,7 @@
 }
 
 .mapas-expanded-title {
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--ds-font-display);
   font-size: clamp(2.8rem, 5vw, 4.2rem);
   line-height: 0.92;
   letter-spacing: 0.02em;
@@ -1275,7 +1275,7 @@
   font-weight: 600;
   color: #3f4a37;
   line-height: 1.5;
-  font-family: "Outfit", sans-serif;
+  font-family: var(--ds-font-body);
 }
 
 .mapas-expanded-desc {
@@ -1283,7 +1283,7 @@
   font-size: 1rem;
   color: #5f6758;
   line-height: 1.8;
-  font-family: "Outfit", sans-serif;
+  font-family: var(--ds-font-body);
   text-align: justify;
 }
 
@@ -1340,7 +1340,7 @@
   border: none;
   border-radius: 10px;
   padding: 14px 18px;
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--ds-font-display);
   font-size: 18px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1472,7 +1472,7 @@
 
 .mapas-side-card-title {
   margin: 0;
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--ds-font-display);
   font-size: 24px;
   letter-spacing: 0.02em;
   color: var(--mapas-green);
@@ -1591,7 +1591,7 @@
 
 .mapas-nav-dest-name {
   margin: 0;
-  font-family: "Playfair Display", serif;
+  font-family: var(--ds-font-serif);
   font-size: 1.2rem;
   font-weight: 700;
   color: #243126;
@@ -1944,7 +1944,7 @@
 .mapas-modal-body h1 {
   margin: 0 0 8px;
   color: #111111;
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--ds-font-display);
   font-size: clamp(3rem, 5vw, 4.2rem);
   line-height: 0.92;
   letter-spacing: 0.02em;
@@ -2073,7 +2073,7 @@
 .mapas-navigation-kicker {
   margin: 0 0 4px;
   color: #df9730;
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--ds-font-serif);
   letter-spacing: 0.08em;
   font-size: 20px;
 }
@@ -2081,7 +2081,7 @@
 .mapas-navigation-head h2 {
   margin: 0;
   color: #2d2543;
-  font-family: "Playfair Display", serif;
+  font-family: var(--ds-font-serif);
   font-size: 1.3rem;
 }
 
@@ -2165,14 +2165,14 @@
 }
 
 .mapas-eta-label {
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--ds-font-serif);
   letter-spacing: 0.12em;
   font-size: 18px;
   opacity: 0.82;
 }
 
 .mapas-eta-card strong {
-  font-family: "Playfair Display", serif;
+  font-family: var(--ds-font-serif);
   font-size: clamp(2rem, 4vw, 2.8rem);
   line-height: 1;
 }
@@ -2218,7 +2218,7 @@
 
 .mapas-tracking-kicker {
   margin: 0 0 4px;
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--ds-font-serif);
   letter-spacing: 0.12em;
   color: #f4ba63;
   font-size: 20px;
@@ -2226,7 +2226,7 @@
 
 .mapas-tracking-head h3 {
   margin: 0;
-  font-family: "Playfair Display", serif;
+  font-family: var(--ds-font-serif);
   font-size: 1.4rem;
   line-height: 1.05;
 }
@@ -2650,7 +2650,7 @@
 }
 
 .mapas-nav-card__title {
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--ds-font-serif);
   font-size: 15px;
   letter-spacing: 0.04em;
   color: var(--mapas-green);

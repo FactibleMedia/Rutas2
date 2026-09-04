@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { supabase } from "./supabaseClient";
 import AuthModal from "./AuthModal";
 import ProfileModal from "./ProfileModal";
@@ -11,10 +11,9 @@ const USER_SESSION_KEY = "rutas_user_session";
 const navItems = [
   { id: "inicio", label: "Inicio", to: "/inicio" },
   { id: "mapas", label: "Mapa", to: "/mapas" },
-  { id: "rutas-interactivas", label: "Rutas", to: "/rutas-interactivas" },
-  { id: "glosario", label: "Glosario", to: "/glosario" },
   { id: "galeria", label: "Galería", to: "/galeria" },
   { id: "acerca", label: "Acerca de", to: "/acerca-de" },
+  { id: "glosario", label: "Glosario", to: "/glosario" },
 ];
 
 function getInitialSession() {
@@ -27,11 +26,10 @@ function getInitialSession() {
 }
 
 export default function TopBar({
-  activeSection = "inicio",
   isAuthenticated: propIsAuthenticated,
   user: propUser,
-  onSectionChange = () => {},
 }) {
+  const { pathname } = useLocation();
   const [authUser, setAuthUser] = useState(getInitialSession);
   const [showAuth, setShowAuth] = useState(null); // null | "login" | "register"
   const [showProfile, setShowProfile] = useState(false);
@@ -219,33 +217,21 @@ export default function TopBar({
           </div>
 
           <nav className="topbar__nav" aria-label="Navegación principal">
-            {navItems.map((item) =>
-              item.to ? (
-                <Link
-                  key={item.id}
-                  to={item.to}
-                  className={`topbar__link${activeSection === item.id ? " active" : ""}`}
-                >
-                  {item.label}
-                </Link>
-              ) : (
-                <a
-                  key={item.id}
-                  href={`#${item.id}`}
-                  className={`topbar__link${activeSection === item.id ? " active" : ""}`}
-                  onClick={() => onSectionChange(item.id)}
-                >
-                  {item.label}
-                </a>
-              )
-            )}
-          </nav>
-
-          <div className="topbar__actions">
-            {/* Search */}
+            {navItems.map((item) => (
+              <Link
+                key={item.id}
+                to={item.to}
+                className={`topbar__link${pathname === item.to ? " active" : ""}`}
+              >
+                {item.label}
+              </Link>
+            ))}
             <button type="button" className="topbar__search-btn" aria-label="Buscar">
               <span className="topbar__search-icon" aria-hidden="true" />
             </button>
+          </nav>
+
+          <div className="topbar__actions">
 
             {isAuthenticated ? (
               <div ref={menuRef} className="topbar__user-area">
@@ -428,17 +414,10 @@ export default function TopBar({
               <>
                 <button
                   type="button"
-                  className="topbar__btn topbar__btn--login"
+                  className="topbar__btn"
                   onClick={() => { setShowAuth("login"); }}
                 >
-                  <span className="topbar__btn-label">Iniciar sesión</span>
-                  <span className="topbar__btn-icon">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4" />
-                      <polyline points="10 17 15 12 10 7" />
-                      <line x1="15" y1="12" x2="3" y2="12" />
-                    </svg>
-                  </span>
+                  Iniciar sesión
                 </button>
                 <button
                   type="button"
@@ -472,41 +451,17 @@ export default function TopBar({
               </div>
 
               <div className="topbar__mobile-nav-items">
-                {navItems.map((item) => {
-                  const content = (
-                    <>
-                      <NavIcon id={item.id} />
-                      <span>{item.label}</span>
-                    </>
-                  );
-
-                  if (item.to) {
-                    return (
-                      <Link
-                        key={item.id}
-                        to={item.to}
-                        className={`topbar__mobile-link${activeSection === item.id ? " active" : ""}`}
-                        onClick={() => setShowMobileNav(false)}
-                      >
-                        {content}
-                      </Link>
-                    );
-                  }
-
-                  return (
-                    <a
-                      key={item.id}
-                      href={`#${item.id}`}
-                      className={`topbar__mobile-link${activeSection === item.id ? " active" : ""}`}
-                      onClick={() => {
-                        onSectionChange(item.id);
-                        setShowMobileNav(false);
-                      }}
-                    >
-                      {content}
-                    </a>
-                  );
-                })}
+                {navItems.map((item) => (
+                  <Link
+                    key={item.id}
+                    to={item.to}
+                    className={`topbar__mobile-link${pathname === item.to ? " active" : ""}`}
+                    onClick={() => setShowMobileNav(false)}
+                  >
+                    <NavIcon id={item.id} />
+                    <span>{item.label}</span>
+                  </Link>
+                ))}
               </div>
 
               {isAuthenticated ? (
@@ -589,7 +544,7 @@ export default function TopBar({
                   </button>
                   <button
                     type="button"
-                    className="topbar__mobile-auth-btn topbar__mobile-auth-btn--secondary"
+                    className="topbar__mobile-auth-btn"
                     onClick={() => { setShowAuth("login"); setShowMobileNav(false); }}
                   >
                     Iniciar sesión

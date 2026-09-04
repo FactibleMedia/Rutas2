@@ -1,6 +1,6 @@
 /* Fonts (@import + @font-face) now live in src/styles/fonts.css, imported
-   once from main.jsx -- this file requested the same Outfit/Roboto weights
-   and the same two local faces. */
+   once from main.jsx. This file's own --font-* aliases below just repoint
+   to the shared --ds-font-* tokens. */
 :root {
   --glos-primary: rgb(var(--ds-orange));
   --glos-primary-dark: #a03d10;
@@ -11,8 +11,8 @@
   --glos-bg-cats: rgb(var(--ds-cream));
   --font-trattatello: var(--ds-font-display);
   --font-heritage: var(--ds-font-serif);
-  --font-roboto: var(--ds-font-roboto);
-  --font-outfit: var(--ds-font-outfit);
+  --font-roboto: var(--ds-font-body);
+  --font-outfit: var(--ds-font-body);
 }
 
 /* =========================================================

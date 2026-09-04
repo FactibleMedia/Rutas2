@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom";
 import logoFooter from "./assets/mcp/logo_footer.png";
-import iconInstagram from "./assets/mcp/icon_instagram.png";
-import iconYoutube from "./assets/mcp/icon_youtube.png";
-import iconLocation from "./assets/mcp/icon_location.png";
-import iconMail from "./assets/mcp/icon_mail.png";
+import iconInstagram from "./assets/mcp/icon_instagram.svg";
+import iconYoutube from "./assets/mcp/icon_youtube.svg";
+import iconLocation from "./assets/mcp/icon_location.svg";
+import iconMail from "./assets/mcp/icon_mail.svg";
 import "./Footer.css";
 
 export default function Footer() {
@@ -68,7 +68,7 @@ export default function Footer() {
       </div>
 
       <div className="footer__divider">
-        <p className="footer__copy">© 2026 Rutas de Valledupar. Todos los derechos reservados. Hecho con amor en Colombia.</p>
+        <p className="footer__copy">© 2026 Rutas de Valledupar. Todos los derechos reservados. Hecho con &#x2764; en Colombia.</p>
         <button className="footer__back-top" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} aria-label="Volver arriba">
           ↑
         </button>

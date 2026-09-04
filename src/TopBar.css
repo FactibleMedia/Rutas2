@@ -37,52 +37,50 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 10px;
   flex: 1;
 }
 
 .topbar__link {
   position: relative;
-  color: #fffce6;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 26px;
+  color: rgb(var(--ds-cream));
   text-decoration: none;
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--ds-font-serif);
   font-size: 20px;
   font-weight: 400;
-  letter-spacing: -0.02em;
-  text-transform: uppercase;
-  padding: 10px 14px;
+  letter-spacing: -0.5px;
+  text-transform: none;
+  /* All nav labels are uppercase-styled text with no descenders, so the
+     font's reserved descender space (below the baseline) sits empty and
+     pushes the visible glyphs above true vertical center. A slightly
+     taller top padding than bottom compensates so the ink -- not just the
+     line box -- lands centered in the pill. */
+  padding: 3.6px 16px 0;
   line-height: 1;
-  transition: color 220ms ease;
-}
-
-.topbar__link::after {
-  content: "";
-  position: absolute;
-  bottom: 4px;
-  left: 50%;
-  transform: translateX(-50%) scaleX(0);
-  width: 60%;
-  height: 3px;
-  border-radius: 2px;
-  background: #e8971b;
-  transition: transform 220ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  border-radius: var(--ds-radius-pill);
+  background: transparent;
+  transition: background-color 180ms ease, color 180ms ease;
 }
 
 .topbar__link:hover {
-  color: #fffce6;
+  color: rgb(var(--ds-cream));
+  text-decoration: underline;
 }
 
-.topbar__link:hover::after {
-  transform: translateX(-50%) scaleX(1);
+.topbar__link:active {
+  background: rgb(var(--ds-orange));
+  color: rgb(var(--ds-cream));
+  text-decoration: none;
 }
 
 .topbar__link.active {
-  color: #fffce6;
-}
-
-.topbar__link.active::after {
-  transform: translateX(-50%) scaleX(1);
-  background: #e8971b;
+  background: rgb(var(--ds-amber));
+  color: rgb(var(--ds-cream));
+  text-decoration: none;
 }
 
 .topbar__actions {
@@ -93,8 +91,8 @@
 }
 
 .topbar__search-btn {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   display: grid;
   place-items: center;
   border: none;
@@ -111,8 +109,8 @@
 
 .topbar__search-icon {
   position: relative;
-  width: 18px;
-  height: 18px;
+  width: 14px;
+  height: 14px;
   display: block;
   border: 2px solid #fffce6;
   border-radius: 50%;
@@ -122,10 +120,10 @@
 .topbar__search-icon::after {
   content: "";
   position: absolute;
-  right: -6px;
-  bottom: -3px;
-  width: 9px;
-  height: 2.5px;
+  right: -5px;
+  bottom: -2px;
+  width: 7px;
+  height: 2px;
   border-radius: var(--ds-radius-pill);
   background: #fffce6;
   transform: rotate(45deg);
@@ -134,18 +132,27 @@
 
 .topbar__btn {
   appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: none;
   border-radius: 6px;
-  padding: 10px 18px;
-  font-family: "Bebas Neue", sans-serif;
-  font-size: 20px;
+  height: 48px;
+  /* Uppercase button labels have no descenders, so the font's reserved
+     descender space sits empty and pushes the ink above true vertical
+     center -- same fix as .topbar__link, taller top padding than bottom
+     to compensate. */
+  padding: 6px 20px 3.6px;
+  font-family: var(--ds-font-serif);
+  font-size: 22px;
   font-weight: 400;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.44px;
+  line-height: 1;
   text-transform: uppercase;
   cursor: pointer;
-  background: #e8971b;
-  color: #322014;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  background: rgb(var(--ds-amber));
+  color: rgb(var(--ds-cream));
+  box-shadow: 0px 4px 2px rgba(0, 0, 0, 0.25);
   transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
 }
 
@@ -337,24 +344,24 @@
   align-items: center;
   gap: 14px;
   padding: 14px 12px;
-  color: rgba(255, 252, 230, 0.7);
+  color: rgb(var(--ds-cream) / 0.7);
   text-decoration: none;
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--ds-font-serif);
   font-size: 22px;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+  letter-spacing: -0.5px;
+  text-transform: none;
   border-radius: 10px;
   transition: all 180ms ease;
 }
 
 .topbar__mobile-link:hover {
-  color: #fffce6;
+  color: rgb(var(--ds-cream));
   background: rgba(255, 255, 255, 0.05);
 }
 
 .topbar__mobile-link.active {
-  color: #fffce6;
-  background: rgba(232, 151, 27, 0.12);
+  color: rgb(var(--ds-cream));
+  background: rgb(var(--ds-amber));
 }
 
 .topbar__mobile-link svg {
@@ -364,7 +371,7 @@
 
 .topbar__mobile-link.active svg {
   opacity: 1;
-  color: #e8971b;
+  color: rgb(var(--ds-cream));
 }
 
 /* Mobile drawer footer (auth) */
@@ -397,7 +404,7 @@
 .topbar__mobile-user-name {
   margin: 0;
   color: #fffce6;
-  font-family: "Inter", sans-serif;
+  font-family: var(--ds-font-body);
   font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
@@ -408,7 +415,7 @@
 .topbar__mobile-user-badge {
   font-size: 10px;
   color: #e89252;
-  font-family: "Inter", sans-serif;
+  font-family: var(--ds-font-body);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -431,7 +438,7 @@
   padding: 11px 8px;
   color: rgba(255, 252, 230, 0.75);
   text-decoration: none;
-  font-family: "Inter", sans-serif;
+  font-family: var(--ds-font-body);
   font-size: 13px;
   font-weight: 500;
   border: none;
@@ -458,7 +465,7 @@
   color: #c8b8a6;
   border-radius: 10px;
   padding: 12px;
-  font-family: "Inter", sans-serif;
+  font-family: var(--ds-font-body);
   font-size: 13px;
   font-weight: 500;
   display: flex;
@@ -473,33 +480,25 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
-.topbar__mobile-auth-btn {
+.topbar__mobile-auth-btn,
+.topbar__mobile-auth-btn--secondary {
   width: 100%;
   border: none;
   border-radius: 10px;
   padding: 14px;
-  font-family: "Bebas Neue", sans-serif;
+  font-family: var(--ds-font-serif);
   font-size: 18px;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.44px;
   text-transform: uppercase;
   cursor: pointer;
-  background: #e8971b;
-  color: #322014;
+  background: rgb(var(--ds-amber));
+  color: rgb(var(--ds-cream));
   transition: background 180ms ease;
 }
 
-.topbar__mobile-auth-btn:hover {
-  background: #f5a52e;
-}
-
-.topbar__mobile-auth-btn--secondary {
-  background: transparent;
-  color: #fffce6;
-  border: 1px solid rgba(255, 252, 230, 0.2);
-}
-
+.topbar__mobile-auth-btn:hover,
 .topbar__mobile-auth-btn--secondary:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: #f5a52e;
 }
 
 /* =========================================================
@@ -513,20 +512,6 @@
   gap: 8px;
 }
 
-/* =========================================================
-   LOGIN BUTTON ICON (mobile)
-   ========================================================= */
-
-.topbar__btn--login {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.topbar__btn-icon {
-  display: none;
-}
-
 @keyframes auth-fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -534,12 +519,11 @@
 
 @media (max-width: 1080px) {
   .topbar__nav {
-    gap: 4px;
+    gap: 6px;
   }
 
   .topbar__link {
-    font-size: 17px;
-    padding: 10px 10px;
+    padding: 0 12px;
   }
 
   .topbar__actions {
@@ -547,8 +531,8 @@
   }
 
   .topbar__btn {
-    font-size: 17px;
-    padding: 9px 14px;
+    font-size: 18px;
+    padding: 0 16px;
   }
 }
 
@@ -584,78 +568,12 @@
     display: flex;
   }
 
-  /* Compact auth buttons */
+  /* Collapsed mobile bar shows only logo + hamburger, matching the Figma
+     mobile mock (search + both auth buttons live only in the drawer now).
+     Logged-in users lose the redundant quick-access avatar here too, but
+     the drawer's logged-in footer already fully duplicates avatar, name,
+     menu items, and logout -- nothing becomes unreachable. */
   .topbar__actions {
-    gap: 4px;
-  }
-
-  .topbar__btn {
-    font-size: 0;
-    padding: 8px 10px;
-    min-width: 40px;
-    min-height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .topbar__btn--login {
-    background: transparent;
-    border: 1px solid rgba(255, 252, 230, 0.25);
-    color: #fffce6;
-  }
-
-  .topbar__btn-icon {
-    display: flex;
-  }
-
-  .topbar__btn-label {
     display: none;
-  }
-
-  /* Regístrate button - show only first letter or abbreviation */
-  .topbar__btn:not(.topbar__btn--login) {
-    font-size: 14px;
-    padding: 8px 12px;
-    letter-spacing: 0.02em;
-  }
-
-  /* Search button smaller */
-  .topbar__search-btn {
-    width: 36px;
-    height: 36px;
-  }
-
-  .topbar__search-icon {
-    width: 16px;
-    height: 16px;
-  }
-
-  .topbar__search-icon::after {
-    width: 7px;
-    height: 2px;
-    right: -5px;
-    bottom: -2px;
-  }
-
-  /* User area compact */
-  .topbar__user-area {
-    gap: 4px;
-  }
-
-  .topbar__menu-btn {
-    width: 36px;
-    height: 36px;
-  }
-
-  .topbar__menu-line {
-    width: 16px;
-    margin: 2.5px 0;
-  }
-
-  .topbar__avatar {
-    width: 34px;
-    height: 34px;
-    font-size: 11px;
   }
 }

@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import TopBar from "../TopBar";
 import Footer from "../Footer";
-import iconInstagram from "../assets/mcp/icon_instagram.png";
-import iconMail from "../assets/mcp/icon_mail.png";
+import iconInstagram from "../assets/mcp/icon_instagram.svg";
+import iconMail from "../assets/mcp/icon_mail.svg";
 import { supabase, isSupabaseReady } from "../supabaseClient";
 import "./AcercaDe.css";
 
@@ -432,7 +432,7 @@ function ContactSection() {
 export default function AcercaDe() {
   return (
     <div className="page-shell acerca-page">
-      <TopBar activeSection="acerca" />
+      <TopBar />
 
       <main className="acerca-page__main">
         {/* SECTION 1: Hero Header */}

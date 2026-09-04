@@ -13,6 +13,7 @@
 :root {
   --font-trattatello: var(--ds-font-display);
   --font-heritage: "Heritage Sans", serif;
+--font-outfit: "Outfit", sans-serif;
   --cream: rgb(var(--ds-cream));
   --dark: rgb(var(--ds-dark));
   --orange: rgb(var(--ds-orange));
@@ -48,7 +49,7 @@
   font-size: 18px;
   padding: 8px 12px;
   text-decoration: none;
-  font-family: "Palatino Linotype", Georgia, serif;
+  font-family: var(--ds-font-serif);
   position: relative;
 }
 
@@ -84,7 +85,7 @@
   border-radius: 6px;
   background: var(--cream);
   color: var(--dark);
-  font-family: "Palatino Linotype", Georgia, serif;
+  font-family: var(--ds-font-serif);
   font-size: 17px;
   padding: 8px 12px;
   cursor: pointer;
@@ -191,7 +192,7 @@
   border-radius: 8px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  font-family: "Bree Serif", Georgia, serif;
+  font-family: var(--ds-font-display);
   font-size: clamp(14px, 1.2vw, 22px);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
 }
@@ -220,7 +221,7 @@
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  font-family: "Bebas Neue", "Outfit", sans-serif;
+  font-family: var(--ds-font-serif);
   font-size: clamp(64px, 5.8vw, 98px);
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -278,75 +279,72 @@
 .maps-section {
   position: relative;
   width: 100%;
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   overflow: hidden;
-  transition: background-color 700ms ease;
-  font-family: "Roboto", Arial, sans-serif;
-  padding-top: 112px; /* 72px TopBar fija + 40px de aire */
+  font-family: var(--ds-font-body);
+  background-color: #fff4db;
+  color: #2c1a0e;
+  padding-top: 78px; /* 72px TopBar fija + 6px de aire */
+  gap: 40px;
 }
 
-/* ── Background image — ocupa todo el contenedor ── */
-.maps-section__bg {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
+/* ── Map + logo block — map centrada, ~95% ancho (73% x1.3), 50% opacidad
+   (Figma base, scaled 30% larger); logo overlaid, also scaled 30% larger.
+   Both live in normal flow now so the message/button/arrow below always
+   render after this block, never overlapping it. ── */
+.maps-section__map-area {
+  position: relative;
+  width: min(1181px, 61%);
+  aspect-ratio: 1402 / 812;
+  margin: 0 auto;
   overflow: hidden;
 }
 
-.maps-section__bg-img {
+/* Stacked crossfade: every background sits in the same box, only the
+   --active one is visible; toggling the class (every 4s, see Maps() in
+   InicioPage.jsx) transitions opacity + a subtle scale settle instead of
+   replacing the image, so the swap is a smooth fade rather than a cut. */
+.maps-section__map-img {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   display: block;
   object-fit: cover;
-}
-
-.maps-section__bg-img--current {
-  z-index: 1;
-  animation: mapsImageIn 600ms ease both;
-}
-
-.maps-section__bg-img--prev {
-  z-index: 2;
-  animation: mapsImageOut 500ms ease both;
-  pointer-events: none;
-}
-
-@keyframes mapsImageIn {
-  from { opacity: 0; transform: scale(0.97); }
-  to   { opacity: 1; transform: scale(1); }
-}
-
-@keyframes mapsImageOut {
-  from { opacity: 1; }
-  to   { opacity: 0; }
-}
-
-.maps-section__bg-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  background: rgba(0, 0, 0, 0.25);
-  pointer-events: none;
   opacity: 0;
-  transition: opacity 500ms ease;
+  transform: scale(1.04);
+  transition: opacity 900ms var(--ds-ease-standard), transform 900ms var(--ds-ease-standard);
+  pointer-events: none;
 }
 
-.maps-section__bg-overlay--visible {
-  opacity: 1;
+.maps-section__map-img--active {
+  opacity: 0.5;
+  transform: scale(1);
 }
 
-/* ── Content ── */
+.maps-section__logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  /* vw fallback capped below the map area's own 61vw width (see
+     .maps-section__map-area) so the logo never exceeds its clipped
+     container on narrow viewports. */
+  width: min(550px, 50vw);
+  height: auto;
+  object-fit: contain;
+}
+
+/* ── Content — message, button and arrow, below the map block ── */
 .maps-section__content {
   position: relative;
   z-index: 1;
   width: 100%;
   max-width: 900px;
-  padding: 40px 24px 60px;
+  padding: 0 24px 60px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -354,87 +352,44 @@
   text-align: center;
 }
 
-/* Logo */
-.maps-section__header {
-  display: flex;
-  justify-content: center;
-}
-
-.maps-section__logo {
-  width: min(320px, 75vw);
-  height: auto;
-  object-fit: contain;
-}
-
-/* Route pills */
-.maps-section__pills {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 14px;
-  z-index: 2;
-}
-
-.maps-section__pill {
-  padding: 10px 24px;
-  border-radius: 4px;
-  border: none;
-  font-family: "Roboto", Arial, sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 400ms ease, color 400ms ease, transform 250ms ease, box-shadow 250ms ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.maps-section__pill:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
-}
-
-.maps-section__pill--active {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
-}
-
-/* Subtitle */
-.maps-section__subtitle {
-  font-family: "Roboto", Arial, sans-serif;
-  font-size: 15px;
-  line-height: 1.6;
-  max-width: 560px;
-  opacity: 0.9;
-  font-weight: 400;
+/* Persistent intro paragraph — entre pills y CTA (antes footer, tras el CTA) */
+.maps-section__intro {
+  font-family: var(--ds-font-body);
+  font-size: clamp(14px, 1.6vw, 16px);
+  line-height: 1.4;
+  max-width: 483px;
+  font-weight: 100;
+  color: #2c1a0e;
   margin: 0;
-  animation: mapsFadeIn 400ms ease;
 }
 
-@keyframes mapsFadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+/* CTA + chevron */
+.maps-section__cta-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
 }
 
-/* CTA Button */
 .maps-section__cta {
-  padding: 12px 32px;
-  background: #2F241F;
-  color: #E8E4D9;
+  padding: 10px 24px;
+  background: #2c1a0e;
+  color: rgb(var(--ds-cream));
   border: none;
-  border-radius: 4px;
-  font-family: "Roboto", Arial, sans-serif;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.2em;
+  border-radius: 6px;
+  font-family: var(--ds-font-display);
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: 1.8px;
   text-transform: uppercase;
   cursor: pointer;
-  transition: all 300ms ease;
+  transition: background-color var(--ds-duration-base) var(--ds-ease-standard),
+              transform var(--ds-duration-fast) var(--ds-ease-standard);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
 }
 
 .maps-section__cta:hover {
-  background: #1A1310;
+  background: #1a1008;
   transform: scale(1.04);
 }
 
@@ -442,82 +397,81 @@
   transform: scale(0.97);
 }
 
-/* Footer description — fuera del mapa */
-.maps-section__footer {
-  width: min(754px, 90vw);
-  flex-shrink: 0;
-  margin-top: 20px;
-  padding-bottom: 40px;
+.maps-section__chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36.77px;
+  height: 36.77px;
 }
 
-.maps-section__footer p {
-  font-family: "Roboto", Arial, sans-serif;
-  font-size: clamp(18px, 1.8vw, 28px);
-  line-height: 1.7;
-  opacity: 0.9;
-  font-weight: 400;
-  margin: 0;
+.maps-section__chevron-icon {
+  display: block;
+  width: 26px;
+  height: 26px;
+  transform: rotate(45deg);
 }
 
 /* Responsive */
 @media (max-width: 900px) {
   .maps-section {
-    padding-top: 92px; /* 72px TopBar + 20px de aire */
+    padding-top: 76px; /* 72px TopBar + 4px de aire */
+    gap: 28px;
   }
 
   .maps-section__content {
-    padding: 24px 20px 40px;
+    padding: 0 20px 40px;
     gap: 20px;
   }
 
   .maps-section__logo {
-    width: min(240px, 65vw);
+    width: min(412px, 50vw);
   }
 
-  .maps-section__pill {
-    padding: 8px 18px;
-    font-size: 12px;
+  .maps-section__intro {
+    max-width: 380px;
+    font-size: clamp(12px, 2.2vw, 15px);
   }
 
-  .maps-section__footer {
-    width: min(600px, 90vw);
+  .maps-section__cta {
+    padding: 8px 20px;
+    font-size: 17px;
   }
 }
 
 @media (max-width: 600px) {
   .maps-section {
-    padding-top: 84px; /* 64px TopBar + 20px de aire */
+    padding-top: 68px; /* 64px TopBar + 4px de aire */
+    gap: 20px;
   }
 
   .maps-section__content {
-    padding: 16px 14px 30px;
+    padding: 0 14px 30px;
     gap: 16px;
   }
 
   .maps-section__logo {
-    width: min(180px, 60vw);
-  }
-
-  .maps-section__pills {
-    gap: 8px;
-  }
-
-  .maps-section__pill {
-    padding: 6px 14px;
-    font-size: 11px;
+    width: min(308px, 50vw);
   }
 
   .maps-section__cta {
-    padding: 10px 24px;
+    padding: 6px 18px;
+    font-size: 14px;
+  }
+
+  .maps-section__intro {
+    max-width: 300px;
     font-size: 11px;
   }
 
-  .maps-section__subtitle {
-    font-size: 13px;
+  .maps-section__chevron {
+    width: 28px;
+    height: 28px;
   }
 
-  .maps-section__footer p {
-    font-size: clamp(16px, 3.5vw, 20px);
+  .maps-section__chevron-icon {
+    width: 20px;
+    height: 20px;
   }
 }
 
@@ -534,24 +488,24 @@
 .glossary__heading h2 {
   color: #000;
   text-align: center;
-  font-family: var(--font-trattatello);
-  font-size: clamp(32px, 5vw, 60px);
+  font-family: var(--font-heritage);
+  font-size: clamp(32px, 5vw, 40px);
   font-style: normal;
   font-weight: 400;
-  line-height: clamp(28px, 3.5vw, 40px);
-  letter-spacing: 2.4px;
+  line-height: clamp(28px, 3.5vw, 39px);
+  letter-spacing: 1px;
   margin-bottom: 16px;
 }
 
 .glossary__heading p {
   color: #000;
   text-align: center;
-  font-family: "Roboto", sans-serif;
-  font-size: clamp(16px, 2.2vw, 25px);
+  font-family: var(--ds-font-body);
+  font-size: clamp(16px, 2.2vw, 16px);
   font-style: normal;
-  font-weight: 400;
-  line-height: clamp(26px, 3.5vw, 40px);
-  max-width: 1040px;
+  font-weight: 100;
+  /* line-height: clamp(26px, 3.5vw, 40px); */
+  max-width: 500px;
   margin: 0 auto;
 }
 
@@ -676,10 +630,10 @@
   color: #FFFCE6;
   text-align: center;
   font-family: var(--font-trattatello);
-  font-size: clamp(22px, 3.5vw, 43px);
+  font-size: clamp(22px, 3.5vw, 34px);
   font-style: normal;
   font-weight: 400;
-  line-height: clamp(26px, 4.2vw, 51px);
+  line-height: clamp(18px, 3.2vw, 20px);
   letter-spacing: 1.73px;
   margin: 0;
 }
@@ -688,7 +642,7 @@
   color: #FFFCE6;
   text-align: center;
   font-family: var(--font-trattatello);
-  font-size: clamp(14px, 2vw, 24px);
+  font-size: clamp(14px, 2vw, 20px);
   font-style: normal;
   font-weight: 400;
   line-height: 1.2;
@@ -699,10 +653,10 @@
 
 .glossary__card-meaning {
   margin-top: 0.8rem;
-  font-family: "Outfit", sans-serif;
-  font-size: clamp(12px, 1.6vw, 21px);
+  font-family: var(--ds-font-body);
+  font-size: clamp(12px, 1.6vw, 14px);
   font-style: normal;
-  font-weight: 400;
+  font-weight: 100;
   line-height: clamp(13px, 1.7vw, 22px);
   max-width: 88%;
 }
@@ -713,14 +667,16 @@
   margin-bottom: 0.4rem;
   font-weight: 400;
   opacity: 0.9;
+  font-family: var(--font-outfit);
+  font-size: clamp(14px, 1.6vw, 16px);
 }
 
 .glossary__card-meaning p {
   color: #FFFCE6;
-  font-family: "Outfit", sans-serif;
-  font-size: inherit;
-  font-weight: 400;
-  line-height: inherit;
+  font-family: var(--font-outfit);
+  font-size: clamp(12px, 1.4vw, 15px);
+  font-weight: 200;
+  line-height: clamp(13px, 1.7vw, 18px);
 }
 
 .glossary__cta-wrap {
@@ -734,19 +690,21 @@
   background: var(--orange);
   color: #FFFCE6;
   font-family: var(--font-trattatello);
-  font-size: clamp(16px, 2vw, 24px);
+  font-size: clamp(16px, 2vw, 20px);
   font-style: normal;
   font-weight: 400;
   line-height: clamp(26px, 3.2vw, 38px);
   letter-spacing: 2.16px;
   text-transform: uppercase;
-  padding: 14px 30px;
+  padding: 10px 20px;
   cursor: pointer;
 }
 
 .gallery-section {
   background: var(--cream);
   padding-top: 80px;
+  padding-bottom: 40px;
+  background: linear-gradient(180deg, transparent 0%, #fecd59a8 100%);
 }
 
 .gallery-section__heading {
@@ -755,33 +713,32 @@
 }
 
 .gallery-section__heading h2 {
-  color: #262626;
+  color: rgb(var(--ds-orange));
   text-align: center;
   font-feature-settings: 'liga' off;
-  font-family: var(--font-trattatello);
-  font-size: clamp(32px, 5vw, 60px);
+  font-family: var(--font-heritage);
+  font-size: clamp(20px, 3.5vw, 40px);
   font-style: normal;
   font-weight: 400;
-  line-height: clamp(42px, 6.5vw, 78px);
-  letter-spacing: 2.4px;
-  max-width: 1000px;
+  line-height: clamp(21px, 3.25vw, 39px);
+  letter-spacing: 1px;
+  max-width: 700px;
   margin: 0 auto 14px;
 }
 
 .gallery-section__heading p {
   color: #262626;
   text-align: center;
-  font-family: "Roboto", sans-serif;
-  font-size: clamp(16px, 2.2vw, 25px);
+  font-family: var(--ds-font-body);
+  font-size: clamp(14px, 1.6vw, 16px);
   font-style: normal;
-  font-weight: 500;
+  font-weight: 100;
   line-height: clamp(26px, 3.4vw, 40px);
 }
 
 .gallery-carousel {
   position: relative;
   height: 560px;
-  background: rgba(71, 39, 49, 0.78);
 }
 
 .gallery-slide {
@@ -825,7 +782,7 @@
   right: 0;
   bottom: 0;
   min-height: 112px;
-  padding: 18px 28px;
+  padding: 22px 36px;
   color: #fffce6;
   display: flex;
   align-items: center;
@@ -836,7 +793,7 @@
 .gallery-slide__info h3 {
   color: #FFFCE6;
   font-family: "Heritage Sans", Georgia, serif;
-  font-size: clamp(22px, 3.5vw, 44px);
+  font-size: clamp(22px, 3.5vw, 34px);
   font-style: normal;
   font-weight: 400;
   line-height: clamp(18px, 2.8vw, 35px);
@@ -844,11 +801,10 @@
 
 .gallery-slide__info p {
   color: #FFFCE6;
-  font-family: "Roboto", sans-serif;
-  font-size: clamp(14px, 2vw, 24px);
+  font-family: var(--ds-font-body);
+  font-size: clamp(14px, 2vw, 16px);
   font-style: normal;
-  font-weight: 400;
-  line-height: clamp(20px, 2.8vw, 35px);
+  font-weight: 100;
 }
 
 .gallery-title {
@@ -858,7 +814,7 @@
   transform: translate(-50%, -50%);
   color: #FFFCE6;
   font-family: var(--font-trattatello);
-  font-size: clamp(40px, 8vw, 105px);
+  font-size: clamp(40px, 8vw, 60px);
   font-style: normal;
   font-weight: 400;
   line-height: clamp(32px, 6.5vw, 83px);
@@ -896,12 +852,31 @@
 }
 
 .cta-section {
-  background: var(--orange);
+  background: #c35e26; /* Figma CTA background -- paired with the soft-light
+    map blend below; distinct from --ds-orange used elsewhere on the site */
   text-align: center;
   padding: 78px 20px;
   color: #fffce6;
   position: relative;
   overflow: hidden;
+}
+
+/* Map + illustrated figures background (Figma), blended into the section
+   color rather than shown at full strength */
+.cta-section__bg-map {
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: soft-light;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.cta-section__bg-map img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
 .cta-section__bg-icon {
@@ -919,7 +894,7 @@
   color: #FFFCE6;
   text-align: center;
   font-family: var(--font-trattatello);
-  font-size: clamp(32px, 5vw, 60px);
+  font-size: clamp(32px, 5vw, 44px);
   font-style: normal;
   font-weight: 400;
   line-height: clamp(44px, 6.8vw, 80px);
@@ -931,11 +906,11 @@
 .cta-section p {
   color: #FFFCE6;
   text-align: center;
-  font-family: "Roboto", sans-serif;
-  font-size: clamp(14px, 1.8vw, 20px);
+  font-family: var(--ds-font-body);
+  font-size: clamp(14px, 1.8vw, 16px);
   font-style: normal;
-  font-weight: 500;
-  line-height: clamp(22px, 2.8vw, 32px);
+  font-weight: 100;
+  /* line-height: clamp(22px, 2.8vw, 32px); */
   margin: 10px 0 26px;
   position: relative;
   z-index: 1;
@@ -948,14 +923,15 @@
   color: #FFFCE6;
   text-align: center;
   font-family: var(--font-trattatello);
-  font-size: clamp(16px, 2vw, 24px);
+  font-size: clamp(16px, 2vw, 20px);
   font-style: normal;
   font-weight: 400;
   line-height: clamp(18px, 2.2vw, 26px);
-  padding: 15px 32px;
+  padding: 12px 30px;
   position: relative;
   z-index: 1;
   cursor: pointer;
+  letter-spacing: 1px;
 }
 
 .reveal {

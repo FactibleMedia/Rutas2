@@ -4,7 +4,6 @@
    ========================================================= */
 
 :root {
-  --font-heritage: var(--ds-font-serif);
   --font-trattatello: var(--ds-font-display);
   --font-inter: var(--ds-font-body);
 }
@@ -360,7 +359,7 @@
 .gallery-hero__description {
   margin-top: 28px;
   color: #2C1A0E;
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-inter);
   font-size: 20.804px;
   font-style: normal;
   font-weight: 400;

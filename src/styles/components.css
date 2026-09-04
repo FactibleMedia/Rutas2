@@ -43,7 +43,7 @@
 .submit-word__btn-login {
   background: #b84a12;
   color: #fff;
-  font-family: 'Special Elite', cursive, monospace;
+  font-family: var(--ds-font-display);
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s;

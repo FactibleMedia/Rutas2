@@ -52,7 +52,7 @@
 }
 
 .footer__col-title {
-  font-family: "Palatino Linotype", Georgia, serif;
+  font-family: var(--ds-font-serif);
   color: var(--gold, #d4a853);
   margin-bottom: 14px;
 }

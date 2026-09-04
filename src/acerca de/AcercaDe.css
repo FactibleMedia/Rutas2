@@ -236,7 +236,7 @@
 
 .acerca-intro__quote {
   color: #000;
-  font-family: var(--font-trattatello), "Trattatello", fantasy;
+  font-family: var(--ds-font-display);
   font-size: 38px;
   font-style: normal;
   font-weight: 200;

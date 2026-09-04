@@ -603,7 +603,7 @@ export default function Glossary() {
   return (
     <div className="gloss-page">
       {/* ===== NAVBAR ===== */}
-      <TopBar activeSection="glosario" onSectionChange={() => {}} />
+      <TopBar />
 
       {/* ===== HERO ===== */}
       <section className="gloss-hero">

@@ -1,10 +1,12 @@
-/* One Google Fonts request replacing 8 separate @import lines that were
-   scattered across styles.css, Glossary.css, GalleryPage.css, TermsPage.css,
-   TermsCookies.css, TermsModal.css, SubmitWordModal.css, MisAportes.css and
-   admin/AdminPanel.css. Same families and weights each page already used --
-   nothing added or dropped, just requested once instead of up to 4 times
-   for the same family (Inter alone was imported by 6 different files). */
-@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Bree+Serif&family=Bricolage+Grotesque:wght@700;800&family=Epilogue:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&family=Roboto:wght@400;500;700&family=Space+Grotesk:wght@600&family=Special+Elite&display=swap");
+/* Google Fonts request for the site's typography system: Inter (body/UI
+   text), Outfit (re-added on request, not yet wired into any component),
+   and Material Symbols Outlined (icon font, not typography). Heritage Sans
+   and Trattatello are self-hosted below via local @font-face and are never
+   requested from Google Fonts. Every other family previously loaded here
+   (Bebas Neue, Bree Serif, Bricolage Grotesque, Epilogue, Plus Jakarta Sans,
+   Roboto, Space Grotesk, Special Elite) is still removed, per the site-wide
+   typography consolidation. */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&family=Outfit:wght@300;400;500;600;700&display=swap");
 
 /* These two local fonts were declared identically (byte-for-byte, apart from
    the family name) in 5 different files: styles.css, Glossary.css,

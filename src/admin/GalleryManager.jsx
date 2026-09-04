@@ -954,7 +954,7 @@ export default function GalleryManager() {
                   </div>
                   <div style={{ textAlign: "center", width: "100%", maxWidth: 280 }}>
                     <h4 style={{
-                      fontFamily: "var(--font-trattatello), fantasy",
+                      fontFamily: "var(--font-display)",
                       fontSize: 18,
                       margin: "0 0 4px",
                       color: "#4a3728",

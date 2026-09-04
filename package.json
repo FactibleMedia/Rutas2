@@ -2,14 +2,15 @@
   "name": "rutas",
   "version": "1.0.0",
   "private": true,
-  "description": "Replica React del diseño Rutas de Valledupar desde Figma",
+  "description": "Replica React del dise\u00f1o Rutas de Valledupar desde Figma",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint src",
     "check:assets": "node scripts/check-assets.mjs",
-    "spell:check": "cspell \"src/**/*.{jsx,js,css}\""
+    "spell:check": "cspell \"src/**/*.{jsx,js,css}\"",
+    "push:both": "bash scripts/push-both.sh"
   },
   "engines": {
     "node": ">=20.19.0"

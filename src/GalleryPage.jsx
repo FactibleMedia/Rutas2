@@ -677,10 +677,7 @@ function MultimediaGallery() {
 export default function GalleryPage() {
   return (
     <>
-      <TopBar
-        activeSection="galeria"
-        onSectionChange={() => {}}
-      />
+      <TopBar />
 
       {/* Block 1 – Hero */}
       <section className="gallery-hero">

@@ -2,8 +2,17 @@ import { Suspense, lazy } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { hasAdminSession } from "./admin/adminAuth";
 
-// Inicio is the landing route, so it stays in the initial chunk.
+// Inicio is the landing route, so it stays in the initial chunk. Same for
+// MaintenancePage: when VITE_MAINTENANCE_MODE is on, it effectively becomes
+// the landing page for every anonymous visitor.
 import InicioPage from "./inicio/InicioPage";
+import MaintenancePage from "./MaintenancePage";
+
+// When on, every public route renders the maintenance page instead of its
+// normal content; /admin and /admin/panel stay reachable so the team can
+// keep preparing content while the public site is gated. Toggle by setting
+// VITE_MAINTENANCE_MODE=true in the environment used for the build/deploy.
+const MAINTENANCE_MODE = import.meta.env.VITE_MAINTENANCE_MODE === "true";
 
 // Everything else is split out. Mapas pulls in mapbox-gl, Glossary pulls in
 // framer-motion, and admin/* is a large CRUD surface no anonymous visitor needs
@@ -29,17 +38,6 @@ export default function App() {
     <BrowserRouter>
       <Suspense fallback={<RouteFallback />}>
         <Routes>
-          <Route path="/" element={<Navigate to="/inicio" replace />} />
-          <Route path="/inicio" element={<InicioPage />} />
-          <Route path="/mapas" element={<Mapas />} />
-          <Route path="/glosario" element={<Glossary />} />
-          <Route path="/galeria" element={<GalleryPage />} />
-          <Route path="/mis-aportes" element={<MisAportes />} />
-          <Route path="/acerca-de" element={<AcercaDe />} />
-          <Route path="/terminos-y-condiciones" element={<TermsPage />} />
-          <Route path="/terminos-de-uso-y-cookies" element={<TermsCookies />} />
-          <Route path="/rutas-interactivas" element={<RutasInteractivas />} />
-
           {/* Admin Login */}
           <Route
             path="/admin"
@@ -56,7 +54,23 @@ export default function App() {
             }
           />
 
-          <Route path="*" element={<Navigate to="/" replace />} />
+          {MAINTENANCE_MODE ? (
+            <Route path="*" element={<MaintenancePage />} />
+          ) : (
+            <>
+              <Route path="/" element={<Navigate to="/inicio" replace />} />
+              <Route path="/inicio" element={<InicioPage />} />
+              <Route path="/mapas" element={<Mapas />} />
+              <Route path="/glosario" element={<Glossary />} />
+              <Route path="/galeria" element={<GalleryPage />} />
+              <Route path="/mis-aportes" element={<MisAportes />} />
+              <Route path="/acerca-de" element={<AcercaDe />} />
+              <Route path="/terminos-y-condiciones" element={<TermsPage />} />
+              <Route path="/terminos-de-uso-y-cookies" element={<TermsCookies />} />
+              <Route path="/rutas-interactivas" element={<RutasInteractivas />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </>
+          )}
         </Routes>
       </Suspense>
     </BrowserRouter>

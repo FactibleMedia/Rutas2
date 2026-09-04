@@ -23,6 +23,6 @@ body,
 
 body {
   background: rgb(var(--ds-cream));
-  font-family: "Outfit", Arial, sans-serif;
+  font-family: var(--ds-font-body);
   overflow-x: hidden;
 }

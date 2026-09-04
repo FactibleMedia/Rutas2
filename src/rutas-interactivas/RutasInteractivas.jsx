@@ -159,7 +159,7 @@ export default function RutasInteractivas() {
     const route = routeOptions.find((r) => r.id === selectedRoute);
     return (
       <div className="page-shell rutas-interactivas-page">
-        <TopBar activeSection="rutas-interactivas" />
+        <TopBar />
         <main className="rutas-interactivas__main">
           <section className="rutas-interactivas__map-section">
             <div className="rutas-interactivas__map-top">

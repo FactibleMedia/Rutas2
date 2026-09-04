@@ -54,7 +54,7 @@ function CardPreview({ palabra, significado, categoria, color }) {
           <span style={{ color: "rgba(255,255,255,0.9)", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.12em", display: "block", marginBottom: 4 }}>
             Significado:
           </span>
-          <p style={{ color: "#fff", fontFamily: "Outfit, sans-serif", fontSize: 13, lineHeight: 1.35, margin: 0, textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
+          <p style={{ color: "#fff", fontFamily: "var(--font-body)", fontSize: 13, lineHeight: 1.35, margin: 0, textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
             {significado || "Descripción de la palabra..."}
           </p>
         </div>

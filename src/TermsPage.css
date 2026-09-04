@@ -1,6 +1,7 @@
 /* =========================================================
    TERMS & CONDITIONS FULL PAGE
-   Fonts (Special Elite, Inter) now imported once in src/styles/fonts.css.
+   Fonts (Trattatello, Heritage Sans, Inter) come from the shared --ds-font-*
+   tokens; the @import lives in src/styles/fonts.css.
    ========================================================= */
 
 @keyframes terms-page-float {
@@ -166,11 +167,11 @@
 .terms-page__tilde {
   color: #b84a12;
   font-size: 24px;
-  font-family: serif;
+  font-family: var(--ds-font-display);
 }
 
 .terms-page__title {
-  font-family: 'Special Elite', cursive, monospace;
+  font-family: var(--ds-font-display);
   font-size: clamp(24px, 4vw, 42px);
   color: #2b2b2b;
   letter-spacing: 0.02em;
@@ -211,7 +212,7 @@
 }
 
 .terms-page__section-title {
-  font-family: 'Special Elite', cursive, monospace;
+  font-family: var(--ds-font-serif);
   font-size: 18px;
   font-weight: 700;
   color: #b84a12;

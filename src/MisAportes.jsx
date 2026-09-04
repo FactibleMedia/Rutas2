@@ -19,7 +19,7 @@ const CATEGORY_META = {
 };
 
 const FALLBACK_AVATAR = "data:image/svg+xml," + encodeURIComponent(
-  '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"><rect width="80" height="80" fill="#fef3c7"/><text x="40" y="46" text-anchor="middle" dominant-baseline="middle" font-family="Bebas Neue, sans-serif" font-size="28" fill="#92400e">UV</text></svg>'
+  '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"><rect width="80" height="80" fill="#fef3c7"/><text x="40" y="46" text-anchor="middle" dominant-baseline="middle" font-family="Heritage Sans, sans-serif" font-size="28" fill="#92400e">UV</text></svg>'
 );
 
 function getInitials(name) {
@@ -168,7 +168,7 @@ export default function MisAportes() {
 
   return (
     <div className="ma-page">
-      <TopBar activeSection="inicio" />
+      <TopBar />
 
       <main className="ma-main">
         <div className="ma-container">

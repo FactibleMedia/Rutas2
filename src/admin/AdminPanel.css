@@ -1,4 +1,5 @@
-/* Fonts (Epilogue, Inter, Material Symbols Outlined) now imported once in
+/* Fonts (Trattatello, Heritage Sans, Inter, Material Symbols Outlined) come
+   from the shared --ds-font-* tokens; the @import lives in
    src/styles/fonts.css. */
 
 /* =====================================================
@@ -66,8 +67,8 @@
   --inverse-on-surface: #f6f1e2;
 
   /* Font families */
-  --font-display: "Epilogue", sans-serif;
-  --font-body: "Inter", sans-serif;
+  --font-display: var(--ds-font-display);
+  --font-body: var(--ds-font-body);
 
   /* Border radius */
   --radius-sm: 0.375rem;

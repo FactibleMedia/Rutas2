@@ -1,6 +1,7 @@
 /* =========================================================
    SUBMIT WORD – FULL WINDOW
-   Fonts (Special Elite, Inter) now imported once in src/styles/fonts.css.
+   Fonts (Trattatello, Heritage Sans, Inter) come from the shared --ds-font-*
+   tokens; the @import lives in src/styles/fonts.css.
    ========================================================= */
 
 @keyframes sw-float {
@@ -163,7 +164,7 @@
 }
 
 .submit-word__title {
-  font-family: 'Special Elite', cursive, monospace;
+  font-family: var(--ds-font-display);
   font-size: clamp(26px, 4vw, 44px);
   font-weight: 700;
   color: #2b2b2b;
@@ -229,7 +230,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Special Elite', cursive, monospace;
+  font-family: var(--ds-font-serif);
   font-weight: 700;
   font-size: 20px;
   color: #fff;
@@ -247,7 +248,7 @@
 }
 
 .submit-word__auth-greeting {
-  font-family: 'Special Elite', cursive, monospace;
+  font-family: var(--ds-font-serif);
   font-size: 20px;
   font-weight: 700;
   color: #fff;
@@ -536,7 +537,7 @@
 }
 
 .submit-word__success h3 {
-  font-family: 'Special Elite', cursive, monospace;
+  font-family: var(--ds-font-display);
   font-size: 22px;
   font-weight: 700;
   color: #2d5a1e;
@@ -554,7 +555,7 @@
   margin-top: 20px;
   background: #b84a12;
   color: #fff;
-  font-family: 'Special Elite', cursive, monospace;
+  font-family: var(--ds-font-display);
   font-size: 14px;
   padding: 12px 28px;
   border: none;
