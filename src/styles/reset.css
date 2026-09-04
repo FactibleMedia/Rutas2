@@ -1,0 +1,28 @@
+/* Genuinely global reset, extracted from styles.css. Previously this lived
+   in styles.css, which is imported only by src/inicio/InicioPage.jsx -- so a
+   visitor who landed directly on any other route (a shared /glosario link,
+   for instance) never got the reset at all until/unless InicioPage's chunk
+   happened to load in that session. Importing this from main.jsx makes it
+   apply on every route from first paint, matching what already happened in
+   the common case of visiting /inicio first.
+
+   Everything else that was in styles.css (.page-shell, .navbar*, and the
+   rest of the Inicio-page-specific rules) stays exactly where it was. */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  background: rgb(var(--ds-cream));
+  font-family: "Outfit", Arial, sans-serif;
+  overflow-x: hidden;
+}

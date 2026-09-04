@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { clearAdminSession, getAdminProfile, hasAdminSession, setAdminSession } from "./adminAuth";
+import { setAdminSession } from "./adminAuth";
 import { supabase, isSupabaseReady, getSupabaseStatus } from "../supabaseClient";
 import logoAdmin from "../assets/mcp/logo_admin.png";
 import "./AdminPanel.css";

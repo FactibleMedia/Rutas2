@@ -515,10 +515,6 @@ function ConfigPage() {
         // Si es una plantilla HTML, mostrar editor grande con preview
         if (config.clave.startsWith("template_")) {
           const isExpanded = expandedTemplates[config.clave];
-          const templateName = config.clave
-            .replace("template_", "")
-            .replace(/_/g, " ")
-            .replace(/\b\w/g, (c) => c.toUpperCase());
 
           return (
             <div className="admin-template-editor">

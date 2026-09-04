@@ -1,0 +1,83 @@
+/* ==========================================================================
+   Design tokens
+
+   Prefixed --ds- throughout so nothing here collides with the existing
+   admin/AdminPanel.css token set, which already uses generic Material-3
+   names (--primary, --surface, --outline, --error, etc.) on the same
+   global :root.
+
+   Scope: this file defines the canonical palette/type/radius/shadow scale
+   and rewires the six existing per-file :root blocks (styles.css,
+   Glossary.css, Mapas.css, GalleryPage.css, AcercaDe.css, AuthModal.css) to
+   reference these tokens wherever their value is exactly identical, so the
+   "same color declared under five different names" problem is fixed at the
+   source without touching the ~1,000+ individual component declarations
+   that already reference those per-file variables (var(--orange),
+   var(--glos-primary), etc. keep working exactly as before -- only what
+   they resolve to is now centralized).
+
+   Deliberately NOT collapsed here, because the values are visually
+   distinct, not duplicates: the ~15-shade orange family used across
+   different surfaces (Terms/Submit orange #b84a12 vs Gallery2's #c2622a vs
+   GalleryPage's #c56238 vs admin's #9d3d1c...), the 182 distinct
+   box-shadow declarations (only the ~8 recognizable families below are
+   tokenized), Mapas' own 8-shade green ramp, and the ~150 hex literals that
+   appear in only one file.
+   ========================================================================== */
+
+:root {
+  /* ---- Brand palette (RGB triplets so both `rgb(var(--ds-x))` and
+     `rgb(var(--ds-x) / <alpha>)` come from one token) ---- */
+  --ds-cream: 255 252 230;      /* #fffce6 -- canonical cream, used in 6+ files */
+  --ds-dark: 26 15 8;           /* #1a0f08 -- canonical dark, used in 6+ files */
+  --ds-orange: 187 76 24;       /* #bb4c18 -- brand terracotta (styles --orange, Glossary --glos-primary) */
+  --ds-amber: 232 152 27;       /* #e8981b -- brand amber/gold (styles --amber, Glossary --glos-gold) */
+  --ds-green: 98 124 80;        /* #627c50 -- styles --green */
+  --ds-forest: 70 76 51;        /* #464c33 -- styles --forest, Glossary --glos-green */
+  --ds-purple: 86 78 135;       /* #564e87 -- styles --purple, Glossary --glos-purple */
+  --ds-gold: 212 168 83;        /* #d4a853 -- styles --gold, used by Footer.css col titles */
+
+  /* ---- Fonts (byte-identical stacks, now declared once) ---- */
+  --ds-font-display: "Trattatello", fantasy;   /* decorative headings */
+  --ds-font-serif: "Heritage Sans", Georgia, serif; /* body/serif accents */
+  --ds-font-body: "Inter", sans-serif;
+  --ds-font-outfit: "Outfit", Arial, sans-serif;
+  --ds-font-roboto: "Roboto", Arial, sans-serif;
+
+  /* ---- Radius: the four pill spellings found in the codebase (999px,
+     9999px, 100px, 99px) all render identically -- one token. ---- */
+  --ds-radius-pill: 999px;
+
+  /* ---- Letter-spacing: 9 values cover 123 of 137 declarations found. ---- */
+  --ds-tracking-tightest: -0.02em;
+  --ds-tracking-tight: 0.02em;
+  --ds-tracking-normal: 0.03em;
+  --ds-tracking-wide: 0.04em;
+  --ds-tracking-wider: 0.05em;
+  --ds-tracking-widest: 0.06em;
+  --ds-tracking-2xl: 0.08em;
+  --ds-tracking-3xl: 0.12em;
+  --ds-tracking-4xl: 0.2em;
+
+  /* ---- Motion ---- */
+  --ds-ease: ease;
+  --ds-ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ds-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ds-duration-fast: 150ms;
+  --ds-duration-base: 200ms;
+  --ds-duration-slow: 300ms;
+
+  /* ---- Shadow families: the ~8 recognizable groups out of 182 distinct
+     box-shadow declarations found in the codebase. Everything else stays a
+     literal -- with no real scale behind it, tokenizing would just rename
+     one-off values rather than unify them. ---- */
+  --ds-shadow-soft-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --ds-shadow-soft-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --ds-shadow-soft-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
+  --ds-shadow-soft-xl: 0 24px 64px rgba(0, 0, 0, 0.4);
+  --ds-shadow-brand-glow: 0 4px 12px rgba(184, 74, 18, 0.25);
+  --ds-shadow-brand-glow-lg: 0 6px 20px rgba(184, 74, 18, 0.35);
+  --ds-shadow-focus-ring: 0 0 0 3px rgba(157, 61, 28, 0.08);
+  --ds-shadow-sticker: 3px 3px 0 rgba(60, 32, 12, 0.1); /* MisAportes hard-offset card treatment */
+  --ds-shadow-inset-field: inset 0 2px 4px rgba(0, 0, 0, 0.03); /* form input recess */
+}

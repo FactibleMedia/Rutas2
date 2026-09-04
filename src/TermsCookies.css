@@ -1,8 +1,7 @@
 /* =========================================================
    TERMS OF USE & COOKIES — BILINGUAL PAGE
+   Fonts (Special Elite, Inter) now imported once in src/styles/fonts.css.
    ========================================================= */
-
-@import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Inter:wght@400;500;600;700&display=swap');
 
 @keyframes terms-cookies-float {
   0% { transform: translateY(0px) rotate(0deg); }
@@ -21,32 +20,23 @@
    Page Shell
    ========================================================= */
 
+/* Background properties shared with .terms-page live in
+   src/styles/components.css */
 .terms-cookies {
   position: relative;
   min-height: 100vh;
-  background-color: #f7f3e8;
-  background-image:
-    radial-gradient(#e5dec9 1px, transparent 1px),
-    radial-gradient(#e5dec9 1px, #f7f3e8 1px);
-  background-size: 40px 40px;
-  background-position: 0 0, 20px 20px;
   display: flex;
   flex-direction: column;
   animation: terms-cookies-fade-in 0.5s ease both;
 }
 
-/* Paper texture overlay */
+/* Paper texture overlay -- background properties shared with
+   TermsPage/TermsModal live in src/styles/components.css */
 .terms-cookies__paper-bg {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  background-color: #f7f3e8;
-  background-image:
-    radial-gradient(#e5dec9 1px, transparent 1px),
-    radial-gradient(#e5dec9 1px, #f7f3e8 1px);
-  background-size: 40px 40px;
-  background-position: 0 0, 20px 20px;
 }
 
 /* Floating decorative SVGs */
@@ -335,24 +325,19 @@
   padding: 32px 0 16px;
 }
 
+/* Shared button properties (background, hover background, font-family,
+   border-radius, cursor, transition) live in src/styles/components.css */
 .terms-cookies__btn-back {
-  background: #b84a12;
-  color: #fff;
-  font-family: 'Special Elite', cursive, monospace;
   font-size: 14px;
   letter-spacing: 0.04em;
   padding: 14px 48px;
   border: 1px solid #8a3307;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(184, 74, 18, 0.25);
+  box-shadow: var(--ds-shadow-brand-glow);
 }
 
 .terms-cookies__btn-back:hover {
-  background: #9a3d0e;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(184, 74, 18, 0.35);
+  box-shadow: var(--ds-shadow-brand-glow-lg);
 }
 
 .terms-cookies__btn-back:active {

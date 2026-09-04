@@ -322,48 +322,6 @@ export function useMapLocations() {
   return useSyncExternalStore(subscribeMapLocations, getMapLocationsSnapshot, fallbackLocations);
 }
 
-export async function setMapLocations(locations) {
-  const normalized = cloneLocations(locations).map(normalizeLocation);
-
-  if (!isSupabaseConfigured()) {
-    return persistLocally(normalized);
-  }
-
-  try {
-    // Get existing IDs from DB
-    const { data: existing } = await supabase
-      .from(TABLE_NAME)
-      .select("id");
-
-    const existingIds = new Set((existing || []).map((r) => r.id));
-    const newIds = new Set(normalized.map((l) => l.id));
-
-    // Upsert all locations
-    const rows = normalized.map(toRow);
-    const { error: upsertError } = await supabase
-      .from(TABLE_NAME)
-      .upsert(rows, { onConflict: "id" });
-
-    if (upsertError) throw upsertError;
-
-    // Delete removed locations
-    const toDelete = [...existingIds].filter((id) => !newIds.has(id));
-    if (toDelete.length > 0) {
-      const { error: deleteError } = await supabase
-        .from(TABLE_NAME)
-        .delete()
-        .in("id", toDelete);
-
-      if (deleteError) throw deleteError;
-    }
-
-    await fetchLocations();
-    return normalized;
-  } catch {
-    return persistLocally(normalized);
-  }
-}
-
 export async function upsertMapLocation(location) {
   const normalized = normalizeLocation(location);
 
@@ -408,37 +366,6 @@ export async function removeMapLocation(id) {
     return getMapLocationsSnapshot();
   } catch {
     return persistLocally(getMapLocationsSnapshot().filter((location) => location.id !== id));
-  }
-}
-
-export async function resetMapLocations() {
-  if (!isSupabaseConfigured()) {
-    return persistLocally(DEFAULT_MAP_LOCATIONS);
-  }
-
-  try {
-    // Delete all existing locations
-    const { error: deleteError } = await supabase
-      .from(TABLE_NAME)
-      .delete()
-      .neq("id", "__nonexistent__"); // delete all
-
-    if (deleteError && deleteError.code !== "PGRST116") {
-      // PGRST116 means no rows affected, that's fine
-      throw deleteError;
-    }
-
-    // Insert defaults
-    const { error: insertError } = await supabase
-      .from(TABLE_NAME)
-      .insert(DEFAULT_MAP_LOCATIONS.map(toRow));
-
-    if (insertError) throw insertError;
-
-    await fetchLocations();
-    return fallbackLocations();
-  } catch {
-    return persistLocally(DEFAULT_MAP_LOCATIONS);
   }
 }
 

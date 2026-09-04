@@ -48,7 +48,7 @@ export default function ProfileModal({ onClose, onProfileUpdate }) {
         setUserId(uid);
 
         // Try perfiles_usuario first (regular users)
-        const { data: perfil, error: perfilError } = await supabase
+        const { data: perfil } = await supabase
           .from("perfiles_usuario")
           .select("*")
           .eq("id", uid)

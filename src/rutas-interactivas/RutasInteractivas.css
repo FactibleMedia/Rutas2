@@ -1,18 +1,4 @@
-@font-face {
-  font-family: "Heritage Sans";
-  src: url("/fonts/Heritage-Sans.otf") format("opentype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Trattatello";
-  src: url("/fonts/Trattatello.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
+/* Heritage Sans / Trattatello @font-face now live in src/styles/fonts.css. */
 
 .rutas-interactivas-page {
   background: #f8f0d8;
@@ -332,7 +318,7 @@
   gap: 10px;
   padding: 12px 28px;
   border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 100px;
+  border-radius: var(--ds-radius-pill);
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(8px);
   color: #fff;
@@ -759,7 +745,7 @@
   align-items: center;
   gap: 6px;
   padding: 4px 12px 4px 8px;
-  border-radius: 100px;
+  border-radius: var(--ds-radius-pill);
   background: rgba(255, 255, 255, 0.7);
   border: 1px solid rgba(99, 63, 28, 0.08);
   font-family: "Roboto", Arial, sans-serif;
@@ -1368,7 +1354,7 @@
   align-items: center;
   gap: 8px;
   padding: 10px 20px;
-  border-radius: 100px;
+  border-radius: var(--ds-radius-pill);
   background: #2c2116;
   color: #fffdf0;
   font-family: "Roboto", Arial, sans-serif;
@@ -1408,7 +1394,7 @@
   gap: 10px;
   padding: 14px 28px;
   border: 2px solid rgba(99, 63, 28, 0.12);
-  border-radius: 100px;
+  border-radius: var(--ds-radius-pill);
   background: rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(8px);
   font-family: "Roboto", Arial, sans-serif;

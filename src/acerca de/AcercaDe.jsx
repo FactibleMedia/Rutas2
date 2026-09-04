@@ -38,10 +38,6 @@ const DEFAULT_TEAM = [
 function HeroHeader() {
   return (
     <header className="acerca-hero">
-      {/* Patrones de fondo: izquierdo y derecho */}
-      <div className="acerca-hero__bg-left" />
-      <div className="acerca-hero__bg-right" />
-
       <div className="acerca-hero__inner">
         <div className="acerca-hero__brand">
           {/* Baldosa naranja izquierda */}
@@ -74,7 +70,7 @@ function HeroImageSection() {
       <div className="acerca-hero-image__frame">
         {/* Imagen central */}
         <img
-          src="/assets/acerca/Imagen central.png"
+          src="/assets/acerca/Imagen central.webp"
           alt="Equipo de Rutas de Valledupar"
           className="acerca-hero-image__img"
         />

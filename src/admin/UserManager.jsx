@@ -7,15 +7,6 @@ const ROLE_OPTIONS = [
   { value: "viewer", label: "Lector / Revisor", color: "var(--tertiary)" },
 ];
 
-function getRoleBadgeClass(role) {
-  switch (role) {
-    case "administrador": return "admin-badge--admin";
-    case "editor": return "admin-badge--editor";
-    case "viewer": return "admin-badge--viewer";
-    default: return "";
-  }
-}
-
 function getRoleLabel(role) {
   const option = ROLE_OPTIONS.find((o) => o.value === role);
   return option?.label || role;

@@ -1,2 +1,19 @@
-public/assets/acerca/video.mp4 filter=lfs diff=lfs merge=lfs -text
-rutas1/Mapa_modified.tif filter=lfs diff=lfs merge=lfs -text
+# Normalize line endings — this repo has been edited on both Windows and macOS
+* text=auto eol=lf
+
+# Binary assets: never diff, never munge line endings
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.avif  binary
+*.mp4   binary
+*.otf   binary
+*.ttf   binary
+*.woff  binary
+*.woff2 binary
+*.tgz   binary
+
+# Generated — collapse in diffs and exclude from language stats
+package-lock.json linguist-generated=true -diff

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import TopBar from './TopBar';
@@ -8,8 +8,8 @@ import { supabase } from './supabaseClient';
 import './Glossary.css';
 
 // Image assets from public/assets/glosario/
-const imgMarcoVerde = "/assets/glosario/864b827d37a64e1ef35951b48f48a7d196f73bfc.png";
-const imgMarcoMorado = "/assets/glosario/d94620b583929c8d0a6fb5418d8c875b924f8c60.png";
+const imgMarcoVerde = "/assets/glosario/864b827d37a64e1ef35951b48f48a7d196f73bfc.webp";
+const imgMarcoMorado = "/assets/glosario/d94620b583929c8d0a6fb5418d8c875b924f8c60.webp";
 const imgRecurso1Postal3 = "/assets/glosario/20fd5b503f6b79dff07b513f3bc7604deafa7331.png";
 const imgRecurso3PostalMorado1 = "/assets/glosario/c56c8963ea54ddce3fb1dd22c4276099b158fec3.png";
 

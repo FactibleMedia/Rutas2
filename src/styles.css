@@ -1,52 +1,26 @@
-@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Bree+Serif&display=swap");
+/* Fonts (@import + @font-face) now live in src/styles/fonts.css, imported
+   once from main.jsx. The reset (*, html/body/#root, body background+font)
+   now lives in src/styles/reset.css, for the same reason -- see that file's
+   header comment.
 
-@font-face {
-  font-family: "Heritage Sans";
-  src: url("/fonts/Heritage-Sans.otf") format("opentype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Trattatello";
-  src: url("/fonts/Trattatello.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
+   --font-heritage is deliberately kept as its OWN literal here rather than
+   aliased to the shared --ds-font-serif token: this file's fallback stack
+   is `serif`, while Glossary.css/GalleryPage.css use `Georgia, serif`. That
+   is a real, pre-existing inconsistency between files (not a duplicate),
+   and collapsing it would change the fallback font on this page if
+   Heritage Sans fails to load. Left as two deliberately different values
+   until that's resolved on purpose. */
 :root {
-  --font-trattatello: "Trattatello", fantasy;
+  --font-trattatello: var(--ds-font-display);
   --font-heritage: "Heritage Sans", serif;
-  --cream: #fffce6;
-  --dark: #1a0f08;
-  --orange: #bb4c18;
-  --amber: #e8981b;
-  --green: #627c50;
-  --purple: #564e87;
-  --forest: #464c33;
-  --gold: #d4a853;
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html,
-body,
-#root {
-  min-height: 100%;
-}
-
-body {
-  background: var(--cream);
-  font-family: "Outfit", Arial, sans-serif;
-  overflow-x: hidden;
+  --cream: rgb(var(--ds-cream));
+  --dark: rgb(var(--ds-dark));
+  --orange: rgb(var(--ds-orange));
+  --amber: rgb(var(--ds-amber));
+  --green: rgb(var(--ds-green));
+  --purple: rgb(var(--ds-purple));
+  --forest: rgb(var(--ds-forest));
+  --gold: rgb(var(--ds-gold));
 }
 
 .page-shell {
@@ -285,7 +259,7 @@ body {
 .hero__dot {
   width: 10px;
   height: 10px;
-  border-radius: 99px;
+  border-radius: var(--ds-radius-pill);
   border: none;
   background: rgba(255, 255, 255, 0.45);
   cursor: pointer;
@@ -981,101 +955,6 @@ body {
   padding: 15px 32px;
   position: relative;
   z-index: 1;
-  cursor: pointer;
-}
-
-.footer {
-  background: var(--dark);
-  color: rgba(255, 246, 229, 0.7);
-  padding: 68px 5vw 40px;
-}
-
-.footer__grid {
-  display: grid;
-  grid-template-columns: 1.25fr 1fr 1fr 1fr;
-  gap: 44px;
-  margin-bottom: 30px;
-}
-
-.footer__logo {
-  height: 52px;
-  object-fit: contain;
-  margin-bottom: 14px;
-}
-
-.footer__desc,
-.footer__link,
-.footer__contact-item span {
-  font-size: 14px;
-  line-height: 1.45;
-}
-
-.footer__socials {
-  margin-top: 18px;
-  display: flex;
-  gap: 10px;
-}
-
-.footer__social-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.footer__social-btn img {
-  width: 16px;
-  height: 16px;
-}
-
-.footer__col-title {
-  font-family: "Palatino Linotype", Georgia, serif;
-  color: var(--gold);
-  margin-bottom: 14px;
-}
-
-.footer__link {
-  text-decoration: none;
-  color: rgba(255, 246, 229, 0.7);
-  display: block;
-  margin-bottom: 9px;
-}
-
-.footer__contact-item {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.footer__contact-item img {
-  width: 15px;
-  height: 15px;
-}
-
-.footer__divider {
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding-top: 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-}
-
-.footer__copy {
-  font-size: 12px;
-}
-
-.footer__back-top {
-  width: 34px;
-  height: 34px;
-  border: none;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.14);
-  color: #fff;
   cursor: pointer;
 }
 

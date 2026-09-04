@@ -28,7 +28,7 @@ export default function AuthModal({ onClose, onAuthSuccess, initialView }) {
 
     try {
       if (currentView === "register") {
-        const { data, error: signUpError } = await supabase.auth.signUp({
+        const { error: signUpError } = await supabase.auth.signUp({
           email: form.email,
           password: form.password,
           options: {

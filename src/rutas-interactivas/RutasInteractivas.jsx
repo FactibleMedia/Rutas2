@@ -20,7 +20,7 @@ const routeOptions = [
     title: "Rutas Patrimoniales",
     description:
       "Recorre los sitios históricos y emblemáticos que cuentan la historia viva de Valledupar. Un viaje a través de la arquitectura y la tradición.",
-    image: "/assets/rutas/gran.png",
+    image: "/assets/rutas/gran.webp",
     icon: MapPin,
     gradient: "from-amber-900/90 via-amber-900/40 to-transparent",
     accentColor: "bg-amber-600",
@@ -31,7 +31,7 @@ const routeOptions = [
     title: "Ruta Gastronómica",
     description:
       "Descubre los sabores auténticos de nuestra tierra. Desde arepas de queso hasta los mejores platos tradicionales de la región.",
-    image: "/assets/rutas/Gastro.png",
+    image: "/assets/rutas/Gastro.webp",
     icon: Utensils,
     gradient: "from-orange-900/90 via-orange-900/40 to-transparent",
     accentColor: "bg-orange-600",
@@ -42,7 +42,7 @@ const routeOptions = [
     title: "Ruta Mística",
     description:
       "Adéntrate en las leyendas y mitos que envuelven la ciudad. Conoce las historias de las sirenas del río Guatapurí y mucho más.",
-    image: "/assets/rutas/Sirena1.png",
+    image: "/assets/rutas/Sirena1.webp",
     icon: Sparkles,
     gradient: "from-emerald-900/90 via-emerald-900/40 to-transparent",
     accentColor: "bg-emerald-600",
@@ -53,7 +53,7 @@ const routeOptions = [
     title: "Ver todas las rutas en el mapa",
     description:
       "Una vista panorámica de todas las rutas y puntos de interés. Planifica tu viaje completo desde un solo lugar interactivo.",
-    image: "/assets/rutas/patri.png",
+    image: "/assets/rutas/patri.webp",
     icon: Map,
     gradient: "from-stone-900/90 via-stone-900/40 to-transparent",
     accentColor: "bg-stone-600",
@@ -64,7 +64,6 @@ const routeOptions = [
 export default function RutasInteractivas() {
   const [searchParams] = useSearchParams();
   const [selectedRoute, setSelectedRoute] = useState(searchParams.get("ruta") || null);
-  const [hoveredRoute, setHoveredRoute] = useState(null);
   const [highlightedPoint, setHighlightedPoint] = useState(null);
   const [pointsData, setPointsData] = useState([]);
   const [connectionsData, setConnectionsData] = useState([]);
@@ -184,7 +183,7 @@ export default function RutasInteractivas() {
               description={route.description}
               pointsData={pointsData}
               routes={connectionsData}
-              mapImage="/assets/mapa-general.png"
+              mapImage="/assets/mapa-general.webp"
               mapFilter={mapFilter}
               routeLegend={routeLegend}
               isGeneral={selectedRoute === "general"}

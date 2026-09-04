@@ -1,0 +1,39 @@
+/* One Google Fonts request replacing 8 separate @import lines that were
+   scattered across styles.css, Glossary.css, GalleryPage.css, TermsPage.css,
+   TermsCookies.css, TermsModal.css, SubmitWordModal.css, MisAportes.css and
+   admin/AdminPanel.css. Same families and weights each page already used --
+   nothing added or dropped, just requested once instead of up to 4 times
+   for the same family (Inter alone was imported by 6 different files). */
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Bree+Serif&family=Bricolage+Grotesque:wght@700;800&family=Epilogue:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&family=Roboto:wght@400;500;700&family=Space+Grotesk:wght@600&family=Special+Elite&display=swap");
+
+/* These two local fonts were declared identically (byte-for-byte, apart from
+   the family name) in 5 different files: styles.css, Glossary.css,
+   GalleryPage.css, AuthModal.css, rutas-interactivas/RutasInteractivas.css.
+   Hoisted here once, and now serve WOFF2 first (converted with fontTools,
+   no subsetting -- every glyph the originals had is still present):
+
+     Heritage-Sans   48.5 KB -> 22.4 KB woff2  (-53%)
+     Trattatello    1160.0 KB -> 270.0 KB woff2 (-76%)
+
+   The original .otf/.ttf stay as a fallback src for any browser that
+   doesn't support woff2 (none in practice today, but the fallback costs
+   nothing since only one format is ever actually downloaded). */
+@font-face {
+  font-family: "Heritage Sans";
+  src:
+    url("/fonts/Heritage-Sans.woff2") format("woff2"),
+    url("/fonts/Heritage-Sans.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Trattatello";
+  src:
+    url("/fonts/Trattatello.woff2") format("woff2"),
+    url("/fonts/Trattatello.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}

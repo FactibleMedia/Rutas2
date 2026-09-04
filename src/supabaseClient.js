@@ -49,7 +49,6 @@ export function setupReconnectionHandler() {
 
   const handleOnline = async () => {
     if (wasOffline) {
-      console.log("[Supabase] Conexión restablecida. Refrescando sesión...");
       try {
         const { error } = await supabase.auth.refreshSession();
         if (error) {

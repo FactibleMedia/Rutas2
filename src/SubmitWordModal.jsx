@@ -148,7 +148,7 @@ export default function SubmitWordModal({ onClose, onWordSubmitted }) {
 
         {/* Left Sticker (Cacique Upar Verde) */}
         <div className="submit-word__sticker-left submit-word__sticker-left--animated">
-          <img src="/assets/glosario/icono_cacique_verde.png" alt="Cacique Upar" style={{ width: "100%", height: "auto", filter: "drop-shadow(0 10px 15px rgba(0,0,0,0.15))" }} />
+          <img src="/assets/glosario/icono_cacique_verde.webp" alt="Cacique Upar" style={{ width: "100%", height: "auto", filter: "drop-shadow(0 10px 15px rgba(0,0,0,0.15))" }} />
         </div>
 
         {/* Center Content */}
@@ -285,7 +285,7 @@ export default function SubmitWordModal({ onClose, onWordSubmitted }) {
 
         {/* Right Sticker (Sirena) */}
         <div className="submit-word__sticker-right submit-word__sticker-right--animated">
-          <img src="/assets/glosario/icono_sirena.png" alt="Sirena" style={{ width: "100%", height: "auto", filter: "drop-shadow(0 10px 15px rgba(0,0,0,0.15))" }} />
+          <img src="/assets/glosario/icono_sirena.webp" alt="Sirena" style={{ width: "100%", height: "auto", filter: "drop-shadow(0 10px 15px rgba(0,0,0,0.15))" }} />
         </div>
       </div>
 

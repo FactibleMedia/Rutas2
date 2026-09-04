@@ -4,9 +4,11 @@
   "private": true,
   "description": "Replica React del diseño Rutas de Valledupar desde Figma",
   "scripts": {
-    "dev": "node ./node_modules/vite/bin/vite.js",
-    "build": "node ./node_modules/vite/bin/vite.js build",
-    "preview": "node ./node_modules/vite/bin/vite.js preview",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint src",
+    "check:assets": "node scripts/check-assets.mjs",
     "spell:check": "cspell \"src/**/*.{jsx,js,css}\""
   },
   "engines": {
@@ -20,13 +22,17 @@
     "mapbox-gl": "^3.24.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
-    "react-router-dom": "^7.15.1",
-    "reicon": "^1.1.1"
+    "react-router-dom": "^7.15.1"
   },
   "devDependencies": {
     "@cspell/dict-es-es": "^3.0.8",
+    "@eslint/js": "^10.0.1",
     "@vitejs/plugin-react": "^6.0.2",
     "cspell": "^10.0.1",
+    "eslint": "^10.9.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.5",
+    "globals": "^17.11.0",
     "vite": "^8.0.14"
   }
 }

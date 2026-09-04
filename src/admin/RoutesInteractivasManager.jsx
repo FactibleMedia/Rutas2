@@ -52,7 +52,7 @@ const MARKER_ICONS = {
   postres_cena: "/assets/rutas/icon-postres_cena.png",
 };
 
-const MAP_IMAGE = "/assets/mapa-general.png";
+const MAP_IMAGE = "/assets/mapa-general.webp";
 const ZOOM_MIN = 1;
 const ZOOM_MAX = 4;
 const ZOOM_STEP = 0.3;
@@ -70,7 +70,7 @@ export default function RoutesInteractivasManager() {
   const [connectingMode, setConnectingMode] = useState(false);
   const [connectingPath, setConnectingPath] = useState([]);
   const [saving, setSaving] = useState(false);
-  const [uploadingImg, setUploadingImg] = useState(null);
+  const [uploadingImg] = useState(null);
   const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [mapaLocations, setMapaLocations] = useState([]);
@@ -118,27 +118,6 @@ export default function RoutesInteractivasManager() {
     setMessage({ type, text });
     setTimeout(() => setMessage({ type: "", text: "" }), 3000);
   };
-
-  // ---- Image upload ----
-  const handleFileUpload = useCallback(async (pointId, file) => {
-    if (!file) return;
-    setUploadingImg(pointId);
-    try {
-      const ext = file.name.split(".").pop();
-      const fileName = `rutas/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-      const { data, error } = await supabase.storage
-        .from(STORAGE_BUCKET)
-        .upload(fileName, file, { cacheControl: "3600", upsert: false });
-      if (error) throw error;
-      const { data: urlData } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(data.path);
-      updatePointField(pointId, "imagen_url", urlData.publicUrl);
-      showMessage("success", "Imagen subida correctamente.");
-    } catch (err) {
-      showMessage("error", `Error al subir imagen: ${err.message}`);
-    } finally {
-      setUploadingImg(null);
-    }
-  }, []);
 
   // ---- Coordinate helpers (zoom-aware) ----
   const getContainerRect = useCallback(() => {
@@ -348,7 +327,7 @@ export default function RoutesInteractivasManager() {
           detalle: `${points.length} punto(s) guardado(s) en ${activeCategory}`,
           tipo: "edicion",
         });
-      } catch (e) { /* silencioso */ }
+      } catch { /* silencioso */ }
       showMessage("success", `${points.length} punto(s) guardados correctamente.`);
       loadData();
     } catch (err) {

@@ -1,0 +1,58 @@
+/* ==========================================================================
+   Shared "common element" treatments, unified only where the source CSS was
+   byte-identical (or differed solely in properties that don't collide with
+   what's unified here) across the files that declared it. Each file keeps
+   its own class name and its own layout-specific properties (position,
+   z-index, border-radius, etc.) -- only the truly duplicated properties move
+   here, so nothing about the DOM structure or class names in any component
+   needs to change.
+   ========================================================================== */
+
+/* Paper-texture background: identical dot-grid treatment used by the Terms
+   page, the Terms/cookies bilingual page, and the Terms modal. The modal
+   additionally sets position:absolute + border-radius on its own class;
+   the page variants set position:fixed + pointer-events + z-index on
+   theirs. No property declared here is also declared in those per-file
+   rules, so cascade order between this file and the page CSS doesn't
+   matter for these properties. */
+.terms-page,
+.terms-cookies,
+.terms-page__paper-bg,
+.terms-cookies__paper-bg,
+.terms-modal__paper-bg {
+  background-color: #f7f3e8;
+  background-image:
+    radial-gradient(#e5dec9 1px, transparent 1px),
+    radial-gradient(#e5dec9 1px, #f7f3e8 1px);
+  background-size: 40px 40px;
+  background-position: 0 0, 20px 20px;
+}
+
+/* Primary CTA (the terracotta "action" button): 5 separate declarations
+   across the Terms triplet and SubmitWordModal, all using the same
+   background/hover-background/font-family/border-radius/cursor/transition.
+   Only those 7 properties were byte-identical everywhere -- padding,
+   font-size, border, box-shadow, hover transform amount, and the
+   :active/:disabled states genuinely differ per button (submit-word's
+   login button has no border at all, for instance) and stay declared on
+   each file's own selector. */
+.terms-page__btn-back,
+.terms-cookies__btn-back,
+.terms-modal__btn-back,
+.submit-word__btn-submit,
+.submit-word__btn-login {
+  background: #b84a12;
+  color: #fff;
+  font-family: 'Special Elite', cursive, monospace;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.terms-page__btn-back:hover,
+.terms-cookies__btn-back:hover,
+.terms-modal__btn-back:hover,
+.submit-word__btn-submit:hover,
+.submit-word__btn-login:hover {
+  background: #9a3d0e;
+}

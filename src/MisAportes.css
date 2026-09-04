@@ -1,4 +1,8 @@
-@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600&family=Space+Grotesk:wght@600&display=swap");
+/* Fonts (Bricolage Grotesque, Plus Jakarta Sans, Space Grotesk) now
+   imported once in src/styles/fonts.css. Note Plus Jakarta Sans was
+   requested here but is actually used by src/NavMap.css, not this file --
+   that accidental cross-file dependency is now resolved for free, since
+   the import is global regardless of which page loaded first. */
 
 /* ============================================================
    MIS APORTES — Página de contribuciones del usuario
@@ -311,7 +315,7 @@
 .ma-filter-chip {
   padding: 6px 14px;
   border: 1px solid #d4c8b4;
-  border-radius: 999px;
+  border-radius: var(--ds-radius-pill);
   background: transparent;
   color: #6b4a2e;
   font-family: "Space Grotesk", "Inter", sans-serif;
