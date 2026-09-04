@@ -21,9 +21,12 @@
    ========================================================= */
 
 .gallery-hero {
-  min-height: 100vh;
+  background-image: url("/assets/gallery/shadows.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   width: 100%;
-  background: #EFCE86;
+  background-color: #EFCE86;
   position: relative;
   overflow: hidden;
   display: flex;
@@ -37,7 +40,7 @@
 
 @media (min-width: 1024px) {
   .gallery-hero {
-    padding: 120px 48px 48px;
+    padding: 70px 48px 48px;
   }
 }
 
@@ -108,7 +111,8 @@
   height: 500px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: end;
+  margin-top: 110px;
 }
 
 @media (min-width: 1024px) {
@@ -122,8 +126,8 @@
 
 .gallery-hero__church {
   position: absolute;
-  top: 5%;
-  left: 5%;
+  top: 0%;
+  left: 20%;
   z-index: 0;
   animation: rock-church 4s ease-in-out infinite;
   transform-origin: center bottom;
@@ -162,9 +166,9 @@
 }
 
 .gallery-hero__photo-frame {
-  background-color: #fff;
+  background-color: transparent;
   padding: 8px;
-  box-shadow: 2px 4px 12px rgba(0, 0, 0, 0.15);
+  /* box-shadow: 2px 4px 12px rgba(0, 0, 0, 0.15); */
   position: absolute;
   width: 280px;
   height: 400px;
@@ -173,7 +177,7 @@
 }
 
 .gallery-hero__photo-frame:hover {
-  box-shadow: 4px 8px 20px rgba(0, 0, 0, 0.25);
+  /* box-shadow: 4px 8px 20px rgba(0, 0, 0, 0.25); */
 }
 
 @media (max-width: 760px) {
@@ -234,7 +238,7 @@
 
 @media (min-width: 768px) {
   .gallery-hero__house {
-    right: -10%;
+    right: 7%;
   }
 }
 
@@ -312,17 +316,16 @@
   font-size: clamp(40px, 7vw, 90px);
   font-style: normal;
   font-weight: 400;
-  line-height: 1.1;
   letter-spacing: 0.02em;
+  margin-left: -100px;
 }
 
 .gallery-hero__title-line--escucha {
   font-family: var(--font-trattatello);
   color: #2C1A0E;
-  font-size: clamp(44px, 7.5vw, 100px);
+  font-size: clamp(44px, 7.5vw, 90px);
   font-style: normal;
   font-weight: 400;
-  line-height: 1.1;
   letter-spacing: 0.02em;
   margin-left: 0;
 }
@@ -336,20 +339,18 @@
 .gallery-hero__title-line--siente {
   font-family: var(--font-trattatello);
   color: #2C1A0E;
-  font-size: clamp(38px, 6.5vw, 85px);
+  font-size: clamp(38px, 6.5vw, 90px);
   font-style: normal;
   font-weight: 400;
-  line-height: 1.1;
   letter-spacing: 0.02em;
 }
 
 .gallery-hero__title-line--valle {
   font-family: var(--font-trattatello);
   color: #BA4C24;
-  font-size: clamp(44px, 7.5vw, 100px);
+  font-size: clamp(44px, 7.5vw, 90px);
   font-style: normal;
   font-weight: 400;
-  line-height: 1.1;
   letter-spacing: 0.02em;
   margin-top: 8px;
 }
@@ -360,11 +361,9 @@
   margin-top: 28px;
   color: #2C1A0E;
   font-family: var(--font-inter);
-  font-size: 20.804px;
+  font-size: 18px;
   font-style: normal;
   font-weight: 400;
-  line-height: 29.472px;
-  letter-spacing: 0.867px;
   max-width: 420px;
 }
 
@@ -374,13 +373,13 @@
   margin-top: 36px;
   background: #bd4f29;
   color: #fff;
-  font-family: var(--font-inter);
+  font-family: var(--ds-font-display);
   font-weight: 600;
-  font-size: 12px;
+  font-size: 20px;
   letter-spacing: 0.2em;
-  padding: 16px 40px;
+  padding: 8px 20px;
   border: none;
-  border-radius: 2px;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 8px 15px rgba(189, 79, 41, 0.3);
@@ -539,7 +538,7 @@
 
 .gallery-multimedia__title-word--gallery {
   font-family: var(--font-trattatello);
-  font-size: clamp(40px, 7vw, 95px);
+  font-size: clamp(40px, 7vw, 70px);
   color: #2C1A0E;
   font-style: normal;
   font-weight: 400;
@@ -549,7 +548,7 @@
 
 .gallery-multimedia__title-word--multimedia {
   font-family: var(--font-trattatello);
-  font-size: clamp(40px, 7vw, 95px);
+  font-size: clamp(40px, 7vw, 70px);
   color: #BB4C18;
   font-style: normal;
   font-weight: 400;
@@ -565,7 +564,7 @@
 
 .gallery-multimedia__desc {
   color: #6d5e50;
-  font-size: 14px;
+  font-size: 16px;
   max-width: 480px;
   margin: 0 auto;
   font-weight: 500;
